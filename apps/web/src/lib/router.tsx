@@ -7,6 +7,7 @@ import {
 
 import { LandingPage } from "../pages";
 import { HomePage } from "../pages/app";
+import { TvPage } from "../pages/app/tv";
 import { OnboardingPage } from "../pages/onboarding";
 
 const rootRoute = createRootRoute({ component: Outlet });
@@ -30,10 +31,15 @@ const onboardingRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "onboarding",
 });
+const tvRoute = createRoute({
+  component: TvPage,
+  getParentRoute: () => appRoute,
+  path: "tv",
+});
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
-  appRoute.addChildren([homeRoute, onboardingRoute]),
+  appRoute.addChildren([homeRoute, onboardingRoute, tvRoute]),
 ]);
 
 export const router = createRouter({
