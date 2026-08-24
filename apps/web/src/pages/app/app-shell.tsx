@@ -82,7 +82,8 @@ const navigation: Array<{
     | "/app/movies"
     | "/app/series"
     | "/app/favorites"
-    | "/app/sources";
+    | "/app/sources"
+    | "/app/settings";
 }> = [
   { icon: "home", label: "Início", to: "/app" },
   { icon: "radio", label: "TV ao vivo", to: "/app/tv" },
@@ -150,7 +151,13 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="mt-auto flex flex-col gap-1">
-        <NavigationItem item={{ icon: "settings", label: "Configurações" }} />
+        <NavigationItem
+          item={{
+            icon: "settings",
+            label: "Configurações",
+            to: "/app/settings",
+          }}
+        />
         <button
           className="mt-3 flex items-center gap-2 border-t border-line px-3 pt-4 text-xs font-semibold text-muted hover:text-text"
           type="button"

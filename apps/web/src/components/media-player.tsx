@@ -15,6 +15,7 @@ import mpegts from "mpegts.js";
 import { useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../features/playback/playback";
 import { formatPlaybackTime } from "../features/playback/playback";
+import { usePlaybackPreferences } from "../services/playback-preferences";
 
 type MediaPlayerProps = {
   descriptor: PlaybackDescriptor;
@@ -57,6 +58,8 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   const [currentTime, setCurrentTime] = useState(descriptor.position ?? 0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const { preferences } = usePlaybackPreferences();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -93,7 +96,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
 
     cleanEngine();
     setError(null);
-    setCurrentTime(descriptor.position ?? 0);
+    setCurrentTime(preferences.autoResume ? (descriptor.position ?? 0) : 0);
     setDuration(0);
 
     const fail = () => {
@@ -114,7 +117,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
         if (data.fatal) fail();
       });
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (descriptor.position && !descriptor.isLive)
+        if (preferences.autoResume && descriptor.position && !descriptor.isLive)
           video.currentTime = descriptor.position;
         void video.play().catch(() => undefined);
       });
@@ -146,7 +149,11 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
           void player
             .load(url)
             .then(() => {
-              if (descriptor.position && !descriptor.isLive)
+              if (
+                preferences.autoResume &&
+                descriptor.position &&
+                !descriptor.isLive
+              )
                 video.currentTime = descriptor.position;
               return video.play();
             })
@@ -168,7 +175,17 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
       sessionRef.current += 1;
       cleanEngine();
     };
-  }, [descriptor]);
+  }, [descriptor, preferences.autoResume]);
+
+  useEffect(() => {
+    if (!preferences.hideControls || !isPlaying) {
+      setControlsVisible(true);
+      return;
+    }
+    setControlsVisible(true);
+    const timer = window.setTimeout(() => setControlsVisible(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [isPlaying, preferences.hideControls]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -223,7 +240,15 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   };
 
   return (
-    <main className="relative flex h-dvh min-h-[560px] w-full flex-col overflow-hidden bg-[#080806] text-text">
+    <main
+      className={`relative flex h-dvh min-h-[560px] w-full flex-col overflow-hidden bg-[#080806] text-text ${preferences.reduceMotion ? "[&_button]:transition-none" : ""}`}
+      onMouseMove={() => {
+        setControlsVisible(true);
+      }}
+      onTouchStart={() => {
+        setControlsVisible(true);
+      }}
+    >
       <video
         aria-label={descriptor.title}
         className="absolute inset-0 size-full object-cover"
@@ -265,7 +290,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
 
       <button
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
-        className="absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-focus"
+        className={`absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text focus-visible:outline-2 focus-visible:outline-focus ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${preferences.reduceMotion ? "transition-none" : "transition-opacity hover:scale-105"}`}
         onClick={togglePlay}
         type="button"
       >
@@ -278,7 +303,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
 
       <section
         aria-label="Controles de reprodução"
-        className="relative z-10 mt-auto flex flex-col gap-3 px-5 pb-7 sm:gap-[18px] sm:px-[42px] sm:pb-[38px]"
+        className={`relative z-10 mt-auto flex flex-col gap-3 px-5 pb-7 sm:gap-[18px] sm:px-[42px] sm:pb-[38px] ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${preferences.reduceMotion ? "transition-none" : "transition-opacity"}`}
       >
         <div className="flex items-end justify-between gap-4">
           <p className="m-0 truncate text-xs font-bold sm:hidden">

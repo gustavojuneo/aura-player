@@ -72,3 +72,11 @@ export function useFavorites() {
 
   return { favorites, isFavorite, toggleFavorite };
 }
+
+export function clearFavorites() {
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    // Storage may be unavailable in restricted browser contexts.
+  }
+}

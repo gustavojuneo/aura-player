@@ -13,6 +13,7 @@ import { MoviesPage } from "../pages/app/movies";
 import { PlayerPage } from "../pages/app/player";
 import { SeriesPage } from "../pages/app/series";
 import { SeriesDetailsPage } from "../pages/app/series-details";
+import { SettingsPage } from "../pages/app/settings";
 import { SourcesPage } from "../pages/app/sources";
 import { TvPage } from "../pages/app/tv";
 import { OnboardingPage } from "../pages/onboarding";
@@ -63,6 +64,11 @@ const sourcesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "sources",
 });
+const settingsRoute = createRoute({
+  component: SettingsPage,
+  getParentRoute: () => appRoute,
+  path: "settings",
+});
 const movieDetailsRoute = createRoute({
   component: MovieDetailsPage,
   getParentRoute: () => appRoute,
@@ -99,6 +105,7 @@ const routeTree = rootRoute.addChildren([
     moviesRoute,
     favoritesRoute,
     sourcesRoute,
+    settingsRoute,
     movieDetailsRoute,
     moviePlayerRoute,
     seriesRoute,
