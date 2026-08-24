@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 export function SourceSelector({
@@ -25,26 +26,11 @@ export function SourceSelector({
         )}
       />
       <span className="min-w-0 flex-1 truncate text-left">{source}</span>
-      <ChevronDownIcon />
-    </button>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="size-[18px] shrink-0 text-muted"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="m6 9 6 6 6-6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
+      <ChevronDown
+        aria-hidden="true"
+        className="size-[18px] shrink-0 text-muted"
+        strokeWidth={1.8}
       />
-    </svg>
+    </button>
   );
 }
