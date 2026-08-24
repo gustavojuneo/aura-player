@@ -1,9 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --color-bg: #15130f;
+  --color-panel: #201d17;
+  --color-panel-2: #2a261f;
+  --color-search: #191713;
+  --color-text: #f6f2e8;
+  --color-muted: #a9a296;
+  --color-gold: #e3a83b;
+  --color-gold-bright: #ffd477;
+  --color-line: #3c372e;
+  --color-focus: #ffe3a1;
+  --color-success: #6bcb8b;
+  --color-live: #a42d26;
+  --color-danger: #e86a5a;
+  --color-danger-strong: #ffb2a7;
+  --color-danger-surface: #3a211d;
+  --color-ink: #211707;
+  --font-sans: Manrope, ui-sans-serif, system-ui, sans-serif;
+  --font-display: Sora, Manrope, ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  font-family: system-ui, sans-serif;
-  color: #171717;
-  background: #ffffff;
+  font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
+  color: #f6f2e8;
+  background: #15130f;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
