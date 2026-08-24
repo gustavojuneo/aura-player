@@ -1,7 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Heart, Play, Radio } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Button, ProductState, SearchField } from "../../components/ui";
+import { useCatalogItems } from "../../hooks/use-catalog-data";
 import { useCatalogState } from "../../hooks/use-catalog-state";
 import { useFavorites } from "../../services/favorites";
 import { AppHeader, AppLayout } from "./app-shell";
@@ -10,6 +12,7 @@ type Channel = {
   current: string;
   id: string;
   name: string;
+  logoUrl?: string;
 };
 
 const categories = [
@@ -128,6 +131,20 @@ function ProgramPanel() {
 export function TvPage() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isLoading, retry } = useCatalogState();
+  const { items } = useCatalogItems("live");
+  const [query, setQuery] = useState("");
+  const visibleChannels = useMemo<Channel[]>(() => {
+    const importedChannels = items.map((item) => ({
+      current: item.groupTitle ?? "Ao vivo",
+      id: item.id,
+      logoUrl: item.logoUrl,
+      name: item.title,
+    }));
+    return (importedChannels.length ? importedChannels : channels).filter(
+      (channel) =>
+        channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+    );
+  }, [items, query]);
 
   return (
     <AppLayout>
@@ -146,7 +163,9 @@ export function TvPage() {
           <SearchField
             aria-label="Buscar canais"
             className="h-11 w-full sm:max-w-[320px]"
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar canais, programas..."
+            value={query}
           />
         </div>
         {isLoading ? (
@@ -159,7 +178,7 @@ export function TvPage() {
           <div className="flex min-h-0 flex-col gap-3 lg:flex-row lg:items-stretch">
             <CategoryList />
             <div className="flex min-w-0 flex-col gap-2 lg:w-[500px] lg:shrink-0">
-              {channels.map((channel) => (
+              {visibleChannels.map((channel) => (
                 <ChannelRow
                   channel={channel}
                   favorite={isFavorite("channel", channel.id)}

@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ProductState, SearchField } from "../../components/ui";
+import { useCatalogSeries } from "../../hooks/use-catalog-data";
 import { useCatalogState } from "../../hooks/use-catalog-state";
 import { AppHeader, AppLayout } from "./app-shell";
 
@@ -132,10 +133,24 @@ export function SeriesPage() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
   const { isLoading, retry } = useCatalogState();
+  const { items: importedSeries } = useCatalogSeries();
+  const seriesCatalog = useMemo<Series[]>(
+    () =>
+      importedSeries.length
+        ? importedSeries.map((item) => ({
+            accent: "from-[#243442] to-[#171510]",
+            genre: item.groupTitle ?? "Outros",
+            id: item.id,
+            seasons: item.seasonCount,
+            title: item.title,
+          }))
+        : series,
+    [importedSeries],
+  );
 
   const visibleSeries = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filtered = series.filter((item) => {
+    const filtered = seriesCatalog.filter((item) => {
       const matchesGenre = genre === "Todos" || item.genre === genre;
       const matchesQuery = item.title
         .toLocaleLowerCase()
@@ -150,7 +165,7 @@ export function SeriesPage() {
     }
 
     return filtered;
-  }, [genre, query, sort]);
+  }, [genre, query, seriesCatalog, sort]);
 
   return (
     <AppLayout>

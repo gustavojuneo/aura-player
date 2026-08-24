@@ -4,6 +4,7 @@ import {
   createPlaybackDescriptor,
   resolvePlaybackUrl,
 } from "../../features/playback/playback";
+import { useCatalogItem } from "../../hooks/use-catalog-data";
 
 type PlayerPageProps = { kind: "live" | "movie" | "episode" };
 
@@ -31,13 +32,22 @@ export function PlayerPage({ kind }: PlayerPageProps) {
       : kind === "movie"
         ? (params.movieId ?? "alem-veu-1")
         : (params.episodeId ?? "episode-4");
-  const content = titles[contentId] ?? { title: contentId };
+  const { item, isLoading } = useCatalogItem(contentId);
+  const content = item ?? titles[contentId] ?? { title: contentId };
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
+        Carregando reprodução...
+      </main>
+    );
+  }
   const descriptor = createPlaybackDescriptor({
     contentId,
     isLive: kind === "live",
-    position: kind === "movie" ? 42 * 60 : undefined,
-    secondaryTitle: content.secondaryTitle,
-    streamUrl: resolvePlaybackUrl(contentId),
+    position: undefined,
+    secondaryTitle:
+      "secondaryTitle" in content ? content.secondaryTitle : item?.groupTitle,
+    streamUrl: item?.streamUrl ?? resolvePlaybackUrl(contentId),
     title: content.title,
   });
 

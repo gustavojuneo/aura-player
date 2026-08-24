@@ -1,6 +1,8 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "../../components/ui";
+import { importM3uSource, saveM3uSource } from "../../services/catalog-service";
 
 type SourceType = "m3u" | "xtream";
 
@@ -100,6 +102,7 @@ function TextInput({
 }
 
 export function OnboardingPage() {
+  const navigate = useNavigate();
   const [sourceType, setSourceType] = useState<SourceType>("m3u");
   const [name, setName] = useState("Minha casa");
   const [url, setUrl] = useState("");
@@ -107,6 +110,8 @@ export function OnboardingPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const isM3uUrlValid = (() => {
     try {
@@ -125,6 +130,32 @@ export function OnboardingPage() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
+    setError(null);
+    if (!isValid || sourceType !== "m3u") return;
+    void (async () => {
+      try {
+        setProgress("Salvando fonte...");
+        const source = await saveM3uSource({ name, url });
+        await importM3uSource(source, {
+          onProgress: (phase) =>
+            setProgress(
+              phase === "fetching"
+                ? "Baixando playlist..."
+                : phase === "parsing"
+                  ? "Analisando conteúdo..."
+                  : "Indexando catálogo...",
+            ),
+        });
+        void navigate({ to: "/app" });
+      } catch (caught) {
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Não foi possível importar a fonte.",
+        );
+        setProgress(null);
+      }
+    })();
   }
 
   function selectSource(type: SourceType) {
@@ -250,7 +281,23 @@ export function OnboardingPage() {
           )}
         </div>
 
-        {submitted && isValid && (
+        {progress && (
+          <p
+            className="m-0 rounded-lg border border-gold/40 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold-bright"
+            role="status"
+          >
+            {progress}
+          </p>
+        )}
+        {error && (
+          <p
+            className="m-0 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-xs font-semibold text-danger-strong"
+            role="alert"
+          >
+            Não foi possível carregar a playlist: {error}
+          </p>
+        )}
+        {submitted && isValid && !progress && (
           <p
             className="m-0 flex items-center gap-2 text-xs font-semibold text-success"
             role="status"
@@ -262,7 +309,12 @@ export function OnboardingPage() {
           </p>
         )}
 
-        <Button className="h-12 w-full" type="submit" variant="primary">
+        <Button
+          className="h-12 w-full"
+          disabled={Boolean(progress)}
+          type="submit"
+          variant="primary"
+        >
           {sourceType === "m3u"
             ? "Validar e adicionar fonte"
             : "Validar e adicionar"}

@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ProductState, SearchField } from "../../components/ui";
+import { useCatalogItems } from "../../hooks/use-catalog-data";
 import { useCatalogState } from "../../hooks/use-catalog-state";
 import { AppHeader, AppLayout } from "./app-shell";
 
@@ -134,10 +135,24 @@ export function MoviesPage() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
   const { isLoading, retry } = useCatalogState();
+  const { items: importedMovies } = useCatalogItems("movie");
+  const movieCatalog = useMemo<Movie[]>(
+    () =>
+      importedMovies.length
+        ? importedMovies.map((movie) => ({
+            accent: "from-[#243442] to-[#171510]",
+            genre: movie.groupTitle ?? "Outros",
+            id: movie.id,
+            metadata: movie.year ? String(movie.year) : "Filme",
+            title: movie.title,
+          }))
+        : movies,
+    [importedMovies],
+  );
 
   const visibleMovies = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filtered = movies.filter((movie) => {
+    const filtered = movieCatalog.filter((movie) => {
       const matchesGenre = genre === "Todos" || movie.genre === genre;
       const matchesQuery = movie.title
         .toLocaleLowerCase()
@@ -152,7 +167,7 @@ export function MoviesPage() {
     }
 
     return filtered;
-  }, [genre, query, sort]);
+  }, [genre, movieCatalog, query, sort]);
 
   return (
     <AppLayout>

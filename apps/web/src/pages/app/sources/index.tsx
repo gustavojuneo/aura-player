@@ -2,43 +2,21 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 
 import { Button, ProductState } from "../../../components/ui";
+import { useCatalogSources } from "../../../hooks/use-catalog-data";
+import {
+  importM3uSource,
+  removeM3uSource,
+  saveM3uSource,
+} from "../../../services/catalog-service";
 import { AppHeader, AppLayout } from "../app-shell";
 import { SourceCard } from "./components/source-card";
 import { SourceForm } from "./components/source-form";
 import type { Source, SourceFormValues } from "./types";
 
-const initialSources: Source[] = [
-  {
-    id: "home",
-    name: "Casa",
-    type: "xtream",
-    status: "active",
-    detail: "Xtream · ativa",
-    server: "https://servidor.exemplo",
-    username: "casa",
-    password: "senha",
-    contentCount: 24,
-  },
-  {
-    id: "office",
-    name: "Escritório",
-    type: "m3u",
-    status: "available",
-    detail: "M3U · disponível",
-    url: "https://servidor.exemplo/lista.m3u",
-    contentCount: 0,
-  },
-  {
-    id: "travel",
-    name: "Viagem",
-    type: "m3u",
-    status: "error",
-    detail: "M3U · erro de conexão",
-    url: "https://servidor.exemplo/viagem.m3u",
-  },
-];
+const initialSources: Source[] = [];
 
 export function SourcesPage() {
+  const { sources: importedSources } = useCatalogSources();
   const [sources, setSources] = useState(initialSources);
   const [activeId, setActiveId] = useState("home");
   const [editing, setEditing] = useState<Source | undefined>();
@@ -56,26 +34,28 @@ export function SourcesPage() {
     setFormOpen(true);
   };
   const saveSource = (values: SourceFormValues) => {
-    const next: Source = {
-      id: editing?.id ?? `source-${Date.now()}`,
-      name: values.name.trim(),
-      type: values.type,
-      status: "available",
-      detail:
-        values.type === "xtream" ? "Xtream · disponível" : "M3U · disponível",
-      server: values.server,
-      username: values.username,
-      password: values.password,
-      url: values.url,
-      contentCount: editing?.contentCount ?? 0,
-    };
-    setSources((current) =>
-      editing
-        ? current.map((source) => (source.id === editing.id ? next : source))
-        : [...current, next],
-    );
-    setFormOpen(false);
-    setNotice(`${next.name} foi salva.`);
+    if (values.type !== "m3u" || !values.url) {
+      setNotice("Neste primeiro marco, apenas fontes M3U estão disponíveis.");
+      return;
+    }
+    void (async () => {
+      try {
+        const source = await saveM3uSource({
+          name: values.name,
+          url: values.url,
+        });
+        await importM3uSource(source);
+        setActiveId(source.id);
+        setFormOpen(false);
+        setNotice(`${source.name} foi importada.`);
+      } catch (error) {
+        setNotice(
+          error instanceof Error
+            ? `Falha na importação: ${error.message}`
+            : "Falha na importação.",
+        );
+      }
+    })();
   };
 
   const refreshSource = (source: Source) => {
@@ -133,7 +113,23 @@ export function SourcesPage() {
             className="flex min-w-0 flex-col gap-2.5"
             aria-label="Fontes cadastradas"
           >
-            {sources.map((source) => (
+            {[
+              ...sources,
+              ...importedSources.map((source) => ({
+                id: source.id,
+                name: source.name,
+                type: "m3u" as const,
+                status:
+                  source.status === "error"
+                    ? ("error" as const)
+                    : source.status === "ready"
+                      ? ("available" as const)
+                      : ("available" as const),
+                detail: `M3U · ${source.status}`,
+                contentCount: source.itemCount,
+                url: source.url,
+              })),
+            ].map((source) => (
               <div className="flex flex-col gap-2" key={source.id}>
                 <SourceCard
                   active={activeId === source.id}
@@ -142,6 +138,7 @@ export function SourcesPage() {
                     setNotice(`${source.name} agora é a fonte ativa.`);
                   }}
                   onDelete={() => {
+                    void removeM3uSource(source.id);
                     setSources((current) =>
                       current.filter((item) => item.id !== source.id),
                     );
