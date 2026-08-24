@@ -13,6 +13,7 @@ import { MoviesPage } from "../pages/app/movies";
 import { PlayerPage } from "../pages/app/player";
 import { SeriesPage } from "../pages/app/series";
 import { SeriesDetailsPage } from "../pages/app/series-details";
+import { SourcesPage } from "../pages/app/sources";
 import { TvPage } from "../pages/app/tv";
 import { OnboardingPage } from "../pages/onboarding";
 
@@ -57,6 +58,11 @@ const favoritesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "favorites",
 });
+const sourcesRoute = createRoute({
+  component: SourcesPage,
+  getParentRoute: () => appRoute,
+  path: "sources",
+});
 const movieDetailsRoute = createRoute({
   component: MovieDetailsPage,
   getParentRoute: () => appRoute,
@@ -92,6 +98,7 @@ const routeTree = rootRoute.addChildren([
     livePlayerRoute,
     moviesRoute,
     favoritesRoute,
+    sourcesRoute,
     movieDetailsRoute,
     moviePlayerRoute,
     seriesRoute,
