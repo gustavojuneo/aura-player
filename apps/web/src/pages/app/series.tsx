@@ -1,4 +1,5 @@
-import { ChevronDown, Play } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { SearchField } from "../../components/ui";
@@ -105,24 +106,19 @@ const series: Series[] = [
 
 function SeriesCard({ item }: { item: Series }) {
   return (
-    <article
-      className={`group relative flex h-[238px] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${item.accent} p-3.5 transition-transform hover:-translate-y-1`}
+    <Link
+      className={`group relative flex h-[238px] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${item.accent} p-3.5 transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-focus`}
+      params={{ seriesId: item.id }}
+      to="/app/series/$seriesId"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
-      <button
-        aria-label={`Reproduzir ${item.title}`}
-        className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-black/30 text-text opacity-0 transition-opacity hover:bg-gold hover:text-ink group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-        type="button"
-      >
-        <Play aria-hidden="true" className="ml-0.5 size-4 fill-current" />
-      </button>
       <div className="relative min-w-0">
         <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
         <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
           {item.seasons} {item.seasons === 1 ? "temporada" : "temporadas"}
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
 

@@ -10,6 +10,7 @@ import { HomePage } from "../pages/app";
 import { MovieDetailsPage } from "../pages/app/movie-details";
 import { MoviesPage } from "../pages/app/movies";
 import { SeriesPage } from "../pages/app/series";
+import { SeriesDetailsPage } from "../pages/app/series-details";
 import { TvPage } from "../pages/app/tv";
 import { OnboardingPage } from "../pages/onboarding";
 
@@ -54,6 +55,11 @@ const seriesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "series",
 });
+const seriesDetailsRoute = createRoute({
+  component: SeriesDetailsPage,
+  getParentRoute: () => appRoute,
+  path: "series/$seriesId",
+});
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
@@ -64,6 +70,7 @@ const routeTree = rootRoute.addChildren([
     moviesRoute,
     movieDetailsRoute,
     seriesRoute,
+    seriesDetailsRoute,
   ]),
 ]);
 
