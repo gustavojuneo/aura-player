@@ -73,14 +73,24 @@ export function SourcesPage() {
   const refreshSource = (source: Source) => {
     setRollbackId(null);
     setSyncingId(source.id);
-    window.setTimeout(() => {
+    const storedSource = importedSources.find((item) => item.id === source.id);
+    if (!storedSource) {
       setSyncingId(null);
-      if (source.status === "error") {
+      setRollbackId(source.id);
+      return;
+    }
+    void importM3uSource(storedSource)
+      .then((updatedSource) => {
+        setNotice(
+          updatedSource.ignoredCount > 0
+            ? `${source.name} foi atualizada. ${updatedSource.ignoredCount} entrada(s) ignorada(s).`
+            : `${source.name} foi atualizada.`,
+        );
+      })
+      .catch(() => {
         setRollbackId(source.id);
-        return;
-      }
-      setNotice(`${source.name} foi sincronizada.`);
-    }, 700);
+      })
+      .finally(() => setSyncingId(null));
   };
 
   return (

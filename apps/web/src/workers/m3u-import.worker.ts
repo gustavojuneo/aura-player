@@ -41,6 +41,7 @@ self.onmessage = async (event: MessageEvent<ImportMessage>) => {
       liveCount: parsed.liveCount,
       movieCount: parsed.movieCount,
       episodeCount: parsed.episodeCount,
+      ignoredCount: parsed.ignoredCount,
       importedAt: source.importedAt ?? new Date().toISOString(),
       refreshedAt: new Date().toISOString(),
       errorMessage: undefined,

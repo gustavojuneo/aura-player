@@ -47,6 +47,7 @@ export const sourceSchema = z.object({
   liveCount: z.number().int().nonnegative().default(0),
   movieCount: z.number().int().nonnegative().default(0),
   episodeCount: z.number().int().nonnegative().default(0),
+  ignoredCount: z.number().int().nonnegative().default(0),
   importedAt: z.string().optional(),
   refreshedAt: z.string().optional(),
   errorMessage: z.string().optional(),
@@ -149,10 +150,23 @@ function deliveryFromUrl(
 export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
   const series = new Map<string, CatalogSeries>();
   const seriesSeasons = new Map<string, Set<number>>();
+  const seriesWithZeroSeason = new Set<string>();
+  const seasonsWithZeroEpisode = new Set<string>();
   const items: CatalogItem[] = [];
   let liveCount = 0;
   let movieCount = 0;
   let episodeCount = 0;
+  let ignoredCount = 0;
+
+  for (const entry of entries) {
+    const match = entry.name.match(episodePattern);
+    if (!match) continue;
+    const seriesId = `${sourceId}:series:${slugify(match[1].trim())}`;
+    const season = Number(match[2]);
+    const episode = Number(match[3]);
+    if (season === 0) seriesWithZeroSeason.add(seriesId);
+    if (episode === 0) seasonsWithZeroEpisode.add(`${seriesId}:${season}`);
+  }
 
   for (const [index, entry] of entries.entries()) {
     const pathname = entry.url.toLowerCase();
@@ -170,14 +184,28 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
         : "live";
     const title = entry.name.trim() || `Item ${index + 1}`;
     const seriesTitle = episodeMatch?.[1].trim();
-    const seasonNumber = episodeMatch ? Number(episodeMatch[2]) : undefined;
-    const episodeNumber = episodeMatch ? Number(episodeMatch[3]) : undefined;
+    const rawSeasonNumber = episodeMatch ? Number(episodeMatch[2]) : undefined;
+    const rawEpisodeNumber = episodeMatch ? Number(episodeMatch[3]) : undefined;
     const seriesId = seriesTitle
       ? `${sourceId}:series:${slugify(seriesTitle)}`
       : undefined;
+    const seasonNumber =
+      rawSeasonNumber === undefined
+        ? undefined
+        : rawSeasonNumber +
+          (seriesId && seriesWithZeroSeason.has(seriesId) ? 1 : 0);
+    const episodeNumber =
+      rawEpisodeNumber === undefined
+        ? undefined
+        : rawEpisodeNumber +
+          (seriesId &&
+          rawSeasonNumber !== undefined &&
+          seasonsWithZeroEpisode.has(`${seriesId}:${rawSeasonNumber}`)
+            ? 1
+            : 0);
     const id = `${sourceId}:${kind}:${index}`;
     const yearMatch = title.match(/\((\d{4})\)\s*$/);
-    const item = catalogItemSchema.parse({
+    const parsedItem = catalogItemSchema.safeParse({
       id,
       sourceId,
       kind,
@@ -196,6 +224,11 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
       seasonNumber,
       episodeNumber,
     });
+    if (!parsedItem.success) {
+      ignoredCount += 1;
+      continue;
+    }
+    const item = parsedItem.data;
     items.push(item);
     if (kind === "live") liveCount += 1;
     if (kind === "movie") movieCount += 1;
@@ -213,7 +246,7 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
         };
         current.episodeCount += 1;
         const seasons = seriesSeasons.get(seriesId) ?? new Set<number>();
-        if (seasonNumber) seasons.add(seasonNumber);
+        if (seasonNumber !== undefined) seasons.add(seasonNumber);
         seriesSeasons.set(seriesId, seasons);
         current.seasonCount = seasons.size;
         if (!current.posterUrl && item.logoUrl)
@@ -228,6 +261,7 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
     liveCount,
     movieCount,
     episodeCount,
+    ignoredCount,
   };
 }
 
