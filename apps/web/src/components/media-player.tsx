@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../features/playback/playback";
 import { formatPlaybackTime } from "../features/playback/playback";
 import { usePlaybackPreferences } from "../services/playback-preferences";
+import { ProductState } from "./ui";
 
 type MediaPlayerProps = {
   descriptor: PlaybackDescriptor;
@@ -58,10 +59,12 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   const [currentTime, setCurrentTime] = useState(descriptor.position ?? 0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
   const { preferences } = usePlaybackPreferences();
 
   useEffect(() => {
+    void retryKey;
     const video = videoRef.current;
     if (!video || !descriptor.streamUrl) {
       setError(
@@ -175,7 +178,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
       sessionRef.current += 1;
       cleanEngine();
     };
-  }, [descriptor, preferences.autoResume]);
+  }, [descriptor, preferences.autoResume, retryKey]);
 
   useEffect(() => {
     if (!preferences.hideControls || !isPlaying) {
@@ -389,9 +392,19 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
         </div>
       </section>
       {error && (
-        <div className="absolute inset-x-4 bottom-28 z-20 mx-auto max-w-lg rounded-xl border border-danger/60 bg-danger-surface/95 p-4 text-center text-xs text-danger-strong sm:bottom-36">
-          {error}
-        </div>
+        <ProductState
+          action={{
+            label: "Tentar novamente",
+            onClick: () => {
+              setError(null);
+              setRetryKey((value) => value + 1);
+            },
+          }}
+          className="absolute inset-x-4 bottom-28 z-20 mx-auto max-w-lg sm:bottom-36"
+          kind="stream-unavailable"
+        >
+          Tente novamente ou escolha outro conteúdo.
+        </ProductState>
       )}
     </main>
   );

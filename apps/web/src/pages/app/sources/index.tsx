@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "../../../components/ui";
+import { Button, ProductState } from "../../../components/ui";
 import { AppHeader, AppLayout } from "../app-shell";
 import { SourceCard } from "./components/source-card";
 import { SourceForm } from "./components/source-form";
@@ -17,6 +17,7 @@ const initialSources: Source[] = [
     server: "https://servidor.exemplo",
     username: "casa",
     password: "senha",
+    contentCount: 24,
   },
   {
     id: "office",
@@ -25,6 +26,7 @@ const initialSources: Source[] = [
     status: "available",
     detail: "M3U · disponível",
     url: "https://servidor.exemplo/lista.m3u",
+    contentCount: 0,
   },
   {
     id: "travel",
@@ -42,6 +44,8 @@ export function SourcesPage() {
   const [editing, setEditing] = useState<Source | undefined>();
   const [formOpen, setFormOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [rollbackId, setRollbackId] = useState<string | null>(null);
 
   const openCreate = () => {
     setEditing(undefined);
@@ -63,6 +67,7 @@ export function SourcesPage() {
       username: values.username,
       password: values.password,
       url: values.url,
+      contentCount: editing?.contentCount ?? 0,
     };
     setSources((current) =>
       editing
@@ -71,6 +76,19 @@ export function SourcesPage() {
     );
     setFormOpen(false);
     setNotice(`${next.name} foi salva.`);
+  };
+
+  const refreshSource = (source: Source) => {
+    setRollbackId(null);
+    setSyncingId(source.id);
+    window.setTimeout(() => {
+      setSyncingId(null);
+      if (source.status === "error") {
+        setRollbackId(source.id);
+        return;
+      }
+      setNotice(`${source.name} foi sincronizada.`);
+    }, 700);
   };
 
   return (
@@ -116,26 +134,46 @@ export function SourcesPage() {
             aria-label="Fontes cadastradas"
           >
             {sources.map((source) => (
-              <SourceCard
-                active={activeId === source.id}
-                key={source.id}
-                onActivate={() => {
-                  setActiveId(source.id);
-                  setNotice(`${source.name} agora é a fonte ativa.`);
-                }}
-                onDelete={() => {
-                  setSources((current) =>
-                    current.filter((item) => item.id !== source.id),
-                  );
-                  if (activeId === source.id)
-                    setActiveId(
-                      sources.find((item) => item.id !== source.id)?.id ?? "",
+              <div className="flex flex-col gap-2" key={source.id}>
+                <SourceCard
+                  active={activeId === source.id}
+                  onActivate={() => {
+                    setActiveId(source.id);
+                    setNotice(`${source.name} agora é a fonte ativa.`);
+                  }}
+                  onDelete={() => {
+                    setSources((current) =>
+                      current.filter((item) => item.id !== source.id),
                     );
-                }}
-                onEdit={() => openEdit(source)}
-                onRefresh={() => setNotice(`${source.name} foi atualizada.`)}
-                source={source}
-              />
+                    if (activeId === source.id)
+                      setActiveId(
+                        sources.find((item) => item.id !== source.id)?.id ?? "",
+                      );
+                  }}
+                  onEdit={() => openEdit(source)}
+                  onRefresh={() => refreshSource(source)}
+                  source={source}
+                  syncing={syncingId === source.id}
+                />
+                {rollbackId === source.id && (
+                  <ProductState
+                    action={{
+                      label: "Tentar novamente",
+                      onClick: () => refreshSource(source),
+                    }}
+                    kind="rollback"
+                  />
+                )}
+                {activeId === source.id && source.contentCount === 0 && (
+                  <ProductState
+                    action={{
+                      label: "Sincronizar",
+                      onClick: () => refreshSource(source),
+                    }}
+                    kind="source-empty"
+                  />
+                )}
+              </div>
             ))}
           </section>
           <section

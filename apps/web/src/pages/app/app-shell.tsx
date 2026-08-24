@@ -15,8 +15,9 @@ import {
   User,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
-import { SourceSelector } from "../../components/ui";
+import { ProductState, SourceSelector } from "../../components/ui";
 
 export type IconName =
   | "bell"
@@ -212,11 +213,34 @@ export function AppHeader({ children }: { children?: ReactNode }) {
 }
 
 export function AppLayout({ children }: { children: ReactNode }) {
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    const handleExpired = () => setSessionExpired(true);
+    window.addEventListener("iptv:session-expired", handleExpired);
+    return () =>
+      window.removeEventListener("iptv:session-expired", handleExpired);
+  }, []);
+
   return (
     <main className="flex min-h-screen bg-bg text-text">
       <Sidebar />
       <div className="min-w-0 flex-1">{children}</div>
       <MobileNavigation />
+      {sessionExpired && (
+        <div className="fixed inset-0 z-40 grid place-items-center bg-bg/90 p-5 backdrop-blur-sm">
+          <ProductState
+            action={{
+              label: "Entrar novamente",
+              onClick: () => {
+                window.location.assign("/");
+              },
+            }}
+            className="w-full max-w-md"
+            kind="session-expired"
+          />
+        </div>
+      )}
     </main>
   );
 }

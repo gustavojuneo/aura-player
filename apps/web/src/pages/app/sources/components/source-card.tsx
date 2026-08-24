@@ -1,6 +1,7 @@
 import { Link as LinkIcon, MoreHorizontal, Server } from "lucide-react";
 import { useState } from "react";
 
+import { ProductState } from "../../../../components/ui";
 import type { Source } from "../types";
 
 const statusLabel = {
@@ -22,6 +23,7 @@ export function SourceCard({
   onEdit,
   onRefresh,
   source,
+  syncing = false,
 }: {
   active: boolean;
   onActivate: () => void;
@@ -29,9 +31,26 @@ export function SourceCard({
   onEdit: () => void;
   onRefresh: () => void;
   source: Source;
+  syncing?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const Icon = source.type === "xtream" ? Server : LinkIcon;
+
+  if (syncing)
+    return (
+      <ProductState
+        action={{ label: "Sincronizando", onClick: onRefresh }}
+        kind="optimistic"
+      />
+    );
+
+  if (source.status === "error")
+    return (
+      <ProductState
+        action={{ label: "Tentar novamente", onClick: onRefresh }}
+        kind="connection-error"
+      />
+    );
 
   return (
     <article

@@ -4,9 +4,11 @@ import type { ReactNode } from "react";
 import {
   Button,
   LiveBadge,
+  ProductState,
   ProgressBar,
   SearchField,
 } from "../../components/ui";
+import { useCatalogState } from "../../hooks/use-catalog-state";
 import { AppHeader, AppLayout, Icon } from "./app-shell";
 
 type ContentCard = {
@@ -131,9 +133,15 @@ function ContentCardView({
         </span>
       )}
       <div className="relative">
-        <h3 className="m-0 truncate text-sm font-bold text-text">
-          {card.title}
-        </h3>
+        {card.title ? (
+          <h3 className="m-0 truncate text-sm font-bold text-text">
+            {card.title}
+          </h3>
+        ) : (
+          <div className="relative">
+            <ProductState compact kind="metadata" />
+          </div>
+        )}
         <p className="m-1.5 truncate text-[11px] text-[#d0c8bb]">{card.meta}</p>
         {card.progress !== undefined && (
           <ProgressBar className="h-1" value={card.progress} />
@@ -195,6 +203,8 @@ function ContentRail({
 }
 
 export function HomePage() {
+  const { isLoading, retry } = useCatalogState();
+
   return (
     <AppLayout>
       <div className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-5 lg:px-8 lg:pb-10">
@@ -208,19 +218,29 @@ export function HomePage() {
         <p className="m-0 text-[13px] font-semibold text-muted">
           Boa noite, Marina <span className="text-line">·</span> Casa ativa
         </p>
-        <FeaturedHero />
-        <section className="flex flex-col gap-3">
-          <SectionHeader>Continuar assistindo</SectionHeader>
-          <ContentRail cards={continueWatching} compact />
-        </section>
-        <section className="flex flex-col gap-3">
-          <SectionHeader>Canais recentes</SectionHeader>
-          <ContentRail cards={recentChannels} compact />
-        </section>
-        <section className="flex flex-col gap-3">
-          <SectionHeader>Filmes em destaque</SectionHeader>
-          <ContentRail cards={featuredMovies} />
-        </section>
+        {isLoading ? (
+          <ProductState
+            action={{ label: "Tentar novamente", onClick: retry }}
+            className="min-h-[420px] justify-center"
+            kind="loading"
+          />
+        ) : (
+          <>
+            <FeaturedHero />
+            <section className="flex flex-col gap-3">
+              <SectionHeader>Continuar assistindo</SectionHeader>
+              <ContentRail cards={continueWatching} compact />
+            </section>
+            <section className="flex flex-col gap-3">
+              <SectionHeader>Canais recentes</SectionHeader>
+              <ContentRail cards={recentChannels} compact />
+            </section>
+            <section className="flex flex-col gap-3">
+              <SectionHeader>Filmes em destaque</SectionHeader>
+              <ContentRail cards={featuredMovies} />
+            </section>
+          </>
+        )}
       </div>
     </AppLayout>
   );

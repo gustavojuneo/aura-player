@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Heart, Play, Radio } from "lucide-react";
 
-import { Button, SearchField } from "../../components/ui";
+import { Button, ProductState, SearchField } from "../../components/ui";
+import { useCatalogState } from "../../hooks/use-catalog-state";
 import { useFavorites } from "../../services/favorites";
 import { AppHeader, AppLayout } from "./app-shell";
 
@@ -126,6 +127,7 @@ function ProgramPanel() {
 
 export function TvPage() {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isLoading, retry } = useCatalogState();
 
   return (
     <AppLayout>
@@ -147,20 +149,28 @@ export function TvPage() {
             placeholder="Buscar canais, programas..."
           />
         </div>
-        <div className="flex min-h-0 flex-col gap-3 lg:flex-row lg:items-stretch">
-          <CategoryList />
-          <div className="flex min-w-0 flex-col gap-2 lg:w-[500px] lg:shrink-0">
-            {channels.map((channel) => (
-              <ChannelRow
-                channel={channel}
-                favorite={isFavorite("channel", channel.id)}
-                key={channel.id}
-                onToggle={() => toggleFavorite("channel", channel.id)}
-              />
-            ))}
+        {isLoading ? (
+          <ProductState
+            action={{ label: "Tentar novamente", onClick: retry }}
+            className="min-h-[420px] justify-center"
+            kind="loading"
+          />
+        ) : (
+          <div className="flex min-h-0 flex-col gap-3 lg:flex-row lg:items-stretch">
+            <CategoryList />
+            <div className="flex min-w-0 flex-col gap-2 lg:w-[500px] lg:shrink-0">
+              {channels.map((channel) => (
+                <ChannelRow
+                  channel={channel}
+                  favorite={isFavorite("channel", channel.id)}
+                  key={channel.id}
+                  onToggle={() => toggleFavorite("channel", channel.id)}
+                />
+              ))}
+            </div>
+            <ProgramPanel />
           </div>
-          <ProgramPanel />
-        </div>
+        )}
       </div>
     </AppLayout>
   );

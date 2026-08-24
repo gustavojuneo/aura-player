@@ -7,6 +7,7 @@ export type Source = {
   type: SourceType;
   status: SourceStatus;
   detail: string;
+  contentCount?: number;
   server?: string;
   username?: string;
   password?: string;

@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { SearchField } from "../../components/ui";
+import { ProductState, SearchField } from "../../components/ui";
+import { useCatalogState } from "../../hooks/use-catalog-state";
 import { AppHeader, AppLayout } from "./app-shell";
 
 type Movie = {
@@ -113,7 +114,13 @@ function MovieCard({ movie }: { movie: Movie }) {
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
       <div className="relative min-w-0">
-        <h2 className="truncate text-sm font-bold text-text">{movie.title}</h2>
+        {movie.title ? (
+          <h2 className="truncate text-sm font-bold text-text">
+            {movie.title}
+          </h2>
+        ) : (
+          <ProductState compact kind="metadata" />
+        )}
         <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
           {movie.metadata}
         </p>
@@ -126,6 +133,7 @@ export function MoviesPage() {
   const [genre, setGenre] = useState("Todos");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
+  const { isLoading, retry } = useCatalogState();
 
   const visibleMovies = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -216,21 +224,30 @@ export function MoviesPage() {
             </button>
           ))}
         </div>
-        {visibleMovies.length > 0 ? (
+        {isLoading ? (
+          <ProductState
+            action={{ label: "Tentar novamente", onClick: retry }}
+            className="min-h-[240px] justify-center"
+            kind="loading"
+          />
+        ) : visibleMovies.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 xl:gap-3.5">
             {visibleMovies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         ) : (
-          <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-line bg-panel/50 px-5 text-center">
-            <h2 className="m-0 font-display text-lg font-bold text-text">
-              Nenhum filme encontrado
-            </h2>
-            <p className="mt-2 mb-0 text-sm text-muted">
-              Tente outro título ou selecione o gênero Todos.
-            </p>
-          </div>
+          <ProductState
+            action={{
+              label: "Limpar filtros",
+              onClick: () => {
+                setGenre("Todos");
+                setQuery("");
+              },
+            }}
+            className="min-h-[240px] justify-center"
+            kind="catalog-empty"
+          />
         )}
       </div>
     </AppLayout>
