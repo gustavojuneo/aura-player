@@ -1,12 +1,14 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Heart, Play, Radio } from "lucide-react";
 
 import { Button, SearchField } from "../../components/ui";
+import { useFavorites } from "../../services/favorites";
 import { AppHeader, AppLayout } from "./app-shell";
 
 type Channel = {
   current: string;
+  id: string;
   name: string;
-  selected?: boolean;
 };
 
 const categories = [
@@ -19,19 +21,28 @@ const categories = [
 ] as const;
 
 const channels: Channel[] = [
-  { current: "Final 38'", name: "Arena Sports", selected: true },
-  { current: "Programa 20:00", name: "Prime News" },
-  { current: "Programa 20:00", name: "Cinema 24" },
-  { current: "Programa 20:00", name: "Mundo Kids" },
-  { current: "Programa 20:00", name: "Natureza+" },
-  { current: "Programa 20:00", name: "Canal Uno" },
+  { current: "Final 38'", id: "arena-sports", name: "Arena Sports" },
+  { current: "Programa 20:00", id: "prime-news", name: "Prime News" },
+  { current: "Programa 20:00", id: "cinema-24", name: "Cinema 24" },
+  { current: "Programa 20:00", id: "mundo-kids", name: "Mundo Kids" },
+  { current: "Programa 20:00", id: "natureza-plus", name: "Natureza+" },
+  { current: "Programa 20:00", id: "canal-uno", name: "Canal Uno" },
 ];
 
-function ChannelRow({ channel }: { channel: Channel }) {
+function ChannelRow({
+  channel,
+  favorite,
+  onToggle,
+}: {
+  channel: Channel;
+  favorite: boolean;
+  onToggle: () => void;
+}) {
   return (
     <button
-      aria-pressed={channel.selected}
-      className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${channel.selected ? "border-gold bg-[#3b2d18]" : "border-line bg-panel hover:border-gold/50"}`}
+      aria-pressed={favorite}
+      className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${favorite ? "border-gold bg-[#3b2d18]" : "border-line bg-panel hover:border-gold/50"}`}
+      onClick={onToggle}
       type="button"
     >
       <span className="grid size-[46px] shrink-0 place-items-center rounded-[9px] bg-panel-2 text-muted">
@@ -47,7 +58,7 @@ function ChannelRow({ channel }: { channel: Channel }) {
       </span>
       <Heart
         aria-hidden="true"
-        className={`size-5 shrink-0 ${channel.selected ? "fill-gold text-gold" : "text-gold-bright"}`}
+        className={`size-5 shrink-0 ${favorite ? "fill-gold text-gold" : "text-gold-bright"}`}
         strokeWidth={1.8}
       />
     </button>
@@ -76,6 +87,7 @@ function CategoryList() {
 }
 
 function ProgramPanel() {
+  const navigate = useNavigate();
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-xl bg-panel p-4 sm:p-[18px] lg:flex-1">
       <div className="flex h-[190px] items-center justify-center rounded-xl bg-gradient-to-br from-[#74451f] to-[#191713] sm:h-[230px]">
@@ -95,7 +107,16 @@ function ProgramPanel() {
           <span className="text-line"> · </span>38 decorridos
         </p>
       </div>
-      <Button className="h-10 self-start px-4 text-xs" variant="primary">
+      <Button
+        className="h-10 self-start px-4 text-xs"
+        onClick={() =>
+          void navigate({
+            to: "/app/tv/$channelId/watch",
+            params: { channelId: "arena-sports" },
+          })
+        }
+        variant="primary"
+      >
         <Play aria-hidden="true" className="size-4 fill-current" />
         Assistir ao vivo
       </Button>
@@ -104,6 +125,8 @@ function ProgramPanel() {
 }
 
 export function TvPage() {
+  const { isFavorite, toggleFavorite } = useFavorites();
+
   return (
     <AppLayout>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
@@ -128,7 +151,12 @@ export function TvPage() {
           <CategoryList />
           <div className="flex min-w-0 flex-col gap-2 lg:w-[500px] lg:shrink-0">
             {channels.map((channel) => (
-              <ChannelRow channel={channel} key={channel.name} />
+              <ChannelRow
+                channel={channel}
+                favorite={isFavorite("channel", channel.id)}
+                key={channel.id}
+                onToggle={() => toggleFavorite("channel", channel.id)}
+              />
             ))}
           </div>
           <ProgramPanel />

@@ -7,8 +7,10 @@ import {
 
 import { LandingPage } from "../pages";
 import { HomePage } from "../pages/app";
+import { FavoritesPage } from "../pages/app/favorites";
 import { MovieDetailsPage } from "../pages/app/movie-details";
 import { MoviesPage } from "../pages/app/movies";
+import { PlayerPage } from "../pages/app/player";
 import { SeriesPage } from "../pages/app/series";
 import { SeriesDetailsPage } from "../pages/app/series-details";
 import { TvPage } from "../pages/app/tv";
@@ -40,15 +42,30 @@ const tvRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "tv",
 });
+const livePlayerRoute = createRoute({
+  component: () => <PlayerPage kind="live" />,
+  getParentRoute: () => appRoute,
+  path: "tv/$channelId/watch",
+});
 const moviesRoute = createRoute({
   component: MoviesPage,
   getParentRoute: () => appRoute,
   path: "movies",
 });
+const favoritesRoute = createRoute({
+  component: FavoritesPage,
+  getParentRoute: () => appRoute,
+  path: "favorites",
+});
 const movieDetailsRoute = createRoute({
   component: MovieDetailsPage,
   getParentRoute: () => appRoute,
   path: "movies/$movieId",
+});
+const moviePlayerRoute = createRoute({
+  component: () => <PlayerPage kind="movie" />,
+  getParentRoute: () => appRoute,
+  path: "movies/$movieId/watch",
 });
 const seriesRoute = createRoute({
   component: SeriesPage,
@@ -60,6 +77,11 @@ const seriesDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "series/$seriesId",
 });
+const episodePlayerRoute = createRoute({
+  component: () => <PlayerPage kind="episode" />,
+  getParentRoute: () => appRoute,
+  path: "series/$seriesId/episodes/$episodeId/watch",
+});
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
@@ -67,10 +89,14 @@ const routeTree = rootRoute.addChildren([
     homeRoute,
     onboardingRoute,
     tvRoute,
+    livePlayerRoute,
     moviesRoute,
+    favoritesRoute,
     movieDetailsRoute,
+    moviePlayerRoute,
     seriesRoute,
     seriesDetailsRoute,
+    episodePlayerRoute,
   ]),
 ]);
 

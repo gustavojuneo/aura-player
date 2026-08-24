@@ -1,8 +1,9 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Heart, Play } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "../../components/ui";
+import { useFavorites } from "../../services/favorites";
 
 type Episode = {
   accent: string;
@@ -175,7 +176,13 @@ function BackLink() {
   );
 }
 
-function EpisodeCard({ episode }: { episode: Episode }) {
+function EpisodeCard({
+  episode,
+  onPlay,
+}: {
+  episode: Episode;
+  onPlay: (episodeId: string) => void;
+}) {
   return (
     <article
       className={`group relative flex h-40 min-w-0 flex-col justify-end overflow-hidden rounded-xl border p-3 ${episode.accent} ${episode.next ? "border-2 border-gold" : "border-line"}`}
@@ -183,6 +190,7 @@ function EpisodeCard({ episode }: { episode: Episode }) {
       <button
         aria-label={`Assistir ${episode.title}`}
         className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-black/25 text-text opacity-0 transition-opacity hover:bg-gold hover:text-ink group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={() => onPlay(episode.id)}
         type="button"
       >
         <Play aria-hidden="true" className="ml-0.5 size-4 fill-current" />
@@ -235,7 +243,9 @@ function MissingSeries() {
 
 export function SeriesDetailsPage() {
   const { seriesId } = useParams({ from: "/app/series/$seriesId" });
+  const navigate = useNavigate();
   const series = seriesDetails[seriesId];
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [season, setSeason] = useState(1);
   const episodes = episodesBySeason[season];
 
@@ -275,17 +285,28 @@ export function SeriesDetailsPage() {
           <div className="flex flex-col gap-2.5 pt-0.5 sm:flex-row">
             <Button
               className="h-12 w-full px-[22px] text-sm sm:w-auto"
+              onClick={() =>
+                void navigate({
+                  to: "/app/series/$seriesId/episodes/$episodeId/watch",
+                  params: { seriesId, episodeId: "episode-4" },
+                })
+              }
               variant="primary"
             >
               <Play aria-hidden="true" className="size-4 fill-current" />
               Continuar E4
             </Button>
             <Button
+              aria-pressed={isFavorite("series", seriesId)}
               className="hidden h-12 px-[22px] sm:inline-flex"
+              onClick={() => toggleFavorite("series", seriesId)}
               variant="secondary"
             >
-              <Heart aria-hidden="true" className="size-4" />
-              Favorito
+              <Heart
+                aria-hidden="true"
+                className={`size-4 ${isFavorite("series", seriesId) ? "fill-current text-gold" : ""}`}
+              />
+              {isFavorite("series", seriesId) ? "Favoritada" : "Favorito"}
             </Button>
           </div>
           <section className="flex flex-col gap-3 md:hidden">
@@ -328,7 +349,16 @@ export function SeriesDetailsPage() {
         </div>
         <div className="grid grid-cols-4 gap-3">
           {episodes.map((episode) => (
-            <EpisodeCard episode={episode} key={episode.id} />
+            <EpisodeCard
+              episode={episode}
+              key={episode.id}
+              onPlay={(episodeId) =>
+                void navigate({
+                  to: "/app/series/$seriesId/episodes/$episodeId/watch",
+                  params: { seriesId, episodeId },
+                })
+              }
+            />
           ))}
         </div>
       </section>

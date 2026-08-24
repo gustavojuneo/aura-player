@@ -1,7 +1,8 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Heart, Play } from "lucide-react";
 
 import { Button } from "../../components/ui";
+import { useFavorites } from "../../services/favorites";
 
 type MovieDetails = {
   description: string;
@@ -223,7 +224,9 @@ function MissingMovie() {
 
 export function MovieDetailsPage() {
   const { movieId } = useParams({ from: "/app/movies/$movieId" });
+  const navigate = useNavigate();
   const movie = movieDetails[movieId];
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   if (!movie) {
     return <MissingMovie />;
@@ -267,6 +270,12 @@ export function MovieDetailsPage() {
           <div className="flex flex-col gap-2.5 pt-0.5 sm:flex-row">
             <Button
               className="h-12 w-full px-[22px] text-sm sm:w-auto"
+              onClick={() =>
+                void navigate({
+                  to: "/app/movies/$movieId/watch",
+                  params: { movieId },
+                })
+              }
               variant="primary"
             >
               <Play aria-hidden="true" className="size-4 fill-current" />
@@ -274,10 +283,15 @@ export function MovieDetailsPage() {
             </Button>
             <Button
               className="hidden h-12 px-[22px] sm:inline-flex"
+              aria-pressed={isFavorite("movie", movieId)}
+              onClick={() => toggleFavorite("movie", movieId)}
               variant="secondary"
             >
-              <Heart aria-hidden="true" className="size-4" />
-              Favorito
+              <Heart
+                aria-hidden="true"
+                className={`size-4 ${isFavorite("movie", movieId) ? "fill-current text-gold" : ""}`}
+              />
+              {isFavorite("movie", movieId) ? "Favoritado" : "Favorito"}
             </Button>
           </div>
           <RelatedMobile movies={movie.related} />

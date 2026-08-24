@@ -76,13 +76,13 @@ export function Brand() {
 const navigation: Array<{
   icon: IconName;
   label: string;
-  to?: "/app" | "/app/tv" | "/app/movies" | "/app/series";
+  to?: "/app" | "/app/tv" | "/app/movies" | "/app/series" | "/app/favorites";
 }> = [
   { icon: "home", label: "Início", to: "/app" },
   { icon: "radio", label: "TV ao vivo", to: "/app/tv" },
   { icon: "clapperboard", label: "Filmes", to: "/app/movies" },
   { icon: "tv", label: "Séries", to: "/app/series" },
-  { icon: "heart", label: "Favoritos" },
+  { icon: "heart", label: "Favoritos", to: "/app/favorites" },
   { icon: "clock", label: "Continuar assistindo" },
   { icon: "database", label: "Fontes IPTV" },
 ];
