@@ -76,11 +76,11 @@ export function Brand() {
 const navigation: Array<{
   icon: IconName;
   label: string;
-  to?: "/app" | "/app/tv";
+  to?: "/app" | "/app/tv" | "/app/movies";
 }> = [
   { icon: "home", label: "Início", to: "/app" },
   { icon: "radio", label: "TV ao vivo", to: "/app/tv" },
-  { icon: "clapperboard", label: "Filmes" },
+  { icon: "clapperboard", label: "Filmes", to: "/app/movies" },
   { icon: "tv", label: "Séries" },
   { icon: "heart", label: "Favoritos" },
   { icon: "clock", label: "Continuar assistindo" },
@@ -165,12 +165,8 @@ export function MobileNavigation() {
       aria-label="Navegação mobile"
       className="fixed inset-x-0 bottom-0 z-20 flex h-[72px] items-center justify-around border-t border-line bg-[#16140fF2] px-2 backdrop-blur-lg lg:hidden"
     >
-      {navigation.slice(0, 5).map((item, index) => (
-        <NavigationItem
-          item={index === 2 ? { icon: "search", label: "Buscar" } : item}
-          key={item.label}
-          mobile
-        />
+      {navigation.slice(0, 5).map((item) => (
+        <NavigationItem item={item} key={item.label} mobile />
       ))}
     </nav>
   );
