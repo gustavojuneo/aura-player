@@ -7,6 +7,7 @@ import {
 
 import { LandingPage } from "../pages";
 import { HomePage } from "../pages/app";
+import { MovieDetailsPage } from "../pages/app/movie-details";
 import { MoviesPage } from "../pages/app/movies";
 import { SeriesPage } from "../pages/app/series";
 import { TvPage } from "../pages/app/tv";
@@ -43,6 +44,11 @@ const moviesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "movies",
 });
+const movieDetailsRoute = createRoute({
+  component: MovieDetailsPage,
+  getParentRoute: () => appRoute,
+  path: "movies/$movieId",
+});
 const seriesRoute = createRoute({
   component: SeriesPage,
   getParentRoute: () => appRoute,
@@ -56,6 +62,7 @@ const routeTree = rootRoute.addChildren([
     onboardingRoute,
     tvRoute,
     moviesRoute,
+    movieDetailsRoute,
     seriesRoute,
   ]),
 ]);
