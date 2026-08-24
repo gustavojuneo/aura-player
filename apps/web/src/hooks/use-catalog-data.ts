@@ -10,6 +10,8 @@ import {
   loadActiveSeries,
   loadCatalogItem,
   loadCatalogSources,
+  loadSeries,
+  loadSeriesEpisodes,
 } from "../services/catalog-service";
 
 export function useCatalogItems(kind: CatalogItem["kind"]) {
@@ -79,6 +81,38 @@ export function useCatalogItem(id: string | undefined) {
       .finally(() => setLoading(false));
   }, [id]);
   return { item, isLoading };
+}
+
+export function useCatalogSeriesDetails(id: string | undefined) {
+  const [series, setSeries] = useState<CatalogSeries | undefined>();
+  const [episodes, setEpisodes] = useState<CatalogItem[]>([]);
+  const [isLoading, setLoading] = useState(Boolean(id));
+  const [error, setError] = useState<Error | null>(null);
+  useEffect(() => {
+    const sourceId = getActiveSourceId();
+    if (!id || !sourceId) {
+      setSeries(undefined);
+      setEpisodes([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    void Promise.all([loadSeries(id), loadSeriesEpisodes(sourceId, id)])
+      .then(([loadedSeries, loadedEpisodes]) => {
+        setSeries(loadedSeries);
+        setEpisodes(
+          loadedEpisodes.sort(
+            (first, second) =>
+              (first.seasonNumber ?? 0) - (second.seasonNumber ?? 0) ||
+              (first.episodeNumber ?? 0) - (second.episodeNumber ?? 0),
+          ),
+        );
+      })
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, [id]);
+  return { series, episodes, isLoading, error };
 }
 
 export function useCatalogSources() {

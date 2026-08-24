@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import {
   Bell,
   Clapperboard,
-  Clock3,
   Database,
   Heart,
   House,
@@ -18,11 +17,15 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { ProductState, SourceSelector } from "../../components/ui";
+import { useCatalogSources } from "../../hooks/use-catalog-data";
+import {
+  getActiveSourceId,
+  setActiveSourceId,
+} from "../../services/catalog-db";
 
 export type IconName =
   | "bell"
   | "clapperboard"
-  | "clock"
   | "database"
   | "heart"
   | "home"
@@ -36,7 +39,6 @@ export type IconName =
 const icons: Record<IconName, LucideIcon> = {
   bell: Bell,
   clapperboard: Clapperboard,
-  clock: Clock3,
   database: Database,
   heart: Heart,
   home: House,
@@ -91,7 +93,6 @@ const navigation: Array<{
   { icon: "clapperboard", label: "Filmes", to: "/app/movies" },
   { icon: "tv", label: "Séries", to: "/app/series" },
   { icon: "heart", label: "Favoritos", to: "/app/favorites" },
-  { icon: "clock", label: "Continuar assistindo" },
   { icon: "database", label: "Fontes IPTV", to: "/app/sources" },
 ];
 
@@ -139,10 +140,17 @@ function NavigationItem({
 }
 
 export function Sidebar() {
+  const { sources } = useCatalogSources();
+  const activeSourceId = getActiveSourceId() ?? sources[0]?.id;
   return (
     <aside className="hidden w-56 shrink-0 flex-col gap-2 border-r border-line bg-[#11100d] p-[26px_18px] lg:flex">
       <Brand />
-      <SourceSelector className="mt-5 w-full" />
+      <SourceSelector
+        activeSourceId={activeSourceId}
+        className="mt-5 w-full"
+        onChange={(sourceId) => setActiveSourceId(sourceId)}
+        sources={sources}
+      />
       <nav
         aria-label="Navegação principal"
         className="mt-2 flex flex-col gap-1"

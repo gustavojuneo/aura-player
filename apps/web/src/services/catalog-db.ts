@@ -170,6 +170,20 @@ export async function getCatalogSeries(sourceId: string) {
   });
 }
 
+export async function getCatalogEpisodes(sourceId: string, seriesId: string) {
+  const database = await openDatabase();
+  return new Promise<CatalogItem[]>((resolve, reject) => {
+    const request = database
+      .transaction(itemStore, "readonly")
+      .objectStore(itemStore)
+      .index("sourceSeries")
+      .getAll([sourceId, seriesId]);
+    request.onsuccess = () => resolve(request.result as CatalogItem[]);
+    request.onerror = () =>
+      reject(request.error ?? new Error("Falha ao consultar os episódios."));
+  });
+}
+
 export async function getCatalogItem(id: string) {
   return transaction<StoreRecord | undefined>(itemStore, "readonly", (store) =>
     store.get(id),

@@ -15,15 +15,6 @@ type Channel = {
   logoUrl?: string;
 };
 
-const categories = [
-  ["Todos", "186"],
-  ["Notícias", "24"],
-  ["Esportes", "38"],
-  ["Filmes", "31"],
-  ["Infantil", "18"],
-  ["Documentários", "12"],
-] as const;
-
 function ChannelRow({
   channel,
   favorite,
@@ -40,8 +31,22 @@ function ChannelRow({
       onClick={onToggle}
       type="button"
     >
-      <span className="grid size-[46px] shrink-0 place-items-center rounded-[9px] bg-panel-2 text-muted">
-        <Radio aria-hidden="true" className="size-5" strokeWidth={1.8} />
+      <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
+        {channel.logoUrl ? (
+          <img
+            alt=""
+            className="size-full object-cover"
+            decoding="async"
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+            referrerPolicy="no-referrer"
+            src={channel.logoUrl}
+          />
+        ) : (
+          <Radio aria-hidden="true" className="size-5" strokeWidth={1.8} />
+        )}
       </span>
       <span className="min-w-0 flex-1">
         <strong className="block truncate text-sm font-bold text-text">
@@ -60,7 +65,15 @@ function ChannelRow({
   );
 }
 
-function CategoryList() {
+function CategoryList({
+  categories,
+  selected,
+  onSelect,
+}: {
+  categories: Array<[string, number]>;
+  selected: string;
+  onSelect: (category: string) => void;
+}) {
   return (
     <aside className="rounded-xl bg-search p-3 lg:w-[190px] lg:shrink-0">
       <h2 className="m-0 px-2 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
@@ -69,8 +82,9 @@ function CategoryList() {
       <div className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
         {categories.map(([label, count]) => (
           <button
-            className={`flex h-10 shrink-0 items-center rounded-[9px] px-3 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === "Esportes" ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
+            className={`flex h-10 shrink-0 items-center rounded-[9px] px-3 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
             key={label}
+            onClick={() => onSelect(label)}
             type="button"
           >
             {label} {count}
@@ -124,6 +138,15 @@ export function TvPage() {
   const { isLoading, retry } = useCatalogState();
   const { items } = useCatalogItems("live");
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("Todos");
+  const categories = useMemo<Array<[string, number]>>(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      const group = item.groupTitle ?? "Sem categoria";
+      counts.set(group, (counts.get(group) ?? 0) + 1);
+    }
+    return [["Todos", items.length], ...counts.entries()];
+  }, [items]);
   const visibleChannels = useMemo<Channel[]>(() => {
     const importedChannels = items.map((item) => ({
       current: item.groupTitle ?? "Ao vivo",
@@ -131,10 +154,12 @@ export function TvPage() {
       logoUrl: item.logoUrl,
       name: item.title,
     }));
-    return importedChannels.filter((channel) =>
-      channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+    return importedChannels.filter(
+      (channel) =>
+        channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
+        (category === "Todos" || channel.current === category),
     );
-  }, [items, query]);
+  }, [category, items, query]);
 
   return (
     <AppLayout>
@@ -166,7 +191,11 @@ export function TvPage() {
           />
         ) : (
           <div className="flex min-h-0 flex-col gap-3 lg:flex-row lg:items-stretch">
-            <CategoryList />
+            <CategoryList
+              categories={categories}
+              onSelect={setCategory}
+              selected={category}
+            />
             <div className="flex min-w-0 flex-col gap-2 lg:w-[500px] lg:shrink-0">
               {visibleChannels.map((channel) => (
                 <ChannelRow

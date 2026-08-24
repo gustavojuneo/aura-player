@@ -60,7 +60,7 @@ export function PlayerPage({ kind }: PlayerPageProps) {
       });
     return void navigate({
       to: "/app/series/$seriesId",
-      params: { seriesId: "alem-do-veu-1" },
+      params: { seriesId: item?.seriesId ?? "" },
     });
   };
 

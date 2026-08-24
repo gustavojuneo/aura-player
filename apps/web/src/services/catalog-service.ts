@@ -7,6 +7,7 @@ import {
   clearActiveSourceId,
   deleteSourceData,
   getActiveSourceId,
+  getCatalogEpisodes,
   getCatalogItem,
   getCatalogItems,
   getCatalogSeries,
@@ -100,4 +101,8 @@ export async function loadCatalogItem(id: string) {
 
 export async function loadSeries(id: string) {
   return getSeries(id);
+}
+
+export async function loadSeriesEpisodes(sourceId: string, seriesId: string) {
+  return getCatalogEpisodes(sourceId, seriesId);
 }

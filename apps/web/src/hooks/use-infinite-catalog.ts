@@ -1,0 +1,48 @@
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+
+const pageSize = 40;
+
+export function useInfiniteCatalog<T>(
+  items: T[],
+  filter: (item: T, query: string, category: string) => boolean,
+  sort: (first: T, second: T) => number,
+  query: string,
+  category: string,
+) {
+  const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase());
+  const [page, setPage] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const resetKey = `${category}|${deferredQuery}|${items.length}|${items[0] ? JSON.stringify(items[0]) : ""}`;
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => filter(item, deferredQuery, category)).sort(sort),
+    [category, deferredQuery, filter, items, sort],
+  );
+  const visibleItems = filteredItems.slice(0, page * pageSize);
+
+  useEffect(() => {
+    if (!resetKey) return;
+    setPage(1);
+  }, [resetKey]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || visibleItems.length >= filteredItems.length) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setPage((current) => current + 1);
+      },
+      { rootMargin: "640px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredItems.length, visibleItems.length]);
+
+  return {
+    deferredQuery,
+    filteredCount: filteredItems.length,
+    hasMore: visibleItems.length < filteredItems.length,
+    sentinelRef,
+    visibleItems,
+  };
+}

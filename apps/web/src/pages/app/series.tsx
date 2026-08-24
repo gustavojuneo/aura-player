@@ -4,20 +4,19 @@ import { useMemo, useState } from "react";
 
 import { ProductState, SearchField } from "../../components/ui";
 import { useCatalogSeries } from "../../hooks/use-catalog-data";
-import { useCatalogState } from "../../hooks/use-catalog-state";
+import { useInfiniteCatalog } from "../../hooks/use-infinite-catalog";
 import { AppHeader, AppLayout } from "./app-shell";
 
 type Series = {
   accent: string;
   genre: string;
   id: string;
+  posterUrl?: string;
   seasons: number;
   title: string;
 };
 
 type SortOption = "recent" | "title";
-
-const genres = ["Todos", "Ação", "Drama", "Ficção", "Comédia", "Documentário"];
 
 const _series: Series[] = [
   {
@@ -114,6 +113,19 @@ function SeriesCard({ item }: { item: Series }) {
       to="/app/series/$seriesId"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
+      {item.posterUrl && (
+        <img
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          decoding="async"
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          referrerPolicy="no-referrer"
+          src={item.posterUrl}
+        />
+      )}
       <div className="relative min-w-0">
         {item.title ? (
           <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
@@ -132,38 +144,40 @@ export function SeriesPage() {
   const [genre, setGenre] = useState("Todos");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
-  const { isLoading, retry } = useCatalogState();
-  const { items: importedSeries } = useCatalogSeries();
+  const { items: importedSeries, isLoading, retry } = useCatalogSeries();
   const seriesCatalog = useMemo<Series[]>(
     () =>
       importedSeries.map((item) => ({
         accent: "from-[#243442] to-[#171510]",
         genre: item.groupTitle ?? "Outros",
         id: item.id,
+        posterUrl: item.posterUrl,
         seasons: item.seasonCount,
         title: item.title,
       })),
     [importedSeries],
   );
 
-  const visibleSeries = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filtered = seriesCatalog.filter((item) => {
-      const matchesGenre = genre === "Todos" || item.genre === genre;
-      const matchesQuery = item.title
-        .toLocaleLowerCase()
-        .includes(normalizedQuery);
-      return matchesGenre && matchesQuery;
-    });
-
-    if (sort === "title") {
-      return [...filtered].sort((first, second) =>
-        first.title.localeCompare(second.title),
-      );
-    }
-
-    return filtered;
-  }, [genre, query, seriesCatalog, sort]);
+  const categories = useMemo(
+    () => ["Todos", ...new Set(seriesCatalog.map((item) => item.genre))],
+    [seriesCatalog],
+  );
+  const {
+    visibleItems: visibleSeries,
+    filteredCount,
+    hasMore,
+    sentinelRef,
+  } = useInfiniteCatalog(
+    seriesCatalog,
+    (item, search, category) =>
+      (category === "Todos" || item.genre === category) &&
+      item.title.toLocaleLowerCase().includes(search),
+    sort === "title"
+      ? (first, second) => first.title.localeCompare(second.title)
+      : () => 0,
+    query,
+    genre,
+  );
 
   return (
     <AppLayout>
@@ -199,7 +213,7 @@ export function SeriesPage() {
                 onChange={(event) => setGenre(event.target.value)}
                 value={genre}
               >
-                {genres.map((item) => (
+                {categories.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -223,7 +237,7 @@ export function SeriesPage() {
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {genres.map((item) => (
+          {categories.map((item) => (
             <button
               aria-pressed={genre === item}
               className={`h-9 shrink-0 rounded-[9px] border px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus ${genre === item ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-transparent text-muted hover:border-gold/60 hover:text-text"}`}
@@ -246,6 +260,7 @@ export function SeriesPage() {
             {visibleSeries.map((item) => (
               <SeriesCard item={item} key={item.id} />
             ))}
+            <div className="col-span-full h-1" ref={sentinelRef} />
           </div>
         ) : (
           <ProductState
@@ -259,6 +274,11 @@ export function SeriesPage() {
             className="min-h-[240px] justify-center"
             kind="catalog-empty"
           />
+        )}
+        {hasMore && visibleSeries.length > 0 && (
+          <p className="m-0 text-center text-xs text-muted" role="status">
+            Mostrando {visibleSeries.length} de {filteredCount} séries...
+          </p>
         )}
       </div>
     </AppLayout>

@@ -4,20 +4,19 @@ import { useMemo, useState } from "react";
 
 import { ProductState, SearchField } from "../../components/ui";
 import { useCatalogItems } from "../../hooks/use-catalog-data";
-import { useCatalogState } from "../../hooks/use-catalog-state";
+import { useInfiniteCatalog } from "../../hooks/use-infinite-catalog";
 import { AppHeader, AppLayout } from "./app-shell";
 
 type Movie = {
   accent: string;
   genre: string;
   id: string;
+  logoUrl?: string;
   metadata: string;
   title: string;
 };
 
 type SortOption = "recent" | "title";
-
-const genres = ["Todos", "Ação", "Drama", "Ficção", "Comédia", "Documentário"];
 
 const _movies: Movie[] = [
   {
@@ -114,6 +113,19 @@ function MovieCard({ movie }: { movie: Movie }) {
       to="/app/movies/$movieId"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
+      {movie.logoUrl && (
+        <img
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          decoding="async"
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          referrerPolicy="no-referrer"
+          src={movie.logoUrl}
+        />
+      )}
       <div className="relative min-w-0">
         {movie.title ? (
           <h2 className="truncate text-sm font-bold text-text">
@@ -134,38 +146,40 @@ export function MoviesPage() {
   const [genre, setGenre] = useState("Todos");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
-  const { isLoading, retry } = useCatalogState();
-  const { items: importedMovies } = useCatalogItems("movie");
+  const { items: importedMovies, isLoading, retry } = useCatalogItems("movie");
   const movieCatalog = useMemo<Movie[]>(
     () =>
       importedMovies.map((movie) => ({
         accent: "from-[#243442] to-[#171510]",
         genre: movie.groupTitle ?? "Outros",
         id: movie.id,
+        logoUrl: movie.logoUrl,
         metadata: movie.year ? String(movie.year) : "Filme",
         title: movie.title,
       })),
     [importedMovies],
   );
 
-  const visibleMovies = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filtered = movieCatalog.filter((movie) => {
-      const matchesGenre = genre === "Todos" || movie.genre === genre;
-      const matchesQuery = movie.title
-        .toLocaleLowerCase()
-        .includes(normalizedQuery);
-      return matchesGenre && matchesQuery;
-    });
-
-    if (sort === "title") {
-      return [...filtered].sort((first, second) =>
-        first.title.localeCompare(second.title),
-      );
-    }
-
-    return filtered;
-  }, [genre, movieCatalog, query, sort]);
+  const categories = useMemo(
+    () => ["Todos", ...new Set(movieCatalog.map((movie) => movie.genre))],
+    [movieCatalog],
+  );
+  const {
+    visibleItems: visibleMovies,
+    filteredCount,
+    hasMore,
+    sentinelRef,
+  } = useInfiniteCatalog(
+    movieCatalog,
+    (movie, search, category) =>
+      (category === "Todos" || movie.genre === category) &&
+      movie.title.toLocaleLowerCase().includes(search),
+    sort === "title"
+      ? (first, second) => first.title.localeCompare(second.title)
+      : () => 0,
+    query,
+    genre,
+  );
 
   return (
     <AppLayout>
@@ -201,7 +215,7 @@ export function MoviesPage() {
                 onChange={(event) => setGenre(event.target.value)}
                 value={genre}
               >
-                {genres.map((item) => (
+                {categories.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -225,7 +239,7 @@ export function MoviesPage() {
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {genres.map((item) => (
+          {categories.map((item) => (
             <button
               aria-pressed={genre === item}
               className={`h-9 shrink-0 rounded-[9px] border px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus ${genre === item ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-transparent text-muted hover:border-gold/60 hover:text-text"}`}
@@ -248,6 +262,7 @@ export function MoviesPage() {
             {visibleMovies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}
+            <div className="col-span-full h-1" ref={sentinelRef} />
           </div>
         ) : (
           <ProductState
@@ -261,6 +276,11 @@ export function MoviesPage() {
             className="min-h-[240px] justify-center"
             kind="catalog-empty"
           />
+        )}
+        {hasMore && visibleMovies.length > 0 && (
+          <p className="m-0 text-center text-xs text-muted" role="status">
+            Mostrando {visibleMovies.length} de {filteredCount} filmes...
+          </p>
         )}
       </div>
     </AppLayout>
