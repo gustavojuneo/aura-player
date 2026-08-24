@@ -8,7 +8,10 @@ import {
   ProgressBar,
   SearchField,
 } from "../../components/ui";
-import { useCatalogState } from "../../hooks/use-catalog-state";
+import {
+  useCatalogItems,
+  useCatalogSources,
+} from "../../hooks/use-catalog-data";
 import { AppHeader, AppLayout, Icon } from "./app-shell";
 
 type ContentCard = {
@@ -18,82 +21,6 @@ type ContentCard = {
   progress?: number;
   title: string;
 };
-
-const continueWatching: ContentCard[] = [
-  {
-    accent: "from-[#30475d] via-[#243442] to-[#171510]",
-    meta: "42 min restantes",
-    progress: 61,
-    title: "Último sinal",
-  },
-  {
-    accent: "from-[#9b642e] via-[#78502a] to-[#171510]",
-    meta: "Ao vivo · 21:10",
-    title: "Arena 4K",
-  },
-  {
-    accent: "from-[#526b76] via-[#243442] to-[#171510]",
-    meta: "2024 · 14",
-    progress: 34,
-    title: "Cidade Velada",
-  },
-  {
-    accent: "from-[#a77736] via-[#78502a] to-[#171510]",
-    meta: "T1:E6",
-    progress: 78,
-    title: "Rota Norte",
-  },
-];
-
-const recentChannels: ContentCard[] = [
-  {
-    accent: "from-[#8a5b2f] to-[#171510]",
-    category: "AO VIVO",
-    meta: "Notícias · Agora",
-    title: "Jornal 24h",
-  },
-  {
-    accent: "from-[#33526a] to-[#171510]",
-    category: "AO VIVO",
-    meta: "Esportes · 21:30",
-    title: "Arena Sports",
-  },
-  {
-    accent: "from-[#6e3f3c] to-[#171510]",
-    category: "AO VIVO",
-    meta: "Filmes · 22:00",
-    title: "Cine Classic",
-  },
-  {
-    accent: "from-[#566340] to-[#171510]",
-    category: "AO VIVO",
-    meta: "Documentários",
-    title: "Mundo Aberto",
-  },
-];
-
-const featuredMovies: ContentCard[] = [
-  {
-    accent: "from-[#6f4b39] to-[#171510]",
-    meta: "2024 · 2h 08min",
-    title: "Horizonte de Âmbar",
-  },
-  {
-    accent: "from-[#455b68] to-[#171510]",
-    meta: "2023 · 1h 52min",
-    title: "Depois da Chuva",
-  },
-  {
-    accent: "from-[#765c3c] to-[#171510]",
-    meta: "2022 · 2h 14min",
-    title: "O Último Farol",
-  },
-  {
-    accent: "from-[#3c4f4e] to-[#171510]",
-    meta: "2024 · 1h 47min",
-    title: "Cidade Velada",
-  },
-];
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
@@ -158,7 +85,7 @@ function ContentCardView({
   );
 }
 
-function FeaturedHero() {
+function FeaturedHero({ title }: { title: string }) {
   return (
     <section className="relative isolate flex min-h-[250px] overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-[#5f4c43] via-[#273c4d] to-[#171510] p-6 md:min-h-[240px] md:p-8">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(227,168,59,0.18),transparent_30%),linear-gradient(90deg,rgba(22,19,15,0.96),rgba(22,19,15,0.2))]" />
@@ -167,7 +94,7 @@ function FeaturedHero() {
           EM DESTAQUE
         </p>
         <h1 className="m-0 font-display text-[28px] font-bold leading-tight tracking-[-0.05em] text-text md:text-[35px]">
-          Horizonte de Âmbar
+          {title}
         </h1>
         <p className="m-0 max-w-[470px] text-sm leading-[1.45] text-[#ddd5c8]">
           Uma expedição atravessa o último sinal conhecido para encontrar uma
@@ -203,7 +130,33 @@ function ContentRail({
 }
 
 export function HomePage() {
-  const { isLoading, retry } = useCatalogState();
+  const {
+    items: liveItems,
+    isLoading: liveLoading,
+    retry: retryLive,
+  } = useCatalogItems("live");
+  const {
+    items: movieItems,
+    isLoading: movieLoading,
+    retry: retryMovies,
+  } = useCatalogItems("movie");
+  const { sources } = useCatalogSources();
+  const isLoading = liveLoading || movieLoading;
+  const retry = () => {
+    retryLive();
+    retryMovies();
+  };
+  const recentChannels: ContentCard[] = liveItems.slice(0, 8).map((item) => ({
+    accent: "from-[#33526a] to-[#171510]",
+    category: "AO VIVO",
+    meta: item.groupTitle ?? "Ao vivo",
+    title: item.title,
+  }));
+  const featuredMovies: ContentCard[] = movieItems.slice(0, 8).map((item) => ({
+    accent: "from-[#6f4b39] to-[#171510]",
+    meta: item.year ? String(item.year) : "Filme",
+    title: item.title,
+  }));
 
   return (
     <AppLayout>
@@ -216,7 +169,9 @@ export function HomePage() {
           />
         </AppHeader>
         <p className="m-0 text-[13px] font-semibold text-muted">
-          Boa noite, Marina <span className="text-line">·</span> Casa ativa
+          Boa noite <span className="text-line">·</span>{" "}
+          {sources.find((source) => source.status === "ready")?.name ??
+            "Nenhuma fonte ativa"}
         </p>
         {isLoading ? (
           <ProductState
@@ -226,18 +181,34 @@ export function HomePage() {
           />
         ) : (
           <>
-            <FeaturedHero />
+            <FeaturedHero title={movieItems[0]?.title ?? "Seu catálogo IPTV"} />
             <section className="flex flex-col gap-3">
               <SectionHeader>Continuar assistindo</SectionHeader>
-              <ContentRail cards={continueWatching} compact />
+              <ProductState
+                className="min-h-[110px]"
+                compact
+                kind="catalog-empty"
+              />
             </section>
             <section className="flex flex-col gap-3">
               <SectionHeader>Canais recentes</SectionHeader>
-              <ContentRail cards={recentChannels} compact />
+              {recentChannels.length ? (
+                <ContentRail cards={recentChannels} compact />
+              ) : (
+                <ProductState
+                  className="min-h-[110px]"
+                  compact
+                  kind="catalog-empty"
+                />
+              )}
             </section>
             <section className="flex flex-col gap-3">
               <SectionHeader>Filmes em destaque</SectionHeader>
-              <ContentRail cards={featuredMovies} />
+              {featuredMovies.length ? (
+                <ContentRail cards={featuredMovies} />
+              ) : (
+                <ProductState className="min-h-[210px]" kind="catalog-empty" />
+              )}
             </section>
           </>
         )}

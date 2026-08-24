@@ -1,8 +1,12 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, ProductState } from "../../../components/ui";
 import { useCatalogSources } from "../../../hooks/use-catalog-data";
+import {
+  getActiveSourceId,
+  setActiveSourceId,
+} from "../../../services/catalog-db";
 import {
   importM3uSource,
   removeM3uSource,
@@ -18,12 +22,19 @@ const initialSources: Source[] = [];
 export function SourcesPage() {
   const { sources: importedSources } = useCatalogSources();
   const [sources, setSources] = useState(initialSources);
-  const [activeId, setActiveId] = useState("home");
+  const [activeId, setActiveId] = useState(() => getActiveSourceId() ?? "");
   const [editing, setEditing] = useState<Source | undefined>();
   const [formOpen, setFormOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [rollbackId, setRollbackId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeId && importedSources[0]) {
+      setActiveId(importedSources[0].id);
+      setActiveSourceId(importedSources[0].id);
+    }
+  }, [activeId, importedSources]);
 
   const openCreate = () => {
     setEditing(undefined);
@@ -46,6 +57,7 @@ export function SourcesPage() {
         });
         await importM3uSource(source);
         setActiveId(source.id);
+        setActiveSourceId(source.id);
         setFormOpen(false);
         setNotice(`${source.name} foi importada.`);
       } catch (error) {
@@ -122,9 +134,11 @@ export function SourcesPage() {
                 status:
                   source.status === "error"
                     ? ("error" as const)
-                    : source.status === "ready"
-                      ? ("available" as const)
-                      : ("available" as const),
+                    : source.status === "importing"
+                      ? ("importing" as const)
+                      : source.status === "ready"
+                        ? ("available" as const)
+                        : ("available" as const),
                 detail: `M3U · ${source.status}`,
                 contentCount: source.itemCount,
                 url: source.url,
@@ -135,6 +149,7 @@ export function SourcesPage() {
                   active={activeId === source.id}
                   onActivate={() => {
                     setActiveId(source.id);
+                    setActiveSourceId(source.id);
                     setNotice(`${source.name} agora é a fonte ativa.`);
                   }}
                   onDelete={() => {
@@ -142,10 +157,15 @@ export function SourcesPage() {
                     setSources((current) =>
                       current.filter((item) => item.id !== source.id),
                     );
-                    if (activeId === source.id)
-                      setActiveId(
-                        sources.find((item) => item.id !== source.id)?.id ?? "",
-                      );
+                    if (activeId === source.id) {
+                      const nextId =
+                        importedSources.find((item) => item.id !== source.id)
+                          ?.id ??
+                        sources.find((item) => item.id !== source.id)?.id ??
+                        "";
+                      setActiveId(nextId);
+                      if (nextId) setActiveSourceId(nextId);
+                    }
                   }}
                   onEdit={() => openEdit(source)}
                   onRefresh={() => refreshSource(source)}

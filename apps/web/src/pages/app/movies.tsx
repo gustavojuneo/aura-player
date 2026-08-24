@@ -19,7 +19,7 @@ type SortOption = "recent" | "title";
 
 const genres = ["Todos", "Ação", "Drama", "Ficção", "Comédia", "Documentário"];
 
-const movies: Movie[] = [
+const _movies: Movie[] = [
   {
     accent: "from-[#243442] to-[#171510]",
     genre: "Drama",
@@ -138,15 +138,13 @@ export function MoviesPage() {
   const { items: importedMovies } = useCatalogItems("movie");
   const movieCatalog = useMemo<Movie[]>(
     () =>
-      importedMovies.length
-        ? importedMovies.map((movie) => ({
-            accent: "from-[#243442] to-[#171510]",
-            genre: movie.groupTitle ?? "Outros",
-            id: movie.id,
-            metadata: movie.year ? String(movie.year) : "Filme",
-            title: movie.title,
-          }))
-        : movies,
+      importedMovies.map((movie) => ({
+        accent: "from-[#243442] to-[#171510]",
+        genre: movie.groupTitle ?? "Outros",
+        id: movie.id,
+        metadata: movie.year ? String(movie.year) : "Filme",
+        title: movie.title,
+      })),
     [importedMovies],
   );
 

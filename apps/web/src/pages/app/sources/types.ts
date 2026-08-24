@@ -1,5 +1,5 @@
 export type SourceType = "m3u" | "xtream";
-export type SourceStatus = "active" | "available" | "error";
+export type SourceStatus = "active" | "available" | "importing" | "error";
 
 export type Source = {
   id: string;

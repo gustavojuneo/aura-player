@@ -24,15 +24,6 @@ const categories = [
   ["Documentários", "12"],
 ] as const;
 
-const channels: Channel[] = [
-  { current: "Final 38'", id: "arena-sports", name: "Arena Sports" },
-  { current: "Programa 20:00", id: "prime-news", name: "Prime News" },
-  { current: "Programa 20:00", id: "cinema-24", name: "Cinema 24" },
-  { current: "Programa 20:00", id: "mundo-kids", name: "Mundo Kids" },
-  { current: "Programa 20:00", id: "natureza-plus", name: "Natureza+" },
-  { current: "Programa 20:00", id: "canal-uno", name: "Canal Uno" },
-];
-
 function ChannelRow({
   channel,
   favorite,
@@ -140,9 +131,8 @@ export function TvPage() {
       logoUrl: item.logoUrl,
       name: item.title,
     }));
-    return (importedChannels.length ? importedChannels : channels).filter(
-      (channel) =>
-        channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+    return importedChannels.filter((channel) =>
+      channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
     );
   }, [items, query]);
 

@@ -7,12 +7,14 @@ import type { Source } from "../types";
 const statusLabel = {
   active: "Ativa · sincronizada agora",
   available: "Disponível · há 2 dias",
+  importing: "Importando catálogo...",
   error: "Erro de conexão · tentar novamente",
 } as const;
 
 const statusClass = {
   active: "text-gold-bright",
   available: "text-success",
+  importing: "text-gold-bright",
   error: "text-danger",
 } as const;
 
@@ -36,7 +38,7 @@ export function SourceCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const Icon = source.type === "xtream" ? Server : LinkIcon;
 
-  if (syncing)
+  if (syncing || source.status === "importing")
     return (
       <ProductState
         action={{ label: "Sincronizando", onClick: onRefresh }}
@@ -71,7 +73,9 @@ export function SourceCard({
               ? "ATIVA"
               : source.status === "available"
                 ? "OK"
-                : "ERRO"}
+                : source.status === "importing"
+                  ? "IMPORTANDO"
+                  : "ERRO"}
           </span>
         </div>
         <p className="mt-1 mb-0 text-xs text-muted">

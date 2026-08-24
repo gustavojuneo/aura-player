@@ -4,6 +4,7 @@ import {
   sourceSchema,
 } from "../features/catalog/catalog";
 import {
+  clearActiveSourceId,
   deleteSourceData,
   getActiveSourceId,
   getCatalogItem,
@@ -77,8 +78,7 @@ export function importM3uSource(
 
 export async function removeM3uSource(sourceId: string) {
   await deleteSourceData(sourceId);
-  if (getActiveSourceId() === sourceId)
-    localStorage.removeItem("aura:active-source");
+  if (getActiveSourceId() === sourceId) clearActiveSourceId();
   window.dispatchEvent(new Event("aura-catalog-change"));
 }
 

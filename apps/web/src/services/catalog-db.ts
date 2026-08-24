@@ -192,3 +192,8 @@ export function setActiveSourceId(sourceId: string) {
   localStorage.setItem(activeSourceKey, sourceId);
   window.dispatchEvent(new Event("aura-catalog-change"));
 }
+
+export function clearActiveSourceId() {
+  localStorage.removeItem(activeSourceKey);
+  window.dispatchEvent(new Event("aura-catalog-change"));
+}

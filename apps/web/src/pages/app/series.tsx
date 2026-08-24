@@ -19,7 +19,7 @@ type SortOption = "recent" | "title";
 
 const genres = ["Todos", "Ação", "Drama", "Ficção", "Comédia", "Documentário"];
 
-const series: Series[] = [
+const _series: Series[] = [
   {
     accent: "from-[#243442] to-[#171510]",
     genre: "Drama",
@@ -136,15 +136,13 @@ export function SeriesPage() {
   const { items: importedSeries } = useCatalogSeries();
   const seriesCatalog = useMemo<Series[]>(
     () =>
-      importedSeries.length
-        ? importedSeries.map((item) => ({
-            accent: "from-[#243442] to-[#171510]",
-            genre: item.groupTitle ?? "Outros",
-            id: item.id,
-            seasons: item.seasonCount,
-            title: item.title,
-          }))
-        : series,
+      importedSeries.map((item) => ({
+        accent: "from-[#243442] to-[#171510]",
+        genre: item.groupTitle ?? "Outros",
+        id: item.id,
+        seasons: item.seasonCount,
+        title: item.title,
+      })),
     [importedSeries],
   );
 
