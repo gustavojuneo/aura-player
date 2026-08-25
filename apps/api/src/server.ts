@@ -594,29 +594,25 @@ async function resolveMediaRedirect(
   url: URL,
   requestUserAgent: string | undefined,
 ) {
-  let current = url;
   const userAgent =
     requestUserAgent?.trim() ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
-  for (let redirects = 0; redirects <= 5; redirects += 1) {
-    const response = await fetch(current, {
-      headers: {
-        Accept: "*/*",
-        Range: "bytes=0-0",
-        "User-Agent": userAgent,
-      },
-      redirect: "manual",
-    });
-    if (![301, 302, 303, 307, 308].includes(response.status)) {
-      await response.body?.cancel();
-      return current;
-    }
-    const location = response.headers.get("location");
-    await response.body?.cancel();
-    if (!location) throw new Error("REDIRECT_WITHOUT_LOCATION");
-    current = await validateRedirect(location, current);
-  }
-  throw new Error("TOO_MANY_REDIRECTS");
+  const response = await fetch(url, {
+    headers: {
+      Accept: "*/*",
+      Range: "bytes=0-0",
+      "User-Agent": userAgent,
+    },
+    redirect: "follow",
+  });
+  const resolvedUrl = new URL(response.url);
+  await response.body?.cancel();
+  if (resolvedUrl.protocol !== "https:")
+    throw new Error("MEDIA_REDIRECT_NOT_SECURE");
+  const addresses = await dns.lookup(resolvedUrl.hostname, { all: true });
+  if (addresses.some(({ address }) => isPrivateAddress(address)))
+    throw new Error("MEDIA_REDIRECT_PRIVATE_TARGET");
+  return resolvedUrl;
 }
 
 function cleanupTargets() {
