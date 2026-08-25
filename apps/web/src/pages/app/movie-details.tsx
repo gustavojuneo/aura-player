@@ -1,9 +1,11 @@
 import { Link, useParams } from "@tanstack/react-router";
+import { ChevronLeft } from "lucide-react";
 import { useMemo } from "react";
 
 import { ProductState } from "../../components/ui";
 import { useCatalogItem, useCatalogItems } from "../../hooks/use-catalog-data";
 import { useFavorites } from "../../services/favorites";
+import { CarouselViewport } from "./components/carousel-viewport";
 import {
   DetailCard,
   DetailHero,
@@ -15,9 +17,33 @@ export function MovieDetailsPage() {
   const { item, isLoading, isMetadataLoading } = useCatalogItem(movieId);
   const { items: movies } = useCatalogItems("movie");
   const { isFavorite, toggleFavorite } = useFavorites();
+  const relatedCategories = useMemo(
+    () =>
+      new Set(
+        [
+          ...(item?.categories ?? []),
+          ...(item?.groupTitle ? [item.groupTitle] : []),
+        ].map((category) => category.trim().toLocaleLowerCase()),
+      ),
+    [item],
+  );
   const relatedMovies = useMemo(
-    () => movies.filter((movie) => movie.id !== movieId).slice(0, 4),
-    [movieId, movies],
+    () =>
+      movies
+        .filter((movie) => {
+          if (movie.id === movieId || relatedCategories.size === 0) {
+            return false;
+          }
+          const movieCategories = [
+            ...movie.categories,
+            ...(movie.groupTitle ? [movie.groupTitle] : []),
+          ];
+          return movieCategories.some((category) =>
+            relatedCategories.has(category.trim().toLocaleLowerCase()),
+          );
+        })
+        .slice(0, 15),
+    [movieId, movies, relatedCategories],
   );
 
   if (isLoading || isMetadataLoading) return <DetailHeroSkeleton />;
@@ -37,14 +63,15 @@ export function MovieDetailsPage() {
 
   return (
     <main className="min-h-screen bg-bg text-text">
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
+      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
         <button
-          className="text-sm font-bold text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
+          aria-label="Voltar para página anterior"
+          className="-ml-2 inline-flex h-10 items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
           onClick={() => window.history.back()}
           type="button"
         >
-          <span className="sm:hidden">←</span>
-          <span className="hidden sm:inline">←&nbsp; Voltar</span>
+          <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />
+          <span>Voltar</span>
         </button>
         <span className="font-display text-[17px] font-extrabold text-text">
           AURA
@@ -66,30 +93,35 @@ export function MovieDetailsPage() {
         watchParams={{ movieId: item.id }}
         watchTo="/app/movies/$movieId/watch"
       />
-      <section className="mx-auto flex max-w-[1300px] flex-col gap-3.5 px-5 pb-12 sm:px-10 sm:pt-3 lg:px-[70px]">
+      <section className="relative z-30 flex w-full flex-col gap-3.5 bg-bg px-5 pt-6 pb-12 sm:px-10 sm:pt-6 lg:px-[70px]">
         <h2 className="m-0 font-display text-lg font-bold text-text sm:text-[21px]">
           Você também pode gostar
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:flex">
-          {relatedMovies.map((movie, index) => (
-            <Link
-              className="min-w-0 flex-1"
-              key={movie.id}
-              params={{ movieId: movie.id }}
-              to="/app/movies/$movieId"
-            >
-              <DetailCard accent={index % 2 ? "amber" : "blue"}>
-                <span className="truncate text-sm font-bold text-text">
-                  {movie.title}
-                </span>
-                <span className="truncate text-[11px] text-muted">
-                  {movie.year ?? "Filme"} ·{" "}
-                  {movie.categories?.[0] ?? "Sem categoria"}
-                </span>
-              </DetailCard>
-            </Link>
-          ))}
-        </div>
+        <CarouselViewport ariaLabel="Filmes relacionados" edgeToEdge>
+          <div className="flex min-w-max flex-nowrap gap-3">
+            {relatedMovies.map((movie, index) => (
+              <Link
+                className="w-[240px] min-w-[240px] shrink-0"
+                key={movie.id}
+                params={{ movieId: movie.id }}
+                to="/app/movies/$movieId"
+              >
+                <DetailCard
+                  accent={index % 2 ? "amber" : "blue"}
+                  imageUrl={movie.logoUrl ?? movie.backdropUrl}
+                >
+                  <span className="truncate text-sm font-bold text-text">
+                    {movie.title}
+                  </span>
+                  <span className="truncate text-[11px] text-muted">
+                    {movie.year ?? "Filme"} ·{" "}
+                    {movie.categories?.[0] ?? "Sem categoria"}
+                  </span>
+                </DetailCard>
+              </Link>
+            ))}
+          </div>
+        </CarouselViewport>
       </section>
     </main>
   );

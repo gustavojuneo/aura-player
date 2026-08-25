@@ -1,4 +1,7 @@
+import type { CSSProperties } from "react";
+
 import { Button } from "../../components/ui";
+import { defaultHeroAspectRatio } from "../../hooks/use-image-aspect-ratio";
 
 const heroImage =
   "https://images.unsplash.com/photo-1659514530020-4681fb340b55?auto=format&fit=crop&w=1800&q=85";
@@ -7,12 +10,13 @@ export function LandingHero({ onAccess }: { onAccess: () => void }) {
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative min-h-[500px] overflow-hidden md:min-h-[610px]"
+      className="relative min-h-[clamp(500px,calc(100vw/var(--hero-aspect-ratio)),900px)] overflow-hidden md:min-h-[clamp(610px,calc(100vw/var(--hero-aspect-ratio)),900px)]"
       id="experiencia"
+      style={{ "--hero-aspect-ratio": defaultHeroAspectRatio } as CSSProperties}
     >
       <img
         alt=""
-        className="absolute inset-0 size-full object-cover"
+        className="absolute inset-0 size-full object-cover object-top"
         src={heroImage}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/10 md:bg-gradient-to-r md:from-bg/[.97] md:via-bg/[.78] md:to-bg/[.18]" />

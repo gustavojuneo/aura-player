@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Info, Radio } from "lucide-react";
 import {
+  type CSSProperties,
   type ReactNode,
   useCallback,
   useEffect,
@@ -17,6 +18,10 @@ import {
   useCatalogItems,
   useCatalogSeries,
 } from "../../hooks/use-catalog-data";
+import {
+  defaultHeroAspectRatio,
+  useImageAspectRatio,
+} from "../../hooks/use-image-aspect-ratio";
 import {
   loadRecentChannels,
   type RecentChannel,
@@ -200,6 +205,7 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
       ? ((item as CatalogItem).backdropUrl ?? (item as CatalogItem).logoUrl)
       : ((item as CatalogSeries).backdropUrl ??
         (item as CatalogSeries).posterUrl));
+  const imageAspectRatio = useImageAspectRatio(imageUrl);
   const backdropFade =
     "linear-gradient(to bottom, rgb(21 19 15 / 0%) 0%, rgb(21 19 15 / 2%) 32%, rgb(21 19 15 / 20%) 52%, rgb(21 19 15 / 62%) 74%, #15130f 100%)";
   const detailsTo = isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId";
@@ -207,15 +213,18 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
     ? { movieId: item?.id ?? "" }
     : { seriesId: item?.id ?? "" };
   return (
-    <section className="relative -mx-4 min-h-[500px] w-[calc(100%+2rem)] overflow-visible px-5 sm:-mx-6 sm:min-h-[650px] sm:w-[calc(100%+3rem)] sm:px-10 lg:-mx-8 lg:w-[calc(100%+4rem)] lg:px-[70px]">
+    <section
+      className="relative -mx-4 min-h-[clamp(500px,calc(100vw/var(--hero-aspect-ratio)),900px)] w-[calc(100%+2rem)] overflow-visible px-5 sm:-mx-6 sm:min-h-[clamp(650px,calc(100vw/var(--hero-aspect-ratio)),900px)] sm:w-[calc(100%+3rem)] sm:px-10 lg:-mx-8 lg:w-[calc(100%+4rem)] lg:px-[70px]"
+      style={{ "--hero-aspect-ratio": defaultHeroAspectRatio } as CSSProperties}
+    >
       <div
-        className={`absolute inset-x-0 top-0 h-[500px] overflow-hidden bg-center bg-no-repeat sm:h-[650px] ${isMovie ? "bg-[#6f441e]" : "bg-[#284151]"}`}
+        className={`absolute inset-x-0 top-0 h-full overflow-hidden bg-top bg-no-repeat ${isMovie ? "bg-[#6f441e]" : "bg-[#284151]"}`}
         style={{
           backgroundImage: imageUrl
             ? `${backdropFade}, url(${imageUrl})`
             : backdropFade,
-          backgroundPosition: "center, center",
-          backgroundSize: "100% 100%, cover",
+          backgroundPosition: "center top, center top",
+          backgroundSize: `100% 100%, ${imageAspectRatio >= 1 ? "100% auto" : "auto 100%"}`,
         }}
       />
       <div className="absolute inset-x-5 bottom-8 z-20 flex max-w-[720px] flex-col gap-3.5 sm:inset-x-10 sm:bottom-10 lg:inset-x-[70px]">

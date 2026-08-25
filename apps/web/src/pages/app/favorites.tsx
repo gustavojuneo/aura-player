@@ -1,14 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, HeartOff, Menu, Radio } from "lucide-react";
-import {
-  memo,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { HeartOff, Menu, Radio } from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import {
   Button,
@@ -32,6 +24,7 @@ import {
   useFavorites,
 } from "../../services/favorites";
 import { AppLayout } from "./app-shell";
+import { CarouselViewport } from "./components/carousel-viewport";
 import { FavoriteButton } from "./components/favorite-button";
 
 const favoriteRoutes = {
@@ -143,75 +136,6 @@ function SectionControls({
           type="button"
         >
           {expanded ? "Ver menos" : "Ver mais"}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function CarouselViewport({ children }: { children: ReactNode }) {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const [canPrevious, setCanPrevious] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-  const updateScrollState = useCallback(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    setCanPrevious(viewport.scrollLeft > 1);
-    setCanNext(
-      viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1,
-    );
-  }, []);
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    updateScrollState();
-    viewport.addEventListener("scroll", updateScrollState, { passive: true });
-    const observer = new ResizeObserver(updateScrollState);
-    observer.observe(viewport);
-    return () => {
-      viewport.removeEventListener("scroll", updateScrollState);
-      observer.disconnect();
-    };
-  }, [updateScrollState]);
-  const move = (direction: number) => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    viewport.scrollBy({
-      behavior: "smooth",
-      left: direction * Math.max(viewport.clientWidth * 0.82, 240),
-    });
-  };
-
-  return (
-    <div className="relative -mx-4 min-w-0 sm:-mx-6 lg:-mx-8">
-      <div
-        className="overflow-x-auto overflow-y-visible scroll-smooth px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8"
-        ref={viewportRef}
-      >
-        {children}
-      </div>
-      {canPrevious && (
-        <button
-          aria-label="Favoritos anteriores"
-          className="absolute inset-y-0 left-0 z-20 flex w-14 items-center justify-center bg-gradient-to-r from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={() => move(-1)}
-          type="button"
-        >
-          <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
-            <ChevronLeft aria-hidden="true" className="size-5" />
-          </span>
-        </button>
-      )}
-      {canNext && (
-        <button
-          aria-label="Próximos favoritos"
-          className="absolute inset-y-0 right-0 z-20 flex w-14 items-center justify-center bg-gradient-to-l from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={() => move(1)}
-          type="button"
-        >
-          <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
-            <ChevronRight aria-hidden="true" className="size-5" />
-          </span>
         </button>
       )}
     </div>

@@ -1,8 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, Play } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type CSSProperties, type ReactNode, useState } from "react";
 
 import { Button } from "../../../components/ui";
+import {
+  defaultHeroAspectRatio,
+  useImageAspectRatio,
+} from "../../../hooks/use-image-aspect-ratio";
 import { cn } from "../../../utils/cn";
 
 type DetailHeroProps = {
@@ -37,6 +41,7 @@ export function DetailHero({
   extraContent,
 }: DetailHeroProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const imageAspectRatio = useImageAspectRatio(imageUrl);
   const canExpandDescription = description.length > 180;
   const backdropFade =
     kind === "movie"
@@ -47,16 +52,19 @@ export function DetailHero({
     <section className="relative min-h-[430px] overflow-visible px-5 sm:min-h-[650px] sm:px-10 lg:px-[70px]">
       <div
         className={cn(
-          "-mx-5 h-[430px] w-[calc(100%+2.5rem)] overflow-hidden bg-center bg-no-repeat shadow-[inset_0_80px_100px_-35px_rgb(0_0_0_/_88%)] sm:-mx-10 sm:h-[650px] sm:w-[calc(100%+5rem)] lg:-mx-[70px] lg:w-[calc(100%+140px)]",
+          "-mx-5 h-[clamp(430px,calc(100vw/var(--hero-aspect-ratio)),900px)] w-[calc(100%+2.5rem)] overflow-hidden bg-top bg-no-repeat shadow-[inset_0_80px_100px_-35px_rgb(0_0_0_/_88%)] sm:-mx-10 sm:h-[clamp(650px,calc(100vw/var(--hero-aspect-ratio)),900px)] sm:w-[calc(100%+5rem)] lg:-mx-[70px] lg:w-[calc(100%+140px)]",
           kind === "movie" ? "bg-[#6f441e]" : "bg-[#284151]",
         )}
-        style={{
-          backgroundImage: imageUrl
-            ? `${backdropFade}, url(${imageUrl})`
-            : backdropFade,
-          backgroundPosition: "center, center",
-          backgroundSize: "100% 100%, cover",
-        }}
+        style={
+          {
+            backgroundImage: imageUrl
+              ? `${backdropFade}, url(${imageUrl})`
+              : backdropFade,
+            backgroundPosition: "center top, center top",
+            backgroundSize: `100% 100%, ${imageAspectRatio >= 1 ? "100% auto" : "auto 100%"}`,
+            "--hero-aspect-ratio": defaultHeroAspectRatio,
+          } as CSSProperties
+        }
       />
       <div className="relative z-20 -mt-[105px] flex max-w-[720px] flex-col gap-3.5 pb-4 sm:-mt-[336px] sm:pb-0">
         <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.08em] text-gold-bright">
@@ -131,20 +139,33 @@ export function DetailCard({
   accent,
   children,
   className,
+  imageUrl,
 }: {
   accent: "blue" | "amber";
   children: ReactNode;
   className?: string;
+  imageUrl?: string;
 }) {
   return (
     <div
       className={cn(
-        "relative flex h-[180px] min-w-0 flex-col justify-end gap-1.5 overflow-hidden rounded-xl border border-line p-3",
+        "group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end gap-1.5 overflow-hidden rounded-xl border border-line p-3 transition-transform hover:-translate-y-1",
         accent === "blue" ? "bg-[#253844]" : "bg-[#633f20]",
         className,
       )}
     >
-      {children}
+      {imageUrl && (
+        <img
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          decoding="async"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          src={imageUrl}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-white/5" />
+      <div className="relative z-10 min-w-0">{children}</div>
     </div>
   );
 }
