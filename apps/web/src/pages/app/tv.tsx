@@ -69,7 +69,7 @@ function ChannelRow({
   return (
     <button
       aria-current={selected ? "true" : undefined}
-      className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${selected ? "border-gold bg-[#3b2d18]" : favorite ? "border-gold/60 bg-[#2d2417]" : "border-line bg-panel hover:border-gold/50"}`}
+      className={`flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 focus-visible:outline-2 focus-visible:outline-focus ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
       onClick={onSelect}
       type="button"
     >

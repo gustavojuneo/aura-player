@@ -1,8 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, HeartOff, Menu, Radio } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { Button, Skeleton } from "../../components/ui";
+import { Button, ProgressBar, Skeleton } from "../../components/ui";
 import type {
   CatalogItem,
   CatalogSeries,
@@ -21,8 +28,6 @@ import {
 import { AppLayout } from "./app-shell";
 import { FavoriteButton } from "./components/favorite-button";
 
-const CAROUSEL_PAGE_SIZE = 4;
-const CHANNEL_CAROUSEL_PAGE_SIZE = 20;
 const favoriteRoutes = {
   channel: "/app/favorites/channels",
   movie: "/app/favorites/movies",
@@ -137,32 +142,44 @@ function SectionControls({
   );
 }
 
-function CarouselViewport({
-  animationKey,
-  canNext,
-  canPrevious,
-  children,
-  direction,
-  onNext,
-  onPrevious,
-}: {
-  animationKey: string;
-  canNext: boolean;
-  canPrevious: boolean;
-  children: ReactNode;
-  direction: "next" | "previous";
-  onNext: () => void;
-  onPrevious: () => void;
-}) {
+function CarouselViewport({ children }: { children: ReactNode }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [canPrevious, setCanPrevious] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+  const updateScrollState = useCallback(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    setCanPrevious(viewport.scrollLeft > 1);
+    setCanNext(
+      viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1,
+    );
+  }, []);
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    updateScrollState();
+    viewport.addEventListener("scroll", updateScrollState, { passive: true });
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(viewport);
+    return () => {
+      viewport.removeEventListener("scroll", updateScrollState);
+      observer.disconnect();
+    };
+  }, [updateScrollState]);
+  const move = (direction: number) => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollBy({
+      behavior: "smooth",
+      left: direction * Math.max(viewport.clientWidth * 0.82, 240),
+    });
+  };
+
   return (
-    <div className="relative min-w-0">
+    <div className="relative -mx-4 min-w-0 sm:-mx-6 lg:-mx-8">
       <div
-        className={
-          direction === "next"
-            ? "animate-favorite-slide-next"
-            : "animate-favorite-slide-previous"
-        }
-        key={animationKey}
+        className="overflow-x-auto overflow-y-visible scroll-smooth px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8"
+        ref={viewportRef}
       >
         {children}
       </div>
@@ -170,7 +187,7 @@ function CarouselViewport({
         <button
           aria-label="Favoritos anteriores"
           className="absolute inset-y-0 left-0 z-20 flex w-14 items-center justify-center bg-gradient-to-r from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={onPrevious}
+          onClick={() => move(-1)}
           type="button"
         >
           <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
@@ -182,7 +199,7 @@ function CarouselViewport({
         <button
           aria-label="Próximos favoritos"
           className="absolute inset-y-0 right-0 z-20 flex w-14 items-center justify-center bg-gradient-to-l from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={onNext}
+          onClick={() => move(1)}
           type="button"
         >
           <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
@@ -196,24 +213,29 @@ function CarouselViewport({
 
 function ChannelList({
   channels,
+  carousel = false,
   grid = false,
   onToggle,
 }: {
   channels: CatalogItem[];
+  carousel?: boolean;
   grid?: boolean;
   onToggle: (kind: FavoriteKind, id: string) => void;
 }) {
   return (
     <div
       className={
-        grid
-          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-          : "flex flex-col gap-2"
+        grid && carousel
+          ? "flex min-w-max flex-nowrap gap-3"
+          : grid
+            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+            : "flex flex-col gap-2"
       }
     >
       {channels.map((channel) => (
         <FavoriteChannelCard
           channel={channel}
+          carousel={carousel}
           grid={grid}
           key={channel.id}
           onToggle={() => onToggle("channel", channel.id)}
@@ -225,10 +247,12 @@ function ChannelList({
 
 function FavoriteChannelCard({
   channel,
+  carousel,
   grid,
   onToggle,
 }: {
   channel: CatalogItem;
+  carousel: boolean;
   grid: boolean;
   onToggle: () => void;
 }) {
@@ -244,18 +268,31 @@ function FavoriteChannelCard({
       now < stop
     );
   });
-  const subtitle = epg.isLoading
-    ? "Carregando programação..."
-    : (currentProgram?.title ??
-      channel.groupTitle ??
-      channel.categories?.[0] ??
-      "Ao vivo");
+  const formatProgramTime = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? "--:--"
+      : new Intl.DateTimeFormat("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(date);
+  };
+  const programProgress = currentProgram
+    ? Math.round(
+        ((Date.now() - Date.parse(currentProgram.start)) /
+          (Date.parse(currentProgram.stop) -
+            Date.parse(currentProgram.start))) *
+          100,
+      )
+    : 0;
   return (
     <div
       className={
-        grid
-          ? "relative flex min-h-[126px] min-w-0 cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60"
-          : "flex min-w-0 cursor-pointer items-center gap-3 rounded-[10px] border border-line bg-panel p-2.5 transition-colors hover:border-gold/60"
+        grid && carousel
+          ? "relative flex min-h-[126px] w-[220px] min-w-[220px] cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60"
+          : grid
+            ? "relative flex min-h-[126px] min-w-0 cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60"
+            : "flex min-w-0 cursor-pointer items-center gap-3 rounded-[10px] border border-line bg-panel p-2.5 transition-colors hover:border-gold/60"
       }
     >
       <Link
@@ -279,9 +316,29 @@ function FavoriteChannelCard({
         <strong className="block truncate text-sm font-bold text-text">
           {channel.title}
         </strong>
-        <span className="mt-1 block truncate text-[11px] text-muted">
-          {subtitle}
-        </span>
+        {epg.isLoading ? (
+          <span className="mt-1 block truncate text-[11px] text-muted">
+            Carregando programação...
+          </span>
+        ) : currentProgram ? (
+          <span className="mt-1 block min-w-0">
+            <span className="block truncate text-[11px] text-muted">
+              <strong className="font-extrabold text-gold-bright">
+                AGORA:
+              </strong>{" "}
+              {currentProgram.title}
+            </span>
+            <span className="mt-1 block text-[10px] text-muted">
+              {formatProgramTime(currentProgram.start)} –{" "}
+              {formatProgramTime(currentProgram.stop)}
+            </span>
+            <ProgressBar className="mt-1 h-1" value={programProgress} />
+          </span>
+        ) : (
+          <span className="mt-1 block truncate text-[11px] text-muted">
+            {channel.groupTitle ?? channel.categories?.[0] ?? "Ao vivo"}
+          </span>
+        )}
       </span>
       <span className={grid ? "absolute top-3 right-3 z-10" : "relative z-10"}>
         <FavoriteButton
@@ -326,14 +383,14 @@ function MediaGrid({
     <div
       className={
         carousel
-          ? "flex min-w-0 flex-nowrap gap-3 overflow-hidden"
+          ? "flex min-w-max flex-nowrap gap-3"
           : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:gap-3.5"
       }
     >
       {media.map((item, index) => {
         return (
           <article
-            className={`group relative flex h-[230px] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 ${carousel ? "w-[calc((100%-36px)/4)] min-w-[180px] shrink-0" : "w-full"} ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
+            className={`group relative flex h-[230px] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 transition-transform hover:-translate-y-1 ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
             key={item.id}
           >
             {item.imageUrl && (
@@ -459,18 +516,6 @@ function CategoryFavoritesContent({
 
 export function FavoritesPage({ category }: { category?: FavoriteKind }) {
   const navigate = useNavigate();
-  const [pageByKind, setPageByKind] = useState<Record<FavoriteKind, number>>({
-    channel: 0,
-    movie: 0,
-    series: 0,
-  });
-  const [directionByKind, setDirectionByKind] = useState<
-    Record<FavoriteKind, "next" | "previous">
-  >({
-    channel: "next",
-    movie: "next",
-    series: "next",
-  });
   const [expandedKinds, setExpandedKinds] = useState<Set<FavoriteKind>>(
     () => new Set(),
   );
@@ -494,34 +539,6 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
   const previewMovies = favoriteMovies.slice(0, 10);
   const previewSeries = favoriteSeries.slice(0, 10);
   const previewChannels = favoriteChannels.slice(0, 20);
-  const carousel = <T extends { id: string }>(
-    kind: FavoriteKind,
-    items: T[],
-  ) => {
-    const pageSize =
-      kind === "channel" ? CHANNEL_CAROUSEL_PAGE_SIZE : CAROUSEL_PAGE_SIZE;
-    const pageCount = Math.max(1, Math.ceil(items.length / pageSize));
-    const page = Math.min(pageByKind[kind], pageCount - 1);
-    return {
-      items:
-        category || expandedKinds.has(kind)
-          ? items
-          : items.slice(page * pageSize, (page + 1) * pageSize),
-      canNext: !expandedKinds.has(kind) && page < pageCount - 1,
-      canPrevious: !expandedKinds.has(kind) && page > 0,
-      page,
-    };
-  };
-  const channelCarousel = carousel("channel", previewChannels);
-  const movieCarousel = carousel("movie", previewMovies);
-  const seriesCarousel = carousel("series", previewSeries);
-  const setPage = (kind: FavoriteKind, page: number) => {
-    setPageByKind((current) => ({ ...current, [kind]: page }));
-  };
-  const moveCarousel = (kind: FavoriteKind, direction: "next" | "previous") => {
-    setDirectionByKind((current) => ({ ...current, [kind]: direction }));
-    setPage(kind, pageByKind[kind] + (direction === "next" ? 1 : -1));
-  };
   const toggleExpanded = (kind: FavoriteKind) => {
     setExpandedKinds((current) => {
       const next = new Set(current);
@@ -612,16 +629,9 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
                     showMore={!category}
                   />
                 </div>
-                <CarouselViewport
-                  animationKey={`movie-${movieCarousel.page}`}
-                  canNext={movieCarousel.canNext}
-                  canPrevious={movieCarousel.canPrevious}
-                  direction={directionByKind.movie}
-                  onNext={() => moveCarousel("movie", "next")}
-                  onPrevious={() => moveCarousel("movie", "previous")}
-                >
+                <CarouselViewport>
                   <MediaGrid
-                    items={movieCarousel.items}
+                    items={previewMovies}
                     kind="movie"
                     onToggle={toggleFavorite}
                   />
@@ -648,16 +658,9 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
                     showMore={!category}
                   />
                 </div>
-                <CarouselViewport
-                  animationKey={`series-${seriesCarousel.page}`}
-                  canNext={seriesCarousel.canNext}
-                  canPrevious={seriesCarousel.canPrevious}
-                  direction={directionByKind.series}
-                  onNext={() => moveCarousel("series", "next")}
-                  onPrevious={() => moveCarousel("series", "previous")}
-                >
+                <CarouselViewport>
                   <MediaGrid
-                    items={seriesCarousel.items}
+                    items={previewSeries}
                     kind="series"
                     onToggle={toggleFavorite}
                   />
@@ -684,20 +687,11 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
                     showMore={!category}
                   />
                 </div>
-                <CarouselViewport
-                  animationKey={`channel-${channelCarousel.page}`}
-                  canNext={channelCarousel.canNext}
-                  canPrevious={channelCarousel.canPrevious}
-                  direction={directionByKind.channel}
-                  onNext={() => moveCarousel("channel", "next")}
-                  onPrevious={() => moveCarousel("channel", "previous")}
-                >
-                  <ChannelList
-                    channels={channelCarousel.items}
-                    grid
-                    onToggle={toggleFavorite}
-                  />
-                </CarouselViewport>
+                <ChannelList
+                  channels={previewChannels}
+                  grid
+                  onToggle={toggleFavorite}
+                />
               </section>
             )}
           </div>
