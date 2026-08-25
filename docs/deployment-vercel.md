@@ -18,10 +18,10 @@ apps/api
 ```
 
 Keep the detected pnpm package manager and enable the option to include files
-outside the Root Directory when Vercel presents it. The `vercel.json` files in
-the application directories provide the build and routing configuration. Vercel
-detects `apps/api/src/server.ts` as the Fastify entrypoint and exposes its
-routes directly at the project root.
+outside the Root Directory when Vercel presents it. The web application uses
+its `vercel.json` for the Vite build and SPA fallback. Vercel detects
+`apps/api/src/server.ts` as the Fastify entrypoint and exposes its routes
+directly at the API project root.
 
 ## Environment variables
 
