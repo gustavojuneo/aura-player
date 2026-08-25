@@ -5,7 +5,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { z } from "zod";
-import { env } from "./env.js";
+import { env } from "./env.ts";
 
 type Target = { expiresAt: number; url: URL };
 type XtreamCredentials = { server: URL; username: string; password: string };
