@@ -4,11 +4,15 @@ import { useMemo } from "react";
 import { ProductState } from "../../components/ui";
 import { useCatalogItem, useCatalogItems } from "../../hooks/use-catalog-data";
 import { useFavorites } from "../../services/favorites";
-import { DetailCard, DetailHero } from "./components/detail-hero";
+import {
+  DetailCard,
+  DetailHero,
+  DetailHeroSkeleton,
+} from "./components/detail-hero";
 
 export function MovieDetailsPage() {
   const { movieId } = useParams({ from: "/app/movies/$movieId" });
-  const { item, isLoading } = useCatalogItem(movieId);
+  const { item, isLoading, isMetadataLoading } = useCatalogItem(movieId);
   const { items: movies } = useCatalogItems("movie");
   const { isFavorite, toggleFavorite } = useFavorites();
   const relatedMovies = useMemo(
@@ -16,10 +20,7 @@ export function MovieDetailsPage() {
     [movieId, movies],
   );
 
-  if (isLoading)
-    return (
-      <ProductState className="min-h-screen justify-center" kind="loading" />
-    );
+  if (isLoading || isMetadataLoading) return <DetailHeroSkeleton />;
   if (item?.kind !== "movie")
     return (
       <ProductState
@@ -50,8 +51,11 @@ export function MovieDetailsPage() {
       </header>
       <DetailHero
         badge={`Filme · ${item.year ?? "Destaque"}`}
-        description={`Uma nova história de ${category.toLocaleLowerCase()} disponível para assistir agora no seu catálogo.`}
-        imageUrl={item.logoUrl}
+        description={
+          item.description ??
+          `Uma nova história de ${category.toLocaleLowerCase()} disponível para assistir agora no seu catálogo.`
+        }
+        imageUrl={item.backdropUrl ?? item.logoUrl}
         isFavorite={isFavorite("movie", item.id)}
         kind="movie"
         metadata={`${item.year ?? "Ano não informado"} · ${category}`}

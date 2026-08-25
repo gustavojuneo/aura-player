@@ -5,12 +5,18 @@ export const deliverySchema = z.enum(["hls", "mpeg-ts", "dash", "native"]);
 
 export const catalogItemSchema = z.object({
   id: z.string().min(1),
+  providerId: z.string().optional(),
   sourceId: z.string().min(1),
   kind: catalogKindSchema,
   title: z.string().min(1),
   groupTitle: z.string().optional(),
   categories: z.array(z.string()).default([]),
   logoUrl: z.string().url().optional(),
+  backdropUrl: z.string().url().optional(),
+  description: z.string().optional(),
+  stillUrl: z.string().url().optional(),
+  durationSecs: z.number().int().nonnegative().optional(),
+  rating: z.number().nonnegative().optional(),
   tvgId: z.string().optional(),
   tvgName: z.string().optional(),
   streamUrl: z.string().url(),
@@ -28,11 +34,15 @@ export type CatalogItem = z.infer<typeof catalogItemSchema>;
 
 export const catalogSeriesSchema = z.object({
   id: z.string().min(1),
+  providerId: z.string().optional(),
   sourceId: z.string().min(1),
   title: z.string().min(1),
   groupTitle: z.string().optional(),
   categories: z.array(z.string()).default([]),
   posterUrl: z.string().url().optional(),
+  backdropUrl: z.string().url().optional(),
+  description: z.string().optional(),
+  rating: z.number().nonnegative().optional(),
   seasonCount: z.number().int().nonnegative(),
   episodeCount: z.number().int().nonnegative(),
 });
@@ -42,8 +52,10 @@ export type CatalogSeries = z.infer<typeof catalogSeriesSchema>;
 export const sourceSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  type: z.literal("m3u"),
-  url: z.string().url(),
+  type: z.enum(["m3u", "xtream"]),
+  url: z.string().url().optional(),
+  server: z.string().url().optional(),
+  username: z.string().optional(),
   status: z.enum(["idle", "importing", "ready", "empty", "error"]),
   itemCount: z.number().int().nonnegative().default(0),
   liveCount: z.number().int().nonnegative().default(0),

@@ -4,7 +4,10 @@ import {
   createPlaybackDescriptor,
   resolvePlaybackUrl,
 } from "../../features/playback/playback";
-import { useCatalogItem } from "../../hooks/use-catalog-data";
+import {
+  useCatalogEpisode,
+  useCatalogItem,
+} from "../../hooks/use-catalog-data";
 import { usePlaybackSource } from "../../hooks/use-playback-source";
 
 type PlayerPageProps = { kind: "live" | "movie" | "episode" };
@@ -33,23 +36,16 @@ export function PlayerPage({ kind }: PlayerPageProps) {
       : kind === "movie"
         ? (params.movieId ?? "alem-veu-1")
         : (params.episodeId ?? "episode-4");
-  const { item, isLoading } = useCatalogItem(contentId);
+  const movie = useCatalogItem(kind === "movie" ? contentId : undefined);
+  const episode = useCatalogEpisode(
+    kind === "episode" ? contentId : undefined,
+    kind === "episode" ? params.seriesId : undefined,
+  );
+  const item = kind === "episode" ? episode.item : movie.item;
+  const isLoading = kind === "episode" ? episode.isLoading : movie.isLoading;
   const content = item ?? titles[contentId] ?? { title: contentId };
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
   const playbackSource = usePlaybackSource(rawStreamUrl, kind === "live");
-  if (isLoading) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
-        Carregando reprodução...
-      </main>
-    );
-  }
-  if (playbackSource.isLoading)
-    return (
-      <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
-        Preparando stream...
-      </main>
-    );
   if (playbackSource.error)
     return (
       <main className="grid min-h-screen place-items-center bg-bg p-6 text-center text-sm text-danger-strong">
@@ -80,7 +76,13 @@ export function PlayerPage({ kind }: PlayerPageProps) {
     });
   };
 
-  return <MediaPlayer descriptor={descriptor} onBack={goBack} />;
+  return (
+    <MediaPlayer
+      descriptor={descriptor}
+      isLoading={isLoading || playbackSource.isLoading}
+      onBack={goBack}
+    />
+  );
 }
 
 export function PlayerFallback() {

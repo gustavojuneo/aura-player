@@ -1,11 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { ProductState, SearchField } from "../../components/ui";
+import {
+  ProductState,
+  ScrollArea,
+  SearchField,
+  SelectField,
+} from "../../components/ui";
 import { useCatalogSeries } from "../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../hooks/use-infinite-catalog";
 import { AppHeader, AppLayout } from "./app-shell";
+import { CatalogGridSkeleton } from "./components/catalog-skeleton";
+import {
+  CategoryDialog,
+  CategoryFilterTrigger,
+  CategorySidebar,
+} from "./components/category-dialog";
 
 type Series = {
   accent: string;
@@ -127,6 +137,10 @@ function SeriesCard({ item }: { item: Series }) {
           src={item.posterUrl}
         />
       )}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)]"
+      />
       <div className="relative min-w-0">
         {item.title ? (
           <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
@@ -143,15 +157,20 @@ function SeriesCard({ item }: { item: Series }) {
 
 export function SeriesPage() {
   const [genre, setGenre] = useState("Todos");
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
-  const { items: importedSeries, isLoading, retry } = useCatalogSeries();
+  const { items: importedSeries, isLoading } = useCatalogSeries();
   const seriesCatalog = useMemo<Series[]>(
     () =>
       importedSeries.map((item) => ({
         accent: "from-[#243442] to-[#171510]",
-        categories: item.categories,
-        genre: item.categories?.[0] ?? "Sem categoria",
+        categories: item.categories?.length
+          ? item.categories
+          : item.groupTitle
+            ? [item.groupTitle]
+            : ["Sem categoria"],
+        genre: item.categories?.[0] ?? item.groupTitle ?? "Sem categoria",
         id: item.id,
         posterUrl: item.posterUrl,
         seasons: item.seasonCount,
@@ -164,7 +183,9 @@ export function SeriesPage() {
     () => [
       "Todos",
       ...new Set(
-        seriesCatalog.flatMap((item) => item.categories ?? [item.genre]),
+        seriesCatalog.flatMap((item) =>
+          item.categories?.length ? item.categories : [item.genre],
+        ),
       ),
     ],
     [seriesCatalog],
@@ -178,7 +199,9 @@ export function SeriesPage() {
     seriesCatalog,
     (item, search, category) =>
       (category === "Todos" ||
-        (item.categories ?? [item.genre]).includes(category)) &&
+        (item.categories?.length ? item.categories : [item.genre]).includes(
+          category,
+        )) &&
       item.title.toLocaleLowerCase().includes(search),
     sort === "title"
       ? (first, second) => first.title.localeCompare(second.title)
@@ -189,66 +212,55 @@ export function SeriesPage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
-        <AppHeader>
-          <SearchField
-            aria-label="Buscar no catálogo"
-            className="max-w-[420px]"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar canais, filmes e séries"
-            value={query}
-          />
+      <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
+        <AppHeader className="sticky top-0 z-30 -mx-4 bg-bg/95 px-4 py-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-[30px] lg:px-[30px]">
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+            <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
+              Séries
+            </h1>
+            <div className="hidden min-w-0 items-center gap-2 lg:flex">
+              <SearchField
+                aria-label="Buscar séries"
+                className="h-10 w-[330px]"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar séries, temporadas..."
+                value={query}
+              />
+              <SelectField
+                aria-label="Filtrar por gênero"
+                className="min-w-[112px]"
+                onValueChange={setGenre}
+                options={categories.map((item) => ({
+                  label: item,
+                  value: item,
+                }))}
+                value={genre}
+                valueLabel="Gênero"
+              />
+              <SelectField
+                aria-label="Ordenar séries"
+                className="min-w-[132px]"
+                onValueChange={(value) => setSort(value as SortOption)}
+                options={[
+                  { label: "Mais recentes", value: "recent" },
+                  { label: "Título A-Z", value: "title" },
+                ]}
+                value={sort}
+                valueLabel={sort === "recent" ? "Mais recentes" : "Título A-Z"}
+              />
+            </div>
+          </div>
         </AppHeader>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="md:hidden">
           <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text">
             Séries
           </h1>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <SearchField
-              aria-label="Buscar séries"
-              className="h-10 w-full sm:w-[330px]"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar séries, temporadas..."
-              value={query}
-            />
-            <label className="relative flex h-10 items-center justify-between gap-2 rounded-xl border border-line bg-panel-2 px-3 text-xs font-semibold text-text sm:min-w-[112px]">
-              <span className="sr-only">Filtrar por gênero</span>
-              <span>Gênero</span>
-              <ChevronDown aria-hidden="true" className="size-4 text-muted" />
-              <select
-                aria-label="Filtrar por gênero"
-                className="absolute h-px w-px overflow-hidden opacity-0"
-                onChange={(event) => setGenre(event.target.value)}
-                value={genre}
-              >
-                {categories.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="relative flex h-10 items-center justify-between gap-2 rounded-xl border border-line bg-panel-2 px-3 text-xs font-semibold text-text sm:min-w-[132px]">
-              <span className="sr-only">Ordenar séries</span>
-              <span>{sort === "recent" ? "Mais recentes" : "Título A-Z"}</span>
-              <ChevronDown aria-hidden="true" className="size-4 text-muted" />
-              <select
-                aria-label="Ordenar séries"
-                className="absolute h-px w-px overflow-hidden opacity-0"
-                onChange={(event) => setSort(event.target.value as SortOption)}
-                value={sort}
-              >
-                <option value="recent">Mais recentes</option>
-                <option value="title">Título A-Z</option>
-              </select>
-            </label>
-          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {categories.map((item) => (
+        <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categories.slice(0, 3).map((item) => (
             <button
               aria-pressed={genre === item}
-              className={`h-9 shrink-0 rounded-[9px] border px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus ${genre === item ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-transparent text-muted hover:border-gold/60 hover:text-text"}`}
+              className={`h-9 shrink-0 rounded-[9px] border px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus ${genre === item ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-panel text-text hover:border-gold/60"}`}
               key={item}
               onClick={() => setGenre(item)}
               type="button"
@@ -256,39 +268,57 @@ export function SeriesPage() {
               {item}
             </button>
           ))}
+          <CategoryFilterTrigger onClick={() => setCategoryDialogOpen(true)} />
         </div>
-        {isLoading ? (
-          <ProductState
-            action={{ label: "Tentar novamente", onClick: retry }}
-            className="min-h-[240px] justify-center"
-            kind="loading"
+        <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-start">
+          <CategorySidebar
+            categories={categories}
+            isLoading={isLoading}
+            onSelect={setGenre}
+            selected={genre}
           />
-        ) : visibleSeries.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 xl:gap-3.5">
-            {visibleSeries.map((item) => (
-              <SeriesCard item={item} key={item.id} />
-            ))}
-            <div className="col-span-full h-1" ref={sentinelRef} />
-          </div>
-        ) : (
-          <ProductState
-            action={{
-              label: "Limpar filtros",
-              onClick: () => {
-                setGenre("Todos");
-                setQuery("");
-              },
-            }}
-            className="min-h-[240px] justify-center"
-            kind="catalog-empty"
-          />
-        )}
-        {hasMore && visibleSeries.length > 0 && (
-          <p className="m-0 text-center text-xs text-muted" role="status">
-            Mostrando {visibleSeries.length} de {filteredCount} séries...
-          </p>
-        )}
+          <ScrollArea className="h-[calc(100dvh-8rem)] min-w-0 flex-1">
+            {isLoading ? (
+              <CatalogGridSkeleton />
+            ) : visibleSeries.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 xl:gap-3.5">
+                {visibleSeries.map((item) => (
+                  <SeriesCard item={item} key={item.id} />
+                ))}
+                <div className="col-span-full h-1" ref={sentinelRef} />
+              </div>
+            ) : (
+              <ProductState
+                action={{
+                  label: "Limpar filtros",
+                  onClick: () => {
+                    setGenre("Todos");
+                    setQuery("");
+                  },
+                }}
+                className="min-h-[240px] justify-center"
+                kind="catalog-empty"
+              />
+            )}
+            {hasMore && visibleSeries.length > 0 && (
+              <p
+                className="mt-5 mb-0 text-center text-xs text-muted"
+                role="status"
+              >
+                Mostrando {visibleSeries.length} de {filteredCount} séries...
+              </p>
+            )}
+          </ScrollArea>
+        </div>
       </div>
+      {categoryDialogOpen && (
+        <CategoryDialog
+          categories={categories}
+          onClose={() => setCategoryDialogOpen(false)}
+          onSelect={setGenre}
+          selected={genre}
+        />
+      )}
     </AppLayout>
   );
 }

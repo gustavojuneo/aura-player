@@ -1,6 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap");
 @import "tailwindcss";
 
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
 @theme {
   --color-bg: #15130f;
   --color-panel: #201d17;
@@ -28,6 +37,14 @@
   background: #15130f;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 * {

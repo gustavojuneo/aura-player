@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Expand,
   ListVideo,
+  LoaderCircle,
   Pause,
   Play,
   Settings,
@@ -20,6 +21,7 @@ import { ProductState } from "./ui";
 
 type MediaPlayerProps = {
   descriptor: PlaybackDescriptor;
+  isLoading?: boolean;
   onBack: () => void;
 };
 
@@ -50,7 +52,11 @@ function ControlButton({
   );
 }
 
-export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
+export function MediaPlayer({
+  descriptor,
+  isLoading = false,
+  onBack,
+}: MediaPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const engineRef = useRef<Engine>(null);
   const sessionRef = useRef(0);
@@ -79,6 +85,10 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   useEffect(() => {
     void retryKey;
     const video = videoRef.current;
+    if (isLoading) {
+      setError(null);
+      return;
+    }
     if (!video || !descriptor.streamUrl) {
       setError(
         "Nenhuma fonte de reprodução foi configurada para este conteúdo.",
@@ -191,7 +201,7 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
       sessionRef.current += 1;
       cleanEngine();
     };
-  }, [descriptor, preferences.autoResume, retryKey]);
+  }, [descriptor, isLoading, preferences.autoResume, retryKey]);
 
   useEffect(() => {
     if (!preferences.hideControls || !isPlaying) {
@@ -314,11 +324,14 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
 
       <button
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
-        className={`absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text focus-visible:outline-2 focus-visible:outline-focus ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${preferences.reduceMotion ? "transition-none" : "transition-opacity hover:scale-105"}`}
+        className={`absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text focus-visible:outline-2 focus-visible:outline-focus ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${isLoading ? "cursor-wait" : ""} ${preferences.reduceMotion ? "transition-none" : "transition-opacity hover:scale-105"}`}
         onClick={togglePlay}
+        disabled={isLoading}
         type="button"
       >
-        {isPlaying ? (
+        {isLoading ? (
+          <LoaderCircle aria-hidden="true" className="size-8 animate-spin" />
+        ) : isPlaying ? (
           <Pause className="size-8" />
         ) : (
           <Play className="ml-1 size-8 fill-current" />

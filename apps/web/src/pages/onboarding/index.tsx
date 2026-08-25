@@ -2,7 +2,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "../../components/ui";
-import { importM3uSource, saveM3uSource } from "../../services/catalog-service";
+import {
+  getXtreamCredentialsFromM3uUrl,
+  importM3uSource,
+  saveM3uSource,
+  saveXtreamSource,
+} from "../../services/catalog-service";
 
 type SourceType = "m3u" | "xtream";
 
@@ -103,7 +108,7 @@ function TextInput({
 
 export function OnboardingPage() {
   const navigate = useNavigate();
-  const [sourceType, setSourceType] = useState<SourceType>("m3u");
+  const [sourceType, setSourceType] = useState<SourceType>("xtream");
   const [name, setName] = useState("Minha casa");
   const [url, setUrl] = useState("");
   const [server, setServer] = useState("");
@@ -131,21 +136,30 @@ export function OnboardingPage() {
     event.preventDefault();
     setSubmitted(true);
     setError(null);
-    if (!isValid || sourceType !== "m3u") return;
+    if (!isValid) return;
     void (async () => {
       try {
-        setProgress("Salvando fonte...");
-        const source = await saveM3uSource({ name, url });
-        await importM3uSource(source, {
-          onProgress: (phase) =>
-            setProgress(
-              phase === "fetching"
-                ? "Baixando playlist..."
-                : phase === "parsing"
-                  ? "Analisando conteúdo..."
-                  : "Indexando catálogo...",
-            ),
-        });
+        setProgress("Carregando catálogo Xtream...");
+        const m3uXtream =
+          sourceType === "m3u" ? getXtreamCredentialsFromM3uUrl(url) : null;
+        if (sourceType === "xtream" || m3uXtream) {
+          await saveXtreamSource({
+            name,
+            ...(m3uXtream ?? { server, username, password }),
+          });
+        } else {
+          const source = await saveM3uSource({ name, url });
+          await importM3uSource(source, {
+            onProgress: (phase) =>
+              setProgress(
+                phase === "fetching"
+                  ? "Baixando playlist..."
+                  : phase === "parsing"
+                    ? "Analisando conteúdo..."
+                    : "Indexando catálogo...",
+              ),
+          });
+        }
         void navigate({ to: "/app" });
       } catch (caught) {
         setError(

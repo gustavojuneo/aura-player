@@ -8,9 +8,12 @@ import {
   setActiveSourceId,
 } from "../../../services/catalog-db";
 import {
+  getXtreamCredentialsFromM3uUrl,
   importM3uSource,
   removeM3uSource,
   saveM3uSource,
+  saveXtreamSource,
+  syncXtreamSource,
 } from "../../../services/catalog-service";
 import { AppHeader, AppLayout } from "../app-shell";
 import { SourceCard } from "./components/source-card";
@@ -45,17 +48,24 @@ export function SourcesPage() {
     setFormOpen(true);
   };
   const saveSource = (values: SourceFormValues) => {
-    if (values.type !== "m3u" || !values.url) {
-      setNotice("Neste primeiro marco, apenas fontes M3U estão disponíveis.");
-      return;
-    }
     void (async () => {
       try {
-        const source = await saveM3uSource({
-          name: values.name,
-          url: values.url,
-        });
-        await importM3uSource(source);
+        const m3uXtream =
+          values.type === "m3u"
+            ? getXtreamCredentialsFromM3uUrl(values.url)
+            : null;
+        const source =
+          values.type === "xtream" || m3uXtream
+            ? await saveXtreamSource({
+                name: values.name,
+                ...(m3uXtream ?? {
+                  server: values.server,
+                  username: values.username,
+                  password: values.password,
+                }),
+              })
+            : await saveM3uSource({ name: values.name, url: values.url });
+        if (values.type === "m3u" && !m3uXtream) await importM3uSource(source);
         setActiveId(source.id);
         setActiveSourceId(source.id);
         setFormOpen(false);
@@ -79,7 +89,11 @@ export function SourcesPage() {
       setRollbackId(source.id);
       return;
     }
-    void importM3uSource(storedSource)
+    const sync =
+      source.type === "xtream"
+        ? syncXtreamSource(storedSource)
+        : importM3uSource(storedSource);
+    void sync
       .then((updatedSource) => {
         setNotice(
           updatedSource.ignoredCount > 0
@@ -140,7 +154,7 @@ export function SourcesPage() {
               ...importedSources.map((source) => ({
                 id: source.id,
                 name: source.name,
-                type: "m3u" as const,
+                type: source.type,
                 status:
                   source.status === "error"
                     ? ("error" as const)
@@ -149,7 +163,7 @@ export function SourcesPage() {
                       : source.status === "ready"
                         ? ("available" as const)
                         : ("available" as const),
-                detail: `M3U · ${source.status}`,
+                detail: `${source.type === "xtream" ? "Xtream" : "M3U"} · ${source.status}`,
                 contentCount: source.itemCount,
                 url: source.url,
               })),
@@ -194,7 +208,7 @@ export function SourcesPage() {
                 {activeId === source.id && source.contentCount === 0 && (
                   <ProductState
                     action={{
-                      label: "Sincronizar",
+                      label: "Atualizar",
                       onClick: () => refreshSource(source),
                     }}
                     kind="source-empty"
@@ -207,6 +221,7 @@ export function SourcesPage() {
             className={`${formOpen ? "flex" : "hidden"} flex-col rounded-[14px] border border-line bg-panel p-5 sm:p-[22px] lg:flex`}
           >
             <SourceForm
+              key={`${editing?.id ?? "new"}-${formOpen ? "open" : "closed"}`}
               initialSource={editing}
               onCancel={() => setFormOpen(false)}
               onSave={saveSource}

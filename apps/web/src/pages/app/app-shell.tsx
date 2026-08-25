@@ -143,7 +143,7 @@ export function Sidebar() {
   const { sources } = useCatalogSources();
   const activeSourceId = getActiveSourceId() ?? sources[0]?.id;
   return (
-    <aside className="hidden w-56 shrink-0 flex-col gap-2 border-r border-line bg-[#11100d] p-[26px_18px] lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-2 overflow-hidden border-r border-line bg-[#11100d] p-[26px_18px] lg:flex">
       <Brand />
       <SourceSelector
         activeSourceId={activeSourceId}
@@ -194,9 +194,17 @@ export function MobileNavigation() {
   );
 }
 
-export function AppHeader({ children }: { children?: ReactNode }) {
+export function AppHeader({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
-    <header className="flex min-h-12 items-center justify-between gap-4">
+    <header
+      className={`flex min-h-12 items-center justify-between gap-4 ${className ?? ""}`}
+    >
       <div className="lg:hidden">
         <Brand />
       </div>
@@ -220,7 +228,13 @@ export function AppHeader({ children }: { children?: ReactNode }) {
   );
 }
 
-export function AppLayout({ children }: { children: ReactNode }) {
+export function AppLayout({
+  children,
+  fixedViewport = false,
+}: {
+  children: ReactNode;
+  fixedViewport?: boolean;
+}) {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
@@ -231,9 +245,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <main className="flex min-h-screen bg-bg text-text">
+    <main
+      className={`flex bg-bg text-text ${fixedViewport ? "h-dvh min-h-0 overflow-hidden" : "min-h-screen"}`}
+    >
       <Sidebar />
-      <div className="min-w-0 flex-1">{children}</div>
+      <div
+        className={`min-w-0 flex-1 ${fixedViewport ? "min-h-0 overflow-hidden" : ""}`}
+      >
+        {children}
+      </div>
       <MobileNavigation />
       {sessionExpired && (
         <div className="fixed inset-0 z-40 grid place-items-center bg-bg/90 p-5 backdrop-blur-sm">

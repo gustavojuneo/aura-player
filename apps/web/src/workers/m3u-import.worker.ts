@@ -15,6 +15,7 @@ self.onmessage = async (event: MessageEvent<ImportMessage>) => {
   if (event.data.type !== "import") return;
   const { source } = event.data;
   try {
+    if (!source.url) throw new Error("A fonte M3U não possui uma URL.");
     self.postMessage({ type: "progress", phase: "fetching" });
     const response = await fetch(source.url, { redirect: "follow" });
     if (!response.ok) throw new Error(`HTTP_${response.status}`);

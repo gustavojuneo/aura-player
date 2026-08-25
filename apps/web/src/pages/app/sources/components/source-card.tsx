@@ -41,7 +41,7 @@ export function SourceCard({
   if (syncing || source.status === "importing")
     return (
       <ProductState
-        action={{ label: "Sincronizando", onClick: onRefresh }}
+        action={{ label: "Atualizando", onClick: onRefresh }}
         kind="optimistic"
       />
     );
@@ -101,6 +101,13 @@ export function SourceCard({
           type="button"
         >
           Editar
+        </button>
+        <button
+          className="text-xs font-semibold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+          onClick={onRefresh}
+          type="button"
+        >
+          Atualizar
         </button>
         <button
           aria-label={`Mais ações para ${source.name}`}

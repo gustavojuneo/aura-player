@@ -4,7 +4,25 @@ import {
   sourceSchema,
 } from "../features/catalog/catalog";
 import {
+  importXtreamCatalog,
+  refreshXtreamCatalog,
+} from "../http/xtream/catalog";
+
+export function getXtreamCredentialsFromM3uUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    const username = parsed.searchParams.get("username")?.trim();
+    const password = parsed.searchParams.get("password")?.trim();
+    if (!username || !password) return null;
+    return { server: `${parsed.protocol}//${parsed.host}`, username, password };
+  } catch {
+    return null;
+  }
+}
+
+import {
   clearActiveSourceId,
+  clearCatalogSource,
   deleteSourceData,
   getActiveSourceId,
   getCatalogEpisodes,
@@ -13,6 +31,7 @@ import {
   getCatalogSeries,
   getSeries,
   getSources,
+  putCatalogBatch,
   putSource,
   setActiveSourceId,
 } from "./catalog-db";
@@ -36,6 +55,62 @@ export async function saveM3uSource(input: { name: string; url: string }) {
   await putSource(source);
   setActiveSourceId(source.id);
   return source;
+}
+
+export async function saveXtreamSource(input: {
+  name: string;
+  server: string;
+  username: string;
+  password: string;
+}) {
+  const imported = await importXtreamCatalog(input);
+  await putSource(imported.source);
+  await clearCatalogSource(imported.source.id);
+  await putCatalogBatch(imported.items, imported.series);
+  const storedMovies = await getCatalogItems(imported.source.id, "movie");
+  const storedEpisodes = await getCatalogItems(imported.source.id, "episode");
+  const storedLive = await getCatalogItems(imported.source.id, "live");
+  const storedSource = sourceSchema.parse({
+    ...imported.source,
+    itemCount: storedLive.length + storedMovies.length + storedEpisodes.length,
+    liveCount: storedLive.length,
+    movieCount: storedMovies.length,
+    episodeCount: storedEpisodes.length,
+    status:
+      storedLive.length + storedMovies.length + storedEpisodes.length > 0
+        ? "ready"
+        : "empty",
+    refreshedAt: new Date().toISOString(),
+  });
+  await putSource(storedSource);
+  setActiveSourceId(imported.source.id);
+  window.dispatchEvent(new Event("aura-catalog-change"));
+  return storedSource;
+}
+
+export async function syncXtreamSource(source: CatalogSource) {
+  const imported = await refreshXtreamCatalog(source.id, source.name);
+  await clearCatalogSource(imported.source.id);
+  await putCatalogBatch(imported.items, imported.series);
+  const storedMovies = await getCatalogItems(imported.source.id, "movie");
+  const storedEpisodes = await getCatalogItems(imported.source.id, "episode");
+  const storedLive = await getCatalogItems(imported.source.id, "live");
+  const storedSource = sourceSchema.parse({
+    ...imported.source,
+    itemCount: storedLive.length + storedMovies.length + storedEpisodes.length,
+    liveCount: storedLive.length,
+    movieCount: storedMovies.length,
+    episodeCount: storedEpisodes.length,
+    status:
+      storedLive.length + storedMovies.length + storedEpisodes.length > 0
+        ? "ready"
+        : "empty",
+    refreshedAt: new Date().toISOString(),
+  });
+  await putSource(storedSource);
+  setActiveSourceId(storedSource.id);
+  window.dispatchEvent(new Event("aura-catalog-change"));
+  return storedSource;
 }
 
 export function importM3uSource(
