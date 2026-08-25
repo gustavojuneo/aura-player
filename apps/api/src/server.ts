@@ -518,9 +518,16 @@ async function validateRedirect(rawUrl: string, previous: URL) {
   return url;
 }
 
-async function fetchMedia(url: URL, range: string | undefined) {
+async function fetchMedia(
+  url: URL,
+  range: string | undefined,
+  requestUserAgent: string | undefined,
+) {
   let current = url;
   let useConfiguredUserAgent = true;
+  const userAgent =
+    requestUserAgent?.trim() ||
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
   for (let redirects = 0; redirects <= 5; redirects += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
@@ -530,9 +537,7 @@ async function fetchMedia(url: URL, range: string | undefined) {
         headers: {
           Accept: "*/*",
           ...(range ? { Range: range } : {}),
-          ...(useConfiguredUserAgent
-            ? { "User-Agent": env.IPTV_STREAM_USER_AGENT }
-            : {}),
+          ...(useConfiguredUserAgent ? { "User-Agent": userAgent } : {}),
         },
         redirect: "manual",
         signal: controller.signal,
@@ -599,7 +604,12 @@ app.get<{ Params: { targetId: string } }>(
     if (!target)
       return reply.code(404).send({ message: "Media target expired" });
     try {
-      const response = await fetchMedia(target.url, request.headers.range);
+      const requestUserAgent = request.headers["user-agent"];
+      const response = await fetchMedia(
+        target.url,
+        request.headers.range,
+        typeof requestUserAgent === "string" ? requestUserAgent : undefined,
+      );
       if (!response.ok || !response.body)
         return reply
           .code(response.status)
