@@ -4,20 +4,20 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
+import { env } from "./env.js";
 
 type Target = { expiresAt: number; url: URL };
 type XtreamCredentials = { server: URL; username: string; password: string };
 
 const app = Fastify({ logger: true });
 await app.register(cors, {
-  origin: process.env.CLIENT_URL ?? "http://localhost:5173",
+  origin: env.CLIENT_URL,
 });
 const targets = new Map<string, Target>();
 const xtreamSources = new Map<string, XtreamCredentials>();
 const targetTtlMs = 5 * 60 * 1000;
 const allowedHosts = new Set(
-  (process.env.IPTV_PROXY_ALLOWED_HOSTS ?? "uexme.pics")
-    .split(",")
+  env.IPTV_PROXY_ALLOWED_HOSTS.split(",")
     .map((host) => host.trim().toLowerCase())
     .filter(Boolean),
 );
@@ -599,10 +599,7 @@ app.get<{ Params: { targetId: string } }>(
           .send({ message: "Media unavailable" });
       reply.code(response.status);
       reply.header("Cache-Control", "no-store");
-      reply.header(
-        "Access-Control-Allow-Origin",
-        process.env.CLIENT_URL ?? "http://localhost:5173",
-      );
+      reply.header("Access-Control-Allow-Origin", env.CLIENT_URL);
       for (const header of [
         "content-type",
         "content-length",
@@ -627,4 +624,9 @@ app.get<{ Params: { targetId: string } }>(
 
 app.get("/health", async () => ({ status: "ok" }));
 
-await app.listen({ host: "0.0.0.0", port: Number(process.env.PORT ?? 3333) });
+export { app };
+export default app;
+
+if (!env.VERCEL) {
+  await app.listen({ host: "0.0.0.0", port: env.PORT });
+}

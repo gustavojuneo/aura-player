@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { env } from "../../env";
 
 export const playbackDescriptorSchema = z.object({
   contentId: z.string().min(1),
@@ -60,7 +61,7 @@ export function createPlaybackDescriptor(
 }
 
 export function resolvePlaybackUrl(contentId: string): string | undefined {
-  const configured = import.meta.env.VITE_PLAYBACK_URLS as string | undefined;
+  const configured = env.VITE_PLAYBACK_URLS;
   if (!configured) return undefined;
 
   try {

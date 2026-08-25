@@ -28,3 +28,6 @@ pnpm format
 The web application is available at `apps/web`. Product screens, API
 integrations, authentication, catalog, and playback will be implemented in
 later approved stages.
+
+Deployment instructions for the two Vercel projects are available in
+[`docs/deployment-vercel.md`](docs/deployment-vercel.md).
