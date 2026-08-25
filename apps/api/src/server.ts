@@ -512,9 +512,6 @@ async function validateRedirect(rawUrl: string, previous: URL) {
   if (!["http:", "https:"].includes(url.protocol))
     throw new Error("UNSUPPORTED_REDIRECT_PROTOCOL");
   const hostname = url.hostname.toLowerCase();
-  if (allowedHosts.has(hostname)) return url;
-  if (!net.isIP(hostname) || !allowedHosts.has(previous.hostname.toLowerCase()))
-    throw new Error("REDIRECT_HOST_NOT_ALLOWED");
   const addresses = await dns.lookup(hostname, { all: true });
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("REDIRECT_PRIVATE_TARGET");
@@ -523,45 +520,47 @@ async function validateRedirect(rawUrl: string, previous: URL) {
 
 async function fetchMedia(url: URL, range: string | undefined) {
   let current = url;
-  let finalReached = false;
+  let useConfiguredUserAgent = true;
   for (let redirects = 0; redirects <= 5; redirects += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
     let response: Response;
     try {
       response = await fetch(current, {
-        headers: range ? { Range: range } : undefined,
+        headers: {
+          Accept: "*/*",
+          ...(range ? { Range: range } : {}),
+          ...(useConfiguredUserAgent
+            ? { "User-Agent": env.IPTV_STREAM_USER_AGENT }
+            : {}),
+        },
         redirect: "manual",
         signal: controller.signal,
       });
+      if (response.status === 403 && useConfiguredUserAgent) {
+        await response.body?.cancel();
+        useConfiguredUserAgent = false;
+        response = await fetch(current, {
+          headers: {
+            Accept: "*/*",
+            ...(range ? { Range: range } : {}),
+          },
+          redirect: "manual",
+          signal: controller.signal,
+        });
+      }
     } finally {
       clearTimeout(timeout);
     }
     if (![301, 302, 303, 307, 308].includes(response.status)) {
-      await response.body?.cancel();
-      finalReached = true;
-      break;
+      return response;
     }
     const location = response.headers.get("location");
-    if (!location) return response;
+    await response.body?.cancel();
+    if (!location) throw new Error("REDIRECT_WITHOUT_LOCATION");
     current = await validateRedirect(location, current);
-    if (net.isIP(current.hostname)) {
-      finalReached = true;
-      break;
-    }
   }
-  if (!finalReached) throw new Error("TOO_MANY_REDIRECTS");
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
-  try {
-    return await fetch(url, {
-      headers: range ? { Range: range } : undefined,
-      redirect: "follow",
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeout);
-  }
+  throw new Error("TOO_MANY_REDIRECTS");
 }
 
 function cleanupTargets() {
@@ -596,6 +595,7 @@ app.get<{ Params: { targetId: string } }>(
   async (request, reply) => {
     cleanupTargets();
     const target = targets.get(request.params.targetId);
+    reply.header("Access-Control-Allow-Origin", env.CLIENT_URL);
     if (!target)
       return reply.code(404).send({ message: "Media target expired" });
     try {
@@ -606,7 +606,6 @@ app.get<{ Params: { targetId: string } }>(
           .send({ message: "Media unavailable" });
       reply.code(response.status);
       reply.header("Cache-Control", "no-store");
-      reply.header("Access-Control-Allow-Origin", env.CLIENT_URL);
       for (const header of [
         "content-type",
         "content-length",
@@ -625,7 +624,15 @@ app.get<{ Params: { targetId: string } }>(
       return reply.send(body);
     } catch (error) {
       request.log.error(
-        { error, targetHost: target.url.hostname },
+        {
+          errorCause:
+            error instanceof Error && error.cause instanceof Error
+              ? error.cause.message
+              : undefined,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorName: error instanceof Error ? error.name : undefined,
+          targetHost: target.url.hostname,
+        },
         "Media proxy failed",
       );
       return reply.code(502).send({ message: "Media unavailable" });
