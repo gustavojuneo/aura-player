@@ -24,6 +24,7 @@ type DetailHeroProps = {
   watchParams: Record<string, string>;
   watchLabel: string;
   extraContent?: ReactNode;
+  fitViewport?: boolean;
 };
 
 export function DetailHero({
@@ -39,6 +40,7 @@ export function DetailHero({
   watchParams,
   watchLabel,
   extraContent,
+  fitViewport = false,
 }: DetailHeroProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const imageAspectRatio = useImageAspectRatio(imageUrl);
@@ -49,10 +51,20 @@ export function DetailHero({
       : "linear-gradient(to bottom, transparent 0%, transparent 28%, rgb(21 19 15 / 11%) 39%, rgb(21 19 15 / 40%) 68%, rgb(21 19 15 / 94%) 90%, #15130fff 98%, #15130fff 100%)";
 
   return (
-    <section className="relative min-h-[430px] overflow-visible px-5 sm:min-h-[650px] sm:px-10 lg:px-[70px]">
+    <section
+      className={cn(
+        "relative overflow-visible px-5 sm:px-10 lg:px-[70px]",
+        fitViewport
+          ? "min-h-0 flex-1 overflow-hidden"
+          : "min-h-[430px] sm:min-h-[650px]",
+      )}
+    >
       <div
         className={cn(
-          "-mx-5 h-[clamp(430px,calc(100vw/var(--hero-aspect-ratio)),900px)] w-[calc(100%+2.5rem)] overflow-hidden bg-top bg-no-repeat shadow-[inset_0_80px_100px_-35px_rgb(0_0_0_/_88%)] sm:-mx-10 sm:h-[clamp(650px,calc(100vw/var(--hero-aspect-ratio)),900px)] sm:w-[calc(100%+5rem)] lg:-mx-[70px] lg:w-[calc(100%+140px)]",
+          fitViewport
+            ? "absolute inset-x-0 top-0 h-full"
+            : "-mx-5 h-[clamp(430px,calc(100vw/var(--hero-aspect-ratio)),900px)] w-[calc(100%+2.5rem)] sm:-mx-10 sm:h-[clamp(650px,calc(100vw/var(--hero-aspect-ratio)),900px)] sm:w-[calc(100%+5rem)] lg:-mx-[70px] lg:w-[calc(100%+140px)]",
+          "overflow-hidden bg-top bg-no-repeat shadow-[inset_0_80px_100px_-35px_rgb(0_0_0_/_88%)]",
           kind === "movie" ? "bg-[#6f441e]" : "bg-[#284151]",
         )}
         style={
@@ -66,7 +78,14 @@ export function DetailHero({
           } as CSSProperties
         }
       />
-      <div className="relative z-20 -mt-[105px] flex max-w-[720px] flex-col gap-3.5 pb-4 sm:-mt-[336px] sm:pb-0">
+      <div
+        className={cn(
+          "relative z-20 flex max-w-[720px] flex-col justify-end gap-3.5",
+          fitViewport
+            ? "h-full pb-8 sm:pb-10"
+            : "-mt-[105px] pb-4 sm:-mt-[336px] sm:pb-0",
+        )}
+      >
         <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.08em] text-gold-bright">
           {badge}
         </p>
@@ -149,7 +168,7 @@ export function DetailCard({
   return (
     <div
       className={cn(
-        "group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end gap-1.5 overflow-hidden rounded-xl border border-line p-3 transition-transform hover:-translate-y-1",
+        "group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end gap-1.5 overflow-hidden rounded-xl border border-line p-3 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1",
         accent === "blue" ? "bg-[#253844]" : "bg-[#633f20]",
         className,
       )}
@@ -165,7 +184,9 @@ export function DetailCard({
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-white/5" />
-      <div className="relative z-10 min-w-0">{children}</div>
+      <div className="relative z-10 flex min-w-0 flex-col gap-1.5">
+        {children}
+      </div>
     </div>
   );
 }
