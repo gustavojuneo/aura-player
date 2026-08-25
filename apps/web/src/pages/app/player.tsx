@@ -45,11 +45,11 @@ export function PlayerPage({ kind }: PlayerPageProps) {
   const isLoading = kind === "episode" ? episode.isLoading : movie.isLoading;
   const content = item ?? titles[contentId] ?? { title: contentId };
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
-  const playbackSource = usePlaybackSource(rawStreamUrl, kind === "live");
+  const playbackSource = usePlaybackSource(rawStreamUrl, Boolean(rawStreamUrl));
   if (playbackSource.error)
     return (
       <main className="grid min-h-screen place-items-center bg-bg p-6 text-center text-sm text-danger-strong">
-        Não foi possível preparar este canal.
+        Não foi possível preparar este conteúdo.
       </main>
     );
   const descriptor = createPlaybackDescriptor({
