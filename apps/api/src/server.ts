@@ -545,9 +545,24 @@ async function fetchMedia(url: URL, range: string | undefined) {
     }
     const location = response.headers.get("location");
     if (!location) return response;
+    await response.body?.cancel();
     current = await validateRedirect(location, current);
   }
-  throw new Error("TOO_MANY_REDIRECTS");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+  try {
+    return await fetch(url, {
+      headers: {
+        Accept: "*/*",
+        ...(range ? { Range: range } : {}),
+        "User-Agent": env.IPTV_STREAM_USER_AGENT,
+      },
+      redirect: "follow",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function cleanupTargets() {
