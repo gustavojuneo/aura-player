@@ -1,5 +1,7 @@
 import dns from "node:dns/promises";
 import net from "node:net";
+import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 
@@ -51,20 +53,61 @@ async function validateTarget(rawUrl: unknown) {
   return url;
 }
 
+async function validateRedirect(rawUrl: string, previous: URL) {
+  const url = new URL(rawUrl, previous);
+  if (!["http:", "https:"].includes(url.protocol))
+    throw new Error("UNSUPPORTED_REDIRECT_PROTOCOL");
+  const hostname = url.hostname.toLowerCase();
+  if (allowedHosts.has(hostname)) return url;
+  if (!net.isIP(hostname) || !allowedHosts.has(previous.hostname.toLowerCase()))
+    throw new Error("REDIRECT_HOST_NOT_ALLOWED");
+  const addresses = await dns.lookup(hostname, { all: true });
+  if (addresses.some(({ address }) => isPrivateAddress(address)))
+    throw new Error("REDIRECT_PRIVATE_TARGET");
+  return url;
+}
+
 async function fetchMedia(url: URL, range: string | undefined) {
   let current = url;
+  let finalReached = false;
   for (let redirects = 0; redirects <= 5; redirects += 1) {
-    const response = await fetch(current, {
-      headers: range ? { Range: range } : undefined,
-      redirect: "manual",
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    let response: Response;
+    try {
+      response = await fetch(current, {
+        headers: range ? { Range: range } : undefined,
+        redirect: "manual",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      await response.body?.cancel();
+      finalReached = true;
+      break;
+    }
     const location = response.headers.get("location");
     if (!location) return response;
-    current = await validateTarget(new URL(location, current).toString());
+    current = await validateRedirect(location, current);
+    if (net.isIP(current.hostname)) {
+      finalReached = true;
+      break;
+    }
   }
-  throw new Error("TOO_MANY_REDIRECTS");
+  if (!finalReached) throw new Error("TOO_MANY_REDIRECTS");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+  try {
+    return await fetch(url, {
+      headers: range ? { Range: range } : undefined,
+      redirect: "follow",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function cleanupTargets() {
@@ -122,7 +165,13 @@ app.get<{ Params: { targetId: string } }>(
         const value = response.headers.get(header);
         if (value) reply.header(header, value);
       }
-      return reply.send(response.body);
+      const body = Readable.fromWeb(
+        response.body as unknown as NodeReadableStream,
+      );
+      reply.raw.on("close", () => {
+        if (!reply.raw.writableFinished) body.destroy();
+      });
+      return reply.send(body);
     } catch {
       return reply.code(502).send({ message: "Media unavailable" });
     }
