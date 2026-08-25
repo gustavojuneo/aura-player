@@ -48,7 +48,8 @@ function newestFavorites<T extends { id: string }>(
   const itemsById = new Map(items.map((item) => [item.id, item]));
   return favorites
     .filter((favorite) => favorite.kind === kind)
-    .toReversed()
+    .slice()
+    .reverse()
     .flatMap((favorite) => {
       const item = itemsById.get(favorite.id);
       return item ? [item] : [];

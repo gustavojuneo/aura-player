@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { MediaPlayer } from "../../components/media-player";
 import {
   createPlaybackDescriptor,
@@ -9,6 +10,7 @@ import {
   useCatalogItem,
 } from "../../hooks/use-catalog-data";
 import { usePlaybackSource } from "../../hooks/use-playback-source";
+import { recordRecentChannel } from "../../services/recent-channels";
 
 type PlayerPageProps = { kind: "live" | "movie" | "episode" };
 
@@ -44,6 +46,9 @@ export function PlayerPage({ kind }: PlayerPageProps) {
     kind === "episode" ? params.seriesId : undefined,
   );
   const item = kind === "episode" ? episode.item : catalogItem.item;
+  useEffect(() => {
+    if (kind === "live" && item?.kind === "live") recordRecentChannel(item);
+  }, [item, kind]);
   const isLoading =
     kind === "episode" ? episode.isLoading : catalogItem.isLoading;
   const content = item ?? titles[contentId] ?? { title: contentId };

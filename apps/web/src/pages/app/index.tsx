@@ -1,131 +1,258 @@
-import { ChevronRight, Info } from "lucide-react";
-import type { ReactNode } from "react";
-
+import { Link } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Info, Radio } from "lucide-react";
 import {
-  Button,
-  LiveBadge,
-  ProductState,
-  ProgressBar,
-  SearchField,
-} from "../../components/ui";
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import { ProductState } from "../../components/ui";
+import type {
+  CatalogItem,
+  CatalogSeries,
+} from "../../features/catalog/catalog";
 import {
   useCatalogItems,
-  useCatalogSources,
+  useCatalogSeries,
 } from "../../hooks/use-catalog-data";
-import { AppHeader, AppLayout, Icon } from "./app-shell";
-
-type ContentCard = {
-  accent: string;
-  category?: string;
-  meta: string;
-  progress?: number;
-  title: string;
-};
+import {
+  loadRecentChannels,
+  type RecentChannel,
+  recentChannelsEvent,
+} from "../../services/recent-channels";
+import { AppLayout, Icon } from "./app-shell";
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <h2 className="m-0 font-display text-[18px] font-semibold tracking-[-0.03em] text-text">
-        {children}
-      </h2>
-      <button
-        className="shrink-0 text-xs font-bold text-gold-bright hover:text-text"
-        type="button"
-      >
-        Ver tudo{" "}
-        <ChevronRight
-          aria-hidden="true"
-          className="inline size-4 align-[-3px]"
-        />
-      </button>
-    </div>
+    <h2 className="m-0 font-display text-[18px] font-semibold tracking-[-0.03em] text-text">
+      {children}
+    </h2>
   );
 }
 
-function ContentCardView({
-  card,
-  compact = false,
+function CarouselViewport({
+  children,
+  label,
 }: {
-  card: ContentCard;
-  compact?: boolean;
+  children: ReactNode;
+  label: string;
 }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [canPrevious, setCanPrevious] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+  const updateScrollState = useCallback(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    setCanPrevious(viewport.scrollLeft > 1);
+    setCanNext(
+      viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1,
+    );
+  }, []);
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    updateScrollState();
+    viewport.addEventListener("scroll", updateScrollState, { passive: true });
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(viewport);
+    return () => {
+      viewport.removeEventListener("scroll", updateScrollState);
+      observer.disconnect();
+    };
+  }, [updateScrollState]);
+  const move = (direction: number) =>
+    viewportRef.current?.scrollBy({
+      behavior: "smooth",
+      left:
+        direction *
+        Math.max((viewportRef.current?.clientWidth ?? 0) * 0.82, 240),
+    });
   return (
-    <article
-      className={`group relative flex shrink-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${card.accent} p-3.5 transition-transform hover:-translate-y-1 ${compact ? "h-[110px] w-[calc((100%-36px)/4)] min-w-[180px]" : "h-[210px] w-[calc((100%-36px)/4)] min-w-[190px]"}`}
+    <section
+      aria-label={label}
+      className="relative -mx-4 min-w-0 sm:-mx-6 lg:-mx-8"
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-white/5" />
-      {card.category && (
-        <span className="relative mb-auto self-start">
-          <LiveBadge />
-        </span>
-      )}
-      <div className="relative">
-        {card.title ? (
-          <h3 className="m-0 truncate text-sm font-bold text-text">
-            {card.title}
-          </h3>
-        ) : (
-          <div className="relative">
-            <ProductState compact kind="metadata" />
-          </div>
-        )}
-        <p className="m-1.5 truncate text-[11px] text-[#d0c8bb]">{card.meta}</p>
-        {card.progress !== undefined && (
-          <ProgressBar className="h-1" value={card.progress} />
-        )}
-      </div>
-      <button
-        aria-label={`Assistir ${card.title}`}
-        className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-black/30 text-text opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-        type="button"
+      <div
+        className="overflow-x-auto overflow-y-visible scroll-smooth px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8"
+        ref={viewportRef}
       >
-        <Icon className="size-4" name="play" />
-      </button>
-    </article>
-  );
-}
-
-function FeaturedHero({ title }: { title: string }) {
-  return (
-    <section className="relative isolate flex min-h-[250px] overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-[#5f4c43] via-[#273c4d] to-[#171510] p-6 md:min-h-[240px] md:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(227,168,59,0.18),transparent_30%),linear-gradient(90deg,rgba(22,19,15,0.96),rgba(22,19,15,0.2))]" />
-      <div className="relative flex max-w-[510px] flex-col items-start justify-end gap-3">
-        <p className="m-0 text-[11px] font-extrabold tracking-[0.1em] text-gold-bright">
-          EM DESTAQUE
-        </p>
-        <h1 className="m-0 font-display text-[28px] font-bold leading-tight tracking-[-0.05em] text-text md:text-[35px]">
-          {title}
-        </h1>
-        <p className="m-0 max-w-[470px] text-sm leading-[1.45] text-[#ddd5c8]">
-          Uma expedição atravessa o último sinal conhecido para encontrar uma
-          cidade que não deveria existir.
-        </p>
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          <Button className="h-11 px-5" variant="primary">
-            <Icon className="size-4" name="play" /> Assistir
-          </Button>
-          <Button className="h-11 px-5" variant="secondary">
-            <Info className="size-4" /> Ver detalhes
-          </Button>
-        </div>
+        <div className="flex min-w-max flex-nowrap gap-3">{children}</div>
       </div>
+      {canPrevious && (
+        <CarouselButton direction="previous" onClick={() => move(-1)} />
+      )}
+      {canNext && <CarouselButton direction="next" onClick={() => move(1)} />}
     </section>
   );
 }
 
-function ContentRail({
-  cards,
-  compact = false,
+function CarouselButton({
+  direction,
+  onClick,
 }: {
-  cards: ContentCard[];
-  compact?: boolean;
+  direction: "next" | "previous";
+  onClick: () => void;
 }) {
+  const next = direction === "next";
   return (
-    <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {cards.map((card) => (
-        <ContentCardView card={card} compact={compact} key={card.title} />
-      ))}
-    </div>
+    <button
+      aria-label={next ? "Próximos itens" : "Itens anteriores"}
+      className={`absolute inset-y-0 z-20 flex w-14 items-center justify-center bg-gradient-to-${next ? "l" : "r"} from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus ${next ? "right-0" : "left-0"}`}
+      onClick={onClick}
+      type="button"
+    >
+      <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
+        {next ? (
+          <ChevronRight aria-hidden="true" className="size-5" />
+        ) : (
+          <ChevronLeft aria-hidden="true" className="size-5" />
+        )}
+      </span>
+    </button>
+  );
+}
+
+function MediaCard({
+  item,
+  kind,
+  index,
+}: {
+  item: CatalogItem | CatalogSeries;
+  kind: "movie" | "series";
+  index: number;
+}) {
+  const isMovie = kind === "movie";
+  const imageUrl = isMovie
+    ? (item as CatalogItem).logoUrl
+    : (item as CatalogSeries).posterUrl;
+  const meta = isMovie
+    ? (item as CatalogItem).year
+      ? String((item as CatalogItem).year)
+      : "Filme"
+    : `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`;
+  return (
+    <article
+      className={`group relative flex aspect-[2/3] w-[190px] min-w-[190px] shrink-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 sm:w-[220px] sm:min-w-[220px] ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
+    >
+      {imageUrl && (
+        <img
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          src={imageUrl}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-white/5" />
+      <Link
+        aria-label={`Abrir ${item.title}`}
+        className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
+        params={isMovie ? { movieId: item.id } : { seriesId: item.id }}
+        to={isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId"}
+      />
+      <div className="relative min-w-0">
+        <h3 className="truncate text-sm font-bold text-text">{item.title}</h3>
+        <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">{meta}</p>
+      </div>
+    </article>
+  );
+}
+
+function ChannelCard({ channel }: { channel: RecentChannel }) {
+  return (
+    <article className="relative flex min-h-[126px] w-[220px] min-w-[220px] shrink-0 cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60">
+      <Link
+        aria-label={`Assistir ${channel.title}`}
+        className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"
+        params={{ channelId: channel.id }}
+        to="/app/tv/$channelId/watch"
+      />
+      <span className="relative z-10 grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-lg bg-panel-2 text-muted">
+        {channel.logoUrl ? (
+          <img
+            alt=""
+            className="size-full object-cover"
+            src={channel.logoUrl}
+          />
+        ) : (
+          <Radio aria-hidden="true" className="size-5" />
+        )}
+      </span>
+      <span className="relative z-10 min-w-0">
+        <strong className="block truncate text-sm font-bold text-text">
+          {channel.title}
+        </strong>
+        <span className="mt-1 block truncate text-[11px] text-muted">
+          {channel.groupTitle ?? "Ao vivo"}
+        </span>
+      </span>
+    </article>
+  );
+}
+
+function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
+  const isMovie = Boolean(item && "kind" in item && item.kind === "movie");
+  const imageUrl =
+    item &&
+    (isMovie
+      ? ((item as CatalogItem).backdropUrl ?? (item as CatalogItem).logoUrl)
+      : ((item as CatalogSeries).backdropUrl ??
+        (item as CatalogSeries).posterUrl));
+  const backdropFade =
+    "linear-gradient(to bottom, rgb(21 19 15 / 0%) 0%, rgb(21 19 15 / 2%) 32%, rgb(21 19 15 / 20%) 52%, rgb(21 19 15 / 62%) 74%, #15130f 100%)";
+  const detailsTo = isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId";
+  const detailsParams = isMovie
+    ? { movieId: item?.id ?? "" }
+    : { seriesId: item?.id ?? "" };
+  return (
+    <section className="relative -mx-4 min-h-[500px] w-[calc(100%+2rem)] overflow-visible px-5 sm:-mx-6 sm:min-h-[650px] sm:w-[calc(100%+3rem)] sm:px-10 lg:-mx-8 lg:w-[calc(100%+4rem)] lg:px-[70px]">
+      <div
+        className={`absolute inset-x-0 top-0 h-[500px] overflow-hidden bg-center bg-no-repeat sm:h-[650px] ${isMovie ? "bg-[#6f441e]" : "bg-[#284151]"}`}
+        style={{
+          backgroundImage: imageUrl
+            ? `${backdropFade}, url(${imageUrl})`
+            : backdropFade,
+          backgroundPosition: "center, center",
+          backgroundSize: "100% 100%, cover",
+        }}
+      />
+      <div className="absolute inset-x-5 bottom-8 z-20 flex max-w-[720px] flex-col gap-3.5 sm:inset-x-10 sm:bottom-10 lg:inset-x-[70px]">
+        <p className="m-0 text-[11px] font-extrabold tracking-[0.1em] text-gold-bright">
+          EM DESTAQUE
+        </p>
+        <h1 className="m-0 font-display text-[28px] font-bold leading-tight tracking-[-0.05em] text-text md:text-[35px]">
+          {item?.title ?? "Seu catálogo IPTV"}
+        </h1>
+        <p className="m-0 max-w-[470px] text-sm leading-[1.45] text-[#ddd5c8]">
+          {item?.description ??
+            "O conteúdo mais recente do seu catálogo, pronto para assistir."}
+        </p>
+        <div className="flex flex-wrap gap-2.5 pt-1">
+          <Link
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-gold bg-gold px-5 text-sm font-bold text-ink hover:bg-gold-bright"
+            params={
+              isMovie
+                ? { movieId: item?.id ?? "" }
+                : { seriesId: item?.id ?? "" }
+            }
+            to={
+              isMovie ? "/app/movies/$movieId/watch" : "/app/series/$seriesId"
+            }
+          >
+            <Icon className="size-4" name="play" /> Assistir
+          </Link>
+          <Link
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-panel-2 px-5 text-sm font-bold text-text hover:border-gold/60 hover:bg-panel-2/80"
+            params={detailsParams}
+            to={detailsTo}
+          >
+            <Info className="size-4" /> Ver detalhes
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -140,39 +267,38 @@ export function HomePage() {
     isLoading: movieLoading,
     retry: retryMovies,
   } = useCatalogItems("movie");
-  const { sources } = useCatalogSources();
-  const isLoading = liveLoading || movieLoading;
+  const {
+    items: seriesItems,
+    isLoading: seriesLoading,
+    retry: retrySeries,
+  } = useCatalogSeries();
+  const [recentChannels, setRecentChannels] =
+    useState<RecentChannel[]>(loadRecentChannels);
+  useEffect(() => {
+    const update = () => setRecentChannels(loadRecentChannels());
+    window.addEventListener(recentChannelsEvent, update);
+    return () => window.removeEventListener(recentChannelsEvent, update);
+  }, []);
+  const recentChannelCards: RecentChannel[] = recentChannels
+    .map((recent) => {
+      const current = liveItems.find((item) => item.id === recent.id);
+      return current
+        ? { ...recent, ...current, accessedAt: recent.accessedAt }
+        : recent;
+    })
+    .slice(0, 5);
+  const featuredMovies = movieItems.slice(0, 20);
+  const featuredSeries = seriesItems.slice(0, 20);
+  const featured = movieItems[0] ?? seriesItems[0];
+  const isLoading = liveLoading || movieLoading || seriesLoading;
   const retry = () => {
     retryLive();
     retryMovies();
+    retrySeries();
   };
-  const recentChannels: ContentCard[] = liveItems.slice(0, 8).map((item) => ({
-    accent: "from-[#33526a] to-[#171510]",
-    category: "AO VIVO",
-    meta: item.groupTitle ?? "Ao vivo",
-    title: item.title,
-  }));
-  const featuredMovies: ContentCard[] = movieItems.slice(0, 8).map((item) => ({
-    accent: "from-[#6f4b39] to-[#171510]",
-    meta: item.year ? String(item.year) : "Filme",
-    title: item.title,
-  }));
-
   return (
     <AppLayout>
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-5 lg:px-8 lg:pb-10">
-        <AppHeader>
-          <SearchField
-            aria-label="Buscar no catálogo"
-            className="max-w-[420px]"
-            placeholder="Buscar filmes, séries e canais"
-          />
-        </AppHeader>
-        <p className="m-0 text-[13px] font-semibold text-muted">
-          Boa noite <span className="text-line">·</span>{" "}
-          {sources.find((source) => source.status === "ready")?.name ??
-            "Nenhuma fonte ativa"}
-        </p>
+      <div className="flex min-h-screen w-full flex-col gap-4 px-4 pb-24 sm:px-6 lg:gap-5 lg:px-8 lg:pb-10">
         {isLoading ? (
           <ProductState
             action={{ label: "Tentar novamente", onClick: retry }}
@@ -181,7 +307,7 @@ export function HomePage() {
           />
         ) : (
           <>
-            <FeaturedHero title={movieItems[0]?.title ?? "Seu catálogo IPTV"} />
+            <FeaturedHero item={featured} />
             <section className="flex flex-col gap-3">
               <SectionHeader>Continuar assistindo</SectionHeader>
               <ProductState
@@ -192,8 +318,12 @@ export function HomePage() {
             </section>
             <section className="flex flex-col gap-3">
               <SectionHeader>Canais recentes</SectionHeader>
-              {recentChannels.length ? (
-                <ContentRail cards={recentChannels} compact />
+              {recentChannelCards.length ? (
+                <CarouselViewport label="Canais recentes">
+                  {recentChannelCards.map((channel) => (
+                    <ChannelCard channel={channel} key={channel.id} />
+                  ))}
+                </CarouselViewport>
               ) : (
                 <ProductState
                   className="min-h-[110px]"
@@ -205,7 +335,33 @@ export function HomePage() {
             <section className="flex flex-col gap-3">
               <SectionHeader>Filmes em destaque</SectionHeader>
               {featuredMovies.length ? (
-                <ContentRail cards={featuredMovies} />
+                <CarouselViewport label="Filmes em destaque">
+                  {featuredMovies.map((item, index) => (
+                    <MediaCard
+                      index={index}
+                      item={item}
+                      key={item.id}
+                      kind="movie"
+                    />
+                  ))}
+                </CarouselViewport>
+              ) : (
+                <ProductState className="min-h-[210px]" kind="catalog-empty" />
+              )}
+            </section>
+            <section className="flex flex-col gap-3">
+              <SectionHeader>Séries em destaque</SectionHeader>
+              {featuredSeries.length ? (
+                <CarouselViewport label="Séries em destaque">
+                  {featuredSeries.map((item, index) => (
+                    <MediaCard
+                      index={index}
+                      item={item}
+                      key={item.id}
+                      kind="series"
+                    />
+                  ))}
+                </CarouselViewport>
               ) : (
                 <ProductState className="min-h-[210px]" kind="catalog-empty" />
               )}
