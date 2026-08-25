@@ -613,6 +613,12 @@ async function resolveMediaRedirect(
   });
   const resolvedUrl = new URL(response.url);
   await response.body?.cancel();
+  if (
+    resolvedUrl.protocol === "http:" &&
+    resolvedUrl.hostname !== url.hostname
+  ) {
+    resolvedUrl.protocol = "https:";
+  }
   if (resolvedUrl.protocol !== "https:") {
     const error = new Error("MEDIA_REDIRECT_NOT_SECURE");
     Object.assign(error, {
