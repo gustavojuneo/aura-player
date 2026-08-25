@@ -59,6 +59,21 @@ const favoritesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "favorites",
 });
+const favoriteMoviesRoute = createRoute({
+  component: () => <FavoritesPage category="movie" />,
+  getParentRoute: () => appRoute,
+  path: "favorites/movies",
+});
+const favoriteSeriesRoute = createRoute({
+  component: () => <FavoritesPage category="series" />,
+  getParentRoute: () => appRoute,
+  path: "favorites/series",
+});
+const favoriteChannelsRoute = createRoute({
+  component: () => <FavoritesPage category="channel" />,
+  getParentRoute: () => appRoute,
+  path: "favorites/channels",
+});
 const sourcesRoute = createRoute({
   component: SourcesPage,
   getParentRoute: () => appRoute,
@@ -104,6 +119,9 @@ const routeTree = rootRoute.addChildren([
     livePlayerRoute,
     moviesRoute,
     favoritesRoute,
+    favoriteMoviesRoute,
+    favoriteSeriesRoute,
+    favoriteChannelsRoute,
     sourcesRoute,
     settingsRoute,
     movieDetailsRoute,

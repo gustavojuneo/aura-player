@@ -54,14 +54,15 @@ export function SeriesDetailsPage() {
   return (
     <main className="min-h-screen bg-bg text-text">
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
-        <Link
-          aria-label="Voltar para séries"
+        <button
+          aria-label="Voltar para página anterior"
           className="-ml-2 inline-flex h-10 items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
-          to="/app/series"
+          onClick={() => window.history.back()}
+          type="button"
         >
           <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />
           <span>Voltar</span>
-        </Link>
+        </button>
         <span className="font-display text-[17px] font-extrabold text-text">
           AURA
         </span>

@@ -8,6 +8,43 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  @keyframes favorite-slide-next {
+    from {
+      opacity: 0;
+      transform: translateX(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes favorite-slide-previous {
+    from {
+      opacity: 0;
+      transform: translateX(-18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-favorite-slide-next {
+    animation: favorite-slide-next 220ms ease-out both;
+  }
+
+  .animate-favorite-slide-previous {
+    animation: favorite-slide-previous 220ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-favorite-slide-next,
+    .animate-favorite-slide-previous {
+      animation: none;
+    }
+  }
 }
 
 @theme {

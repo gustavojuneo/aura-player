@@ -38,13 +38,14 @@ export function MovieDetailsPage() {
   return (
     <main className="min-h-screen bg-bg text-text">
       <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
-        <Link
+        <button
           className="text-sm font-bold text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
-          to="/app/movies"
+          onClick={() => window.history.back()}
+          type="button"
         >
           <span className="sm:hidden">←</span>
           <span className="hidden sm:inline">←&nbsp; Voltar</span>
-        </Link>
+        </button>
         <span className="font-display text-[17px] font-extrabold text-text">
           AURA
         </span>

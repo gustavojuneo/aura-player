@@ -4,19 +4,11 @@ export type FavoriteKind = "channel" | "movie" | "series";
 export type Favorite = { id: string; kind: FavoriteKind };
 
 const storageKey = "aura:favorites";
-const initialFavorites: Favorite[] = [
-  { id: "arena-sports", kind: "channel" },
-  { id: "prime-news", kind: "channel" },
-  { id: "cinema-24", kind: "channel" },
-  { id: "natureza-plus", kind: "channel" },
-  { id: "alem-veu-1", kind: "movie" },
-  { id: "rota-norte-1", kind: "movie" },
-  { id: "arquivo-zero-1", kind: "movie" },
-  { id: "mare-alta-1", kind: "movie" },
-  { id: "alem-do-veu-1", kind: "series" },
-  { id: "rota-norte-1", kind: "series" },
-  { id: "neon-selvagem-1", kind: "series" },
-];
+const initialFavorites: Favorite[] = [];
+
+function notifyFavoritesChanged() {
+  window.dispatchEvent(new Event("aura-favorites-change"));
+}
 
 function readFavorites(): Favorite[] {
   if (typeof window === "undefined") return initialFavorites;
@@ -50,24 +42,32 @@ function persistFavorites(favorites: Favorite[]) {
 export function useFavorites() {
   const [favorites, setFavorites] = useState<Favorite[]>(readFavorites);
 
-  useEffect(() => persistFavorites(favorites), [favorites]);
+  useEffect(() => {
+    const sync = () => setFavorites(readFavorites());
+    window.addEventListener("aura-favorites-change", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("aura-favorites-change", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   const isFavorite = (kind: FavoriteKind, id: string) =>
     favorites.some((favorite) => favorite.kind === kind && favorite.id === id);
 
   const toggleFavorite = (kind: FavoriteKind, id: string) => {
-    setFavorites((current) => {
-      const exists = current.some(
-        (favorite) => favorite.kind === kind && favorite.id === id,
-      );
-      const next = exists
-        ? current.filter(
-            (favorite) => !(favorite.kind === kind && favorite.id === id),
-          )
-        : [...current, { id, kind }];
-      persistFavorites(next);
-      return next;
-    });
+    const current = readFavorites();
+    const exists = current.some(
+      (favorite) => favorite.kind === kind && favorite.id === id,
+    );
+    const next = exists
+      ? current.filter(
+          (favorite) => !(favorite.kind === kind && favorite.id === id),
+        )
+      : [...current, { id, kind }];
+    setFavorites(next);
+    persistFavorites(next);
+    notifyFavoritesChanged();
   };
 
   return { favorites, isFavorite, toggleFavorite };
@@ -76,6 +76,7 @@ export function useFavorites() {
 export function clearFavorites() {
   try {
     window.localStorage.removeItem(storageKey);
+    notifyFavoritesChanged();
   } catch {
     // Storage may be unavailable in restricted browser contexts.
   }
