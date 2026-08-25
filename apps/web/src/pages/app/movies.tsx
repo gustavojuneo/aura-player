@@ -9,6 +9,7 @@ import { AppHeader, AppLayout } from "./app-shell";
 
 type Movie = {
   accent: string;
+  categories?: string[];
   genre: string;
   id: string;
   logoUrl?: string;
@@ -151,7 +152,8 @@ export function MoviesPage() {
     () =>
       importedMovies.map((movie) => ({
         accent: "from-[#243442] to-[#171510]",
-        genre: movie.groupTitle ?? "Outros",
+        categories: movie.categories,
+        genre: movie.categories?.[0] ?? "Sem categoria",
         id: movie.id,
         logoUrl: movie.logoUrl,
         metadata: movie.year ? String(movie.year) : "Filme",
@@ -161,7 +163,12 @@ export function MoviesPage() {
   );
 
   const categories = useMemo(
-    () => ["Todos", ...new Set(movieCatalog.map((movie) => movie.genre))],
+    () => [
+      "Todos",
+      ...new Set(
+        movieCatalog.flatMap((movie) => movie.categories ?? [movie.genre]),
+      ),
+    ],
     [movieCatalog],
   );
   const {
@@ -172,7 +179,8 @@ export function MoviesPage() {
   } = useInfiniteCatalog(
     movieCatalog,
     (movie, search, category) =>
-      (category === "Todos" || movie.genre === category) &&
+      (category === "Todos" ||
+        (movie.categories ?? [movie.genre]).includes(category)) &&
       movie.title.toLocaleLowerCase().includes(search),
     sort === "title"
       ? (first, second) => first.title.localeCompare(second.title)

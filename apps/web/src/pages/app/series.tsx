@@ -9,6 +9,7 @@ import { AppHeader, AppLayout } from "./app-shell";
 
 type Series = {
   accent: string;
+  categories?: string[];
   genre: string;
   id: string;
   posterUrl?: string;
@@ -149,7 +150,8 @@ export function SeriesPage() {
     () =>
       importedSeries.map((item) => ({
         accent: "from-[#243442] to-[#171510]",
-        genre: item.groupTitle ?? "Outros",
+        categories: item.categories,
+        genre: item.categories?.[0] ?? "Sem categoria",
         id: item.id,
         posterUrl: item.posterUrl,
         seasons: item.seasonCount,
@@ -159,7 +161,12 @@ export function SeriesPage() {
   );
 
   const categories = useMemo(
-    () => ["Todos", ...new Set(seriesCatalog.map((item) => item.genre))],
+    () => [
+      "Todos",
+      ...new Set(
+        seriesCatalog.flatMap((item) => item.categories ?? [item.genre]),
+      ),
+    ],
     [seriesCatalog],
   );
   const {
@@ -170,7 +177,8 @@ export function SeriesPage() {
   } = useInfiniteCatalog(
     seriesCatalog,
     (item, search, category) =>
-      (category === "Todos" || item.genre === category) &&
+      (category === "Todos" ||
+        (item.categories ?? [item.genre]).includes(category)) &&
       item.title.toLocaleLowerCase().includes(search),
     sort === "title"
       ? (first, second) => first.title.localeCompare(second.title)

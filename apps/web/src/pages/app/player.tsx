@@ -5,6 +5,7 @@ import {
   resolvePlaybackUrl,
 } from "../../features/playback/playback";
 import { useCatalogItem } from "../../hooks/use-catalog-data";
+import { usePlaybackSource } from "../../hooks/use-playback-source";
 
 type PlayerPageProps = { kind: "live" | "movie" | "episode" };
 
@@ -34,6 +35,8 @@ export function PlayerPage({ kind }: PlayerPageProps) {
         : (params.episodeId ?? "episode-4");
   const { item, isLoading } = useCatalogItem(contentId);
   const content = item ?? titles[contentId] ?? { title: contentId };
+  const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
+  const playbackSource = usePlaybackSource(rawStreamUrl, kind === "live");
   if (isLoading) {
     return (
       <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
@@ -41,13 +44,26 @@ export function PlayerPage({ kind }: PlayerPageProps) {
       </main>
     );
   }
+  if (playbackSource.isLoading)
+    return (
+      <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
+        Preparando stream...
+      </main>
+    );
+  if (playbackSource.error)
+    return (
+      <main className="grid min-h-screen place-items-center bg-bg p-6 text-center text-sm text-danger-strong">
+        Não foi possível preparar este canal.
+      </main>
+    );
   const descriptor = createPlaybackDescriptor({
     contentId,
+    delivery: item?.delivery,
     isLive: kind === "live",
     position: undefined,
     secondaryTitle:
       "secondaryTitle" in content ? content.secondaryTitle : item?.groupTitle,
-    streamUrl: item?.streamUrl ?? resolvePlaybackUrl(contentId),
+    streamUrl: playbackSource.source,
     title: content.title,
   });
 

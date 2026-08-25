@@ -86,7 +86,28 @@ export async function removeM3uSource(sourceId: string) {
 export async function loadActiveCatalog(kind: CatalogItem["kind"]) {
   const sourceId = getActiveSourceId();
   if (!sourceId) return [];
-  return getCatalogItems(sourceId, kind);
+  const items = await getCatalogItems(sourceId, kind);
+  if (kind === "live") return items;
+  const unique = new Map<string, CatalogItem>();
+  for (const item of items) {
+    const identity =
+      kind === "movie"
+        ? `${item.title.trim().toLocaleLowerCase()}|${item.year ?? ""}`
+        : `${item.seriesId ?? item.seriesTitle ?? item.title}|${item.seasonNumber ?? ""}|${item.episodeNumber ?? ""}`;
+    const existing = unique.get(identity);
+    if (!existing) {
+      unique.set(identity, item);
+      continue;
+    }
+    existing.categories = [
+      ...new Set([
+        ...(existing.categories ??
+          (existing.groupTitle ? [existing.groupTitle] : [])),
+        ...(item.categories ?? (item.groupTitle ? [item.groupTitle] : [])),
+      ]),
+    ];
+  }
+  return [...unique.values()];
 }
 
 export async function loadActiveSeries() {

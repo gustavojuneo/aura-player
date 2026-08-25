@@ -19,16 +19,18 @@ function ChannelRow({
   channel,
   favorite,
   onToggle,
+  onWatch,
 }: {
   channel: Channel;
   favorite: boolean;
   onToggle: () => void;
+  onWatch: () => void;
 }) {
   return (
     <button
       aria-pressed={favorite}
       className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${favorite ? "border-gold bg-[#3b2d18]" : "border-line bg-panel hover:border-gold/50"}`}
-      onClick={onToggle}
+      onClick={onWatch}
       type="button"
     >
       <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
@@ -56,11 +58,25 @@ function ChannelRow({
           {channel.current}
         </span>
       </span>
-      <Heart
-        aria-hidden="true"
-        className={`size-5 shrink-0 ${favorite ? "fill-gold text-gold" : "text-gold-bright"}`}
-        strokeWidth={1.8}
-      />
+      <button
+        aria-label={
+          favorite
+            ? `Remover ${channel.name} dos favoritos`
+            : `Favoritar ${channel.name}`
+        }
+        className="shrink-0 rounded-md p-1 focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggle();
+        }}
+        type="button"
+      >
+        <Heart
+          aria-hidden="true"
+          className={`size-5 shrink-0 ${favorite ? "fill-gold text-gold" : "text-gold-bright"}`}
+          strokeWidth={1.8}
+        />
+      </button>
     </button>
   );
 }
@@ -95,7 +111,7 @@ function CategoryList({
   );
 }
 
-function ProgramPanel() {
+function ProgramPanel({ channel }: { channel?: Channel }) {
   const navigate = useNavigate();
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-xl bg-panel p-4 sm:p-[18px] lg:flex-1">
@@ -106,10 +122,10 @@ function ProgramPanel() {
       </div>
       <div>
         <h2 className="m-0 font-display text-[21px] font-bold tracking-[-0.04em] text-text">
-          Arena Sports
+          {channel?.name ?? "Selecione um canal"}
         </h2>
         <p className="m-1.5 mb-0 text-sm font-bold text-gold-bright">
-          Final continental
+          {channel?.current ?? "Nenhum canal selecionado"}
         </p>
         <p className="m-1.5 mb-0 text-xs text-muted">
           20:00 <span className="text-line">·</span> 22:15
@@ -121,7 +137,7 @@ function ProgramPanel() {
         onClick={() =>
           void navigate({
             to: "/app/tv/$channelId/watch",
-            params: { channelId: "arena-sports" },
+            params: { channelId: channel?.id ?? "" },
           })
         }
         variant="primary"
@@ -134,6 +150,7 @@ function ProgramPanel() {
 }
 
 export function TvPage() {
+  const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isLoading, retry } = useCatalogState();
   const { items } = useCatalogItems("live");
@@ -203,10 +220,16 @@ export function TvPage() {
                   favorite={isFavorite("channel", channel.id)}
                   key={channel.id}
                   onToggle={() => toggleFavorite("channel", channel.id)}
+                  onWatch={() =>
+                    void navigate({
+                      to: "/app/tv/$channelId/watch",
+                      params: { channelId: channel.id },
+                    })
+                  }
                 />
               ))}
             </div>
-            <ProgramPanel />
+            <ProgramPanel channel={visibleChannels[0]} />
           </div>
         )}
       </div>

@@ -15,6 +15,7 @@ export type PlaybackDescriptor = z.infer<typeof playbackDescriptorSchema>;
 
 type PlaybackInput = {
   contentId: string;
+  delivery?: PlaybackDescriptor["delivery"];
   isLive: boolean;
   secondaryTitle?: string;
   streamUrl?: string;
@@ -49,7 +50,7 @@ export function createPlaybackDescriptor(
   const streamUrl = input.streamUrl?.trim() || undefined;
   return playbackDescriptorSchema.parse({
     contentId: input.contentId,
-    delivery: deliveryFromUrl(streamUrl),
+    delivery: input.delivery ?? deliveryFromUrl(streamUrl),
     isLive: input.isLive,
     position: input.position,
     secondaryTitle: input.secondaryTitle,

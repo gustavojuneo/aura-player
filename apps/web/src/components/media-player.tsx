@@ -12,7 +12,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import mpegts from "mpegts.js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../features/playback/playback";
 import { formatPlaybackTime } from "../features/playback/playback";
 import { usePlaybackPreferences } from "../services/playback-preferences";
@@ -61,7 +61,20 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const hideTimerRef = useRef<number | null>(null);
   const { preferences } = usePlaybackPreferences();
+
+  const revealControls = useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimerRef.current !== null)
+      window.clearTimeout(hideTimerRef.current);
+    if (preferences.hideControls && isPlaying) {
+      hideTimerRef.current = window.setTimeout(
+        () => setControlsVisible(false),
+        3000,
+      );
+    }
+  }, [isPlaying, preferences.hideControls]);
 
   useEffect(() => {
     void retryKey;
@@ -183,12 +196,16 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
   useEffect(() => {
     if (!preferences.hideControls || !isPlaying) {
       setControlsVisible(true);
+      if (hideTimerRef.current !== null)
+        window.clearTimeout(hideTimerRef.current);
       return;
     }
-    setControlsVisible(true);
-    const timer = window.setTimeout(() => setControlsVisible(false), 3000);
-    return () => window.clearTimeout(timer);
-  }, [isPlaying, preferences.hideControls]);
+    revealControls();
+    return () => {
+      if (hideTimerRef.current !== null)
+        window.clearTimeout(hideTimerRef.current);
+    };
+  }, [isPlaying, preferences.hideControls, revealControls]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -246,10 +263,10 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
     <main
       className={`relative flex h-dvh min-h-[560px] w-full flex-col overflow-hidden bg-[#080806] text-text ${preferences.reduceMotion ? "[&_button]:transition-none" : ""}`}
       onMouseMove={() => {
-        setControlsVisible(true);
+        revealControls();
       }}
       onTouchStart={() => {
-        setControlsVisible(true);
+        revealControls();
       }}
     >
       <video
@@ -266,7 +283,9 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
         />
       </video>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/90" />
-      <header className="relative z-10 flex items-start justify-between px-5 pt-6 sm:px-9 sm:pt-7">
+      <header
+        className={`relative z-10 flex items-start justify-between px-5 pt-6 transition-opacity sm:px-9 sm:pt-7 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      >
         <button
           className="flex min-w-0 items-start gap-3 text-left focus-visible:outline-2 focus-visible:outline-focus"
           onClick={onBack}
@@ -285,7 +304,9 @@ export function MediaPlayer({ descriptor, onBack }: MediaPlayerProps) {
           </span>
         </button>
         {descriptor.isLive && (
-          <span className="rounded-full bg-live px-2.5 py-1 text-[9px] font-extrabold tracking-[0.08em] text-text">
+          <span
+            className={`rounded-full bg-live px-2.5 py-1 text-[9px] font-extrabold tracking-[0.08em] text-text transition-opacity ${controlsVisible ? "opacity-100" : "opacity-0"}`}
+          >
             ● AO VIVO
           </span>
         )}

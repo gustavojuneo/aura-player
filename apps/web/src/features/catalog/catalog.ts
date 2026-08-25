@@ -9,6 +9,7 @@ export const catalogItemSchema = z.object({
   kind: catalogKindSchema,
   title: z.string().min(1),
   groupTitle: z.string().optional(),
+  categories: z.array(z.string()).default([]),
   logoUrl: z.string().url().optional(),
   tvgId: z.string().optional(),
   tvgName: z.string().optional(),
@@ -30,6 +31,7 @@ export const catalogSeriesSchema = z.object({
   sourceId: z.string().min(1),
   title: z.string().min(1),
   groupTitle: z.string().optional(),
+  categories: z.array(z.string()).default([]),
   posterUrl: z.string().url().optional(),
   seasonCount: z.number().int().nonnegative(),
   episodeCount: z.number().int().nonnegative(),
@@ -152,6 +154,7 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
   const seriesSeasons = new Map<string, Set<number>>();
   const seriesWithZeroSeason = new Set<string>();
   const seasonsWithZeroEpisode = new Set<string>();
+  const itemByIdentity = new Map<string, CatalogItem>();
   const items: CatalogItem[] = [];
   let liveCount = 0;
   let movieCount = 0;
@@ -189,6 +192,7 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
     const seriesId = seriesTitle
       ? `${sourceId}:series:${slugify(seriesTitle)}`
       : undefined;
+    const yearMatch = title.match(/\((\d{4})\)\s*$/);
     const seasonNumber =
       rawSeasonNumber === undefined
         ? undefined
@@ -204,13 +208,20 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
             ? 1
             : 0);
     const id = `${sourceId}:${kind}:${index}`;
-    const yearMatch = title.match(/\((\d{4})\)\s*$/);
+    const category = entry.attributes["group-title"]?.trim() || "Sem categoria";
+    const identity =
+      kind === "movie"
+        ? `${kind}:${slugify(title)}:${yearMatch?.[1] ?? ""}`
+        : kind === "episode"
+          ? `${kind}:${seriesId ?? slugify(title)}:${seasonNumber ?? ""}:${episodeNumber ?? ""}`
+          : id;
     const parsedItem = catalogItemSchema.safeParse({
       id,
       sourceId,
       kind,
       title,
       groupTitle: entry.attributes["group-title"] || undefined,
+      categories: [category],
       logoUrl: validUrl(entry.attributes["tvg-logo"]),
       tvgId: entry.attributes["tvg-id"] || undefined,
       tvgName: entry.attributes["tvg-name"] || undefined,
@@ -229,6 +240,12 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
       continue;
     }
     const item = parsedItem.data;
+    const duplicate = itemByIdentity.get(identity);
+    if (duplicate) {
+      duplicate.categories = [...new Set([...duplicate.categories, category])];
+      continue;
+    }
+    itemByIdentity.set(identity, item);
     items.push(item);
     if (kind === "live") liveCount += 1;
     if (kind === "movie") movieCount += 1;
@@ -240,11 +257,15 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
           sourceId,
           title: seriesTitle,
           groupTitle: item.groupTitle,
+          categories: item.categories,
           posterUrl: item.logoUrl,
           seasonCount: 0,
           episodeCount: 0,
         };
         current.episodeCount += 1;
+        current.categories = [
+          ...new Set([...current.categories, ...item.categories]),
+        ];
         const seasons = seriesSeasons.get(seriesId) ?? new Set<number>();
         if (seasonNumber !== undefined) seasons.add(seasonNumber);
         seriesSeasons.set(seriesId, seasons);
