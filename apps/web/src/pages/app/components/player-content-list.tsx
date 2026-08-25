@@ -1,0 +1,216 @@
+import { Play, Radio, X } from "lucide-react";
+
+import { ScrollArea, SelectField } from "../../../components/ui";
+import type { CatalogItem } from "../../../features/catalog/catalog";
+
+const transparentPanel =
+  "border border-white/15 bg-black/35 shadow-2xl backdrop-blur-md";
+
+export function PlayerLiveContentList({
+  avoidLiveGuide,
+  channels,
+  categories,
+  currentChannelId,
+  onCategoryChange,
+  onClose,
+  onSelectChannel,
+  selectedCategory,
+}: {
+  avoidLiveGuide: boolean;
+  channels: readonly CatalogItem[];
+  categories: readonly string[];
+  currentChannelId: string;
+  onCategoryChange: (category: string) => void;
+  onClose: () => void;
+  onSelectChannel: (channelId: string) => void;
+  selectedCategory: string;
+}) {
+  return (
+    <PlayerContentListShell
+      eyebrow="TV AO VIVO"
+      onClose={onClose}
+      avoidLiveGuide={avoidLiveGuide}
+      title={selectedCategory}
+    >
+      <SelectField
+        aria-label="Selecionar categoria de canais"
+        onValueChange={onCategoryChange}
+        options={categories.map((category) => ({
+          label: category,
+          value: category,
+        }))}
+        triggerClassName="w-full border-white/15 bg-transparent"
+        value={selectedCategory}
+      />
+      {categories.length > 0 && (
+        <span className="mt-3 px-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white/55">
+          Canais
+        </span>
+      )}
+      <ScrollArea className="mt-3 min-h-0 flex-1">
+        <div className="grid gap-1.5 pr-1">
+          {channels
+            .filter(
+              (channel) =>
+                (channel.groupTitle ??
+                  channel.categories?.[0] ??
+                  "Sem categoria") === selectedCategory,
+            )
+            .map((channel) => (
+              <button
+                aria-current={
+                  channel.id === currentChannelId ? "true" : undefined
+                }
+                className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${channel.id === currentChannelId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+                key={channel.id}
+                onClick={() => onSelectChannel(channel.id)}
+                type="button"
+              >
+                <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-black/25 text-white/65">
+                  {channel.logoUrl ? (
+                    <img
+                      alt=""
+                      className="size-full object-cover"
+                      src={channel.logoUrl}
+                    />
+                  ) : (
+                    <Radio aria-hidden="true" className="size-4" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+                  {channel.title}
+                </span>
+                {channel.id === currentChannelId && (
+                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.08em] text-gold-bright">
+                    Atual
+                  </span>
+                )}
+              </button>
+            ))}
+        </div>
+      </ScrollArea>
+    </PlayerContentListShell>
+  );
+}
+
+export function PlayerSeriesContentList({
+  avoidLiveGuide,
+  currentEpisodeId,
+  episodes,
+  onClose,
+  onSeasonChange,
+  onSelectEpisode,
+  seasons,
+  selectedSeason,
+}: {
+  avoidLiveGuide: boolean;
+  currentEpisodeId: string;
+  episodes: readonly CatalogItem[];
+  onClose: () => void;
+  onSeasonChange: (season: number) => void;
+  onSelectEpisode: (episode: CatalogItem) => void;
+  seasons: readonly number[];
+  selectedSeason: number;
+}) {
+  const visibleEpisodes = episodes.filter(
+    (episode) => (episode.seasonNumber ?? 1) === selectedSeason,
+  );
+
+  return (
+    <PlayerContentListShell
+      eyebrow="SÉRIE"
+      onClose={onClose}
+      avoidLiveGuide={avoidLiveGuide}
+      title={`Temporada ${selectedSeason}`}
+    >
+      <SelectField
+        aria-label="Selecionar temporada"
+        onValueChange={(value) => onSeasonChange(Number(value))}
+        options={seasons.map((season) => ({
+          label: `Temporada ${season}`,
+          value: String(season),
+        }))}
+        triggerClassName="w-full border-white/15 bg-transparent"
+        value={String(selectedSeason)}
+      />
+      <ScrollArea className="mt-3 min-h-0 flex-1">
+        <div className="grid gap-1.5 pr-1">
+          {visibleEpisodes.map((episode) => (
+            <button
+              aria-current={
+                episode.id === currentEpisodeId ? "true" : undefined
+              }
+              className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${episode.id === currentEpisodeId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+              key={episode.id}
+              onClick={() => onSelectEpisode(episode)}
+              type="button"
+            >
+              <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-black/25 text-white/65">
+                <Play aria-hidden="true" className="size-3.5 fill-current" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block truncate text-sm font-semibold text-white">
+                  {episode.title}
+                </strong>
+                <span className="mt-0.5 block text-[11px] text-white/55">
+                  Episódio {episode.episodeNumber ?? "—"}
+                </span>
+              </span>
+              {episode.id === currentEpisodeId && (
+                <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.08em] text-gold-bright">
+                  Atual
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </PlayerContentListShell>
+  );
+}
+
+function PlayerContentListShell({
+  avoidLiveGuide,
+  children,
+  eyebrow,
+  onClose,
+  title,
+}: {
+  avoidLiveGuide: boolean;
+  children: React.ReactNode;
+  eyebrow: string;
+  onClose: () => void;
+  title: string;
+}) {
+  return (
+    <div
+      aria-label="Lista de conteúdo"
+      className={`pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-end overflow-hidden bg-transparent p-4 pt-20 sm:p-8 sm:pt-24 ${avoidLiveGuide ? "bottom-[280px] sm:bottom-[300px]" : "bottom-[88px] sm:bottom-[112px]"}`}
+      role="dialog"
+    >
+      <div
+        className={`pointer-events-auto flex h-full max-h-full w-full max-w-sm flex-col overflow-hidden rounded-2xl p-4 ${transparentPanel}`}
+      >
+        <header className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold-bright">
+              {eyebrow}
+            </p>
+            <h2 className="mt-1 mb-0 truncate font-display text-xl font-bold text-white">
+              {title}
+            </h2>
+          </div>
+          <button
+            aria-label="Fechar lista de conteúdo"
+            className="grid size-8 shrink-0 place-items-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-focus"
+            onClick={onClose}
+            type="button"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        </header>
+        <div className="mt-3 flex min-h-0 flex-1 flex-col">{children}</div>
+      </div>
+    </div>
+  );
+}

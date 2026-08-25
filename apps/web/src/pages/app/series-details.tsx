@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ProductState, SelectField } from "../../components/ui";
 import { useCatalogSeriesDetails } from "../../hooks/use-catalog-data";
 import { useFavorites } from "../../services/favorites";
+import { markPlaybackNavigation } from "../../services/playback-autoplay";
 import { DetailHero, DetailHeroSkeleton } from "./components/detail-hero";
 
 const fallbackEpisodeImage = "/episode-no-image.png";
@@ -162,6 +163,7 @@ export function SeriesDetailsPage() {
             <Link
               className="group min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
               key={episode.id}
+              onClick={markPlaybackNavigation}
               params={{ episodeId: episode.id, seriesId: series.id }}
               to="/app/series/$seriesId/episodes/$episodeId/watch"
             >

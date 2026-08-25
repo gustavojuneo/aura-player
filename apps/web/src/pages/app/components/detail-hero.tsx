@@ -7,6 +7,7 @@ import {
   defaultHeroAspectRatio,
   useImageAspectRatio,
 } from "../../../hooks/use-image-aspect-ratio";
+import { markPlaybackNavigation } from "../../../services/playback-autoplay";
 import { cn } from "../../../utils/cn";
 
 type DetailHeroProps = {
@@ -119,6 +120,7 @@ export function DetailHero({
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gold bg-gold px-5 text-xs font-bold text-ink transition-colors hover:bg-gold-bright focus-visible:outline-2 focus-visible:outline-focus sm:h-12 sm:text-sm"
             params={watchParams}
+            onClick={markPlaybackNavigation}
             to={watchTo}
           >
             <Play className="size-4 fill-current" /> {watchLabel}
