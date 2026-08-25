@@ -1,10 +1,9 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Heart, Play } from "lucide-react";
 
 import { ProductState } from "../../components/ui";
 import { useCatalogSeriesDetails } from "../../hooks/use-catalog-data";
 import { useFavorites } from "../../services/favorites";
-import { AppLayout } from "./app-shell";
+import { DetailCard, DetailHero } from "./components/detail-hero";
 
 export function SeriesDetailsPage() {
   const { seriesId } = useParams({ from: "/app/series/$seriesId" });
@@ -13,6 +12,10 @@ export function SeriesDetailsPage() {
   const seasons = [
     ...new Set(episodes.map((episode) => episode.seasonNumber ?? 1)),
   ].sort((a, b) => a - b);
+  const firstSeason = seasons[0] ?? 1;
+  const seasonEpisodes = episodes
+    .filter((episode) => (episode.seasonNumber ?? 1) === firstSeason)
+    .slice(0, 4);
 
   if (isLoading)
     return (
@@ -30,86 +33,76 @@ export function SeriesDetailsPage() {
       />
     );
 
+  const category = series.categories?.[0] ?? series.groupTitle ?? "Série";
+
   return (
-    <AppLayout>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-8 lg:pb-10">
+    <main className="min-h-screen bg-bg text-text">
+      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
         <Link
-          className="inline-flex items-center gap-2 text-sm text-muted hover:text-text"
+          className="text-sm font-bold text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
           to="/app/series"
         >
-          <ArrowLeft className="size-4" /> Voltar às séries
+          <span className="sm:hidden">←</span>
+          <span className="hidden sm:inline">←&nbsp; Voltar</span>
         </Link>
-        <section className="grid gap-6 rounded-2xl border border-line bg-panel p-5 md:grid-cols-[220px_1fr] md:p-8">
-          <div className="aspect-[2/3] overflow-hidden rounded-xl bg-gradient-to-br from-[#765c3c] to-[#171510]">
-            {series.posterUrl && (
-              <img
-                alt={series.title}
-                className="size-full object-cover"
-                decoding="async"
-                src={series.posterUrl}
-              />
-            )}
-          </div>
-          <div className="flex flex-col items-start justify-end gap-4">
-            <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.1em] text-gold-bright">
-              Série
-            </p>
-            <h1 className="m-0 font-display text-3xl font-bold text-text md:text-5xl">
-              {series.title}
-            </h1>
-            <p className="m-0 text-sm text-muted">
-              {series.seasonCount} temporadas · {series.episodeCount} episódios
-              · {series.groupTitle ?? "Sem categoria"}
-            </p>
-            <button
-              className="inline-flex items-center gap-2 text-sm font-bold text-gold-bright"
-              onClick={() => toggleFavorite("series", series.id)}
-              type="button"
-            >
-              <Heart
-                className={
-                  isFavorite("series", series.id)
-                    ? "fill-gold text-gold"
-                    : "size-4"
-                }
-              />
-              {isFavorite("series", series.id) ? "Favorito" : "Favoritar"}
-            </button>
-          </div>
-        </section>
-        <section className="flex flex-col gap-3">
-          <h2 className="m-0 font-display text-2xl font-bold text-text">
+        <span className="font-display text-[17px] font-extrabold text-text">
+          AURA
+        </span>
+      </header>
+      <DetailHero
+        badge={`Série · ${series.seasonCount} temporadas`}
+        description={`Uma história de ${category.toLocaleLowerCase()} para acompanhar episódio por episódio.`}
+        imageUrl={series.posterUrl}
+        isFavorite={isFavorite("series", series.id)}
+        kind="series"
+        metadata={`${category} · ${series.episodeCount} episódios`}
+        onToggleFavorite={() => toggleFavorite("series", series.id)}
+        title={series.title}
+        watchLabel="Continuar série · E4"
+        watchParams={{
+          seriesId: series.id,
+          episodeId: seasonEpisodes[0]?.id ?? "",
+        }}
+        watchTo="/app/series/$seriesId/episodes/$episodeId/watch"
+      />
+      <section className="mx-auto flex max-w-[1300px] flex-col gap-3.5 px-5 pb-12 sm:px-10 sm:pt-3 lg:px-[70px]">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="m-0 font-display text-lg font-bold text-text sm:text-[21px]">
             Episódios
           </h2>
-          {seasons.map((season) => (
-            <div
-              className="rounded-xl border border-line bg-panel p-4"
-              key={season}
+          <span className="rounded-lg bg-panel-2 px-3 py-2 text-[11px] font-bold text-text">
+            Temporada {firstSeason} ▾
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:flex">
+          {seasonEpisodes.map((episode, index) => (
+            <Link
+              className="min-w-0 flex-1"
+              key={episode.id}
+              params={{ episodeId: episode.id, seriesId: series.id }}
+              to="/app/series/$seriesId/episodes/$episodeId/watch"
             >
-              <h3 className="m-0 text-sm font-bold text-text">
-                Temporada {season}
-              </h3>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {episodes
-                  .filter((episode) => (episode.seasonNumber ?? 1) === season)
-                  .map((episode) => (
-                    <Link
-                      className="flex items-center justify-between gap-3 rounded-lg border border-line bg-panel-2 px-3 py-3 text-sm text-text hover:border-gold"
-                      key={episode.id}
-                      params={{ episodeId: episode.id, seriesId: series.id }}
-                      to="/app/series/$seriesId/episodes/$episodeId/watch"
-                    >
-                      <span className="min-w-0 truncate">
-                        E{episode.episodeNumber ?? "-"} · {episode.title}
-                      </span>
-                      <Play className="size-4 shrink-0 text-gold" />
-                    </Link>
-                  ))}
-              </div>
-            </div>
+              <DetailCard
+                accent={index % 2 ? "amber" : "blue"}
+                className={
+                  index === seasonEpisodes.length - 1
+                    ? "border-gold"
+                    : undefined
+                }
+              >
+                <span className="truncate text-sm font-bold text-text">
+                  {episode.episodeNumber ?? index + 1}. {episode.title}
+                </span>
+                <span className="truncate text-[11px] text-muted">
+                  {index === seasonEpisodes.length - 1
+                    ? "Próximo · 48 min"
+                    : "Episódio"}
+                </span>
+              </DetailCard>
+            </Link>
           ))}
-        </section>
-      </main>
-    </AppLayout>
+        </div>
+      </section>
+    </main>
   );
 }

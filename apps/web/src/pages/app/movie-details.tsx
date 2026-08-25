@@ -1,15 +1,20 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Heart, Play } from "lucide-react";
+import { useMemo } from "react";
 
-import { Button, ProductState } from "../../components/ui";
-import { useCatalogItem } from "../../hooks/use-catalog-data";
+import { ProductState } from "../../components/ui";
+import { useCatalogItem, useCatalogItems } from "../../hooks/use-catalog-data";
 import { useFavorites } from "../../services/favorites";
-import { AppLayout } from "./app-shell";
+import { DetailCard, DetailHero } from "./components/detail-hero";
 
 export function MovieDetailsPage() {
   const { movieId } = useParams({ from: "/app/movies/$movieId" });
   const { item, isLoading } = useCatalogItem(movieId);
+  const { items: movies } = useCatalogItems("movie");
   const { isFavorite, toggleFavorite } = useFavorites();
+  const relatedMovies = useMemo(
+    () => movies.filter((movie) => movie.id !== movieId).slice(0, 4),
+    [movieId, movies],
+  );
 
   if (isLoading)
     return (
@@ -27,60 +32,60 @@ export function MovieDetailsPage() {
       />
     );
 
+  const category = item.categories?.[0] ?? item.groupTitle ?? "Filme";
+
   return (
-    <AppLayout>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pb-24 pt-6 sm:px-8 lg:pb-10">
+    <main className="min-h-screen bg-bg text-text">
+      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
         <Link
-          className="inline-flex items-center gap-2 text-sm text-muted hover:text-text"
+          className="text-sm font-bold text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
           to="/app/movies"
         >
-          <ArrowLeft className="size-4" /> Voltar aos filmes
+          <span className="sm:hidden">←</span>
+          <span className="hidden sm:inline">←&nbsp; Voltar</span>
         </Link>
-        <section className="grid gap-6 rounded-2xl border border-line bg-panel p-5 md:grid-cols-[220px_1fr] md:p-8">
-          <div className="aspect-[2/3] overflow-hidden rounded-xl bg-gradient-to-br from-[#765c3c] to-[#171510]">
-            {item.logoUrl && (
-              <img
-                alt={item.title}
-                className="size-full object-cover"
-                decoding="async"
-                src={item.logoUrl}
-              />
-            )}
-          </div>
-          <div className="flex flex-col items-start justify-end gap-4">
-            <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.1em] text-gold-bright">
-              Filme
-            </p>
-            <h1 className="m-0 font-display text-3xl font-bold text-text md:text-5xl">
-              {item.title}
-            </h1>
-            <p className="m-0 text-sm text-muted">
-              {item.year ?? "Ano não informado"} ·{" "}
-              {item.groupTitle ?? "Sem categoria"}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-gold bg-gold px-[22px] text-sm font-bold text-ink"
-                params={{ movieId: item.id }}
-                to="/app/movies/$movieId/watch"
-              >
-                <Play className="size-4 fill-current" /> Assistir
-              </Link>
-              <Button
-                onClick={() => toggleFavorite("movie", item.id)}
-                variant="secondary"
-              >
-                <Heart
-                  className={
-                    isFavorite("movie", item.id) ? "fill-gold text-gold" : ""
-                  }
-                />
-                {isFavorite("movie", item.id) ? "Favorito" : "Favoritar"}
-              </Button>
-            </div>
-          </div>
-        </section>
-      </main>
-    </AppLayout>
+        <span className="font-display text-[17px] font-extrabold text-text">
+          AURA
+        </span>
+      </header>
+      <DetailHero
+        badge={`Filme · ${item.year ?? "Destaque"}`}
+        description={`Uma nova história de ${category.toLocaleLowerCase()} disponível para assistir agora no seu catálogo.`}
+        imageUrl={item.logoUrl}
+        isFavorite={isFavorite("movie", item.id)}
+        kind="movie"
+        metadata={`${item.year ?? "Ano não informado"} · ${category}`}
+        onToggleFavorite={() => toggleFavorite("movie", item.id)}
+        title={item.title}
+        watchLabel="Continuar · 42 min"
+        watchParams={{ movieId: item.id }}
+        watchTo="/app/movies/$movieId/watch"
+      />
+      <section className="mx-auto flex max-w-[1300px] flex-col gap-3.5 px-5 pb-12 sm:px-10 sm:pt-3 lg:px-[70px]">
+        <h2 className="m-0 font-display text-lg font-bold text-text sm:text-[21px]">
+          Você também pode gostar
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:flex">
+          {relatedMovies.map((movie, index) => (
+            <Link
+              className="min-w-0 flex-1"
+              key={movie.id}
+              params={{ movieId: movie.id }}
+              to="/app/movies/$movieId"
+            >
+              <DetailCard accent={index % 2 ? "amber" : "blue"}>
+                <span className="truncate text-sm font-bold text-text">
+                  {movie.title}
+                </span>
+                <span className="truncate text-[11px] text-muted">
+                  {movie.year ?? "Filme"} ·{" "}
+                  {movie.categories?.[0] ?? "Sem categoria"}
+                </span>
+              </DetailCard>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
