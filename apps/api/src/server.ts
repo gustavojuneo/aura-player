@@ -600,7 +600,11 @@ async function resolveMediaRedirect(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
   for (let redirects = 0; redirects <= 5; redirects += 1) {
     const response = await fetch(current, {
-      headers: { Accept: "*/*", "User-Agent": userAgent },
+      headers: {
+        Accept: "*/*",
+        Range: "bytes=0-0",
+        "User-Agent": userAgent,
+      },
       redirect: "manual",
     });
     if (![301, 302, 303, 307, 308].includes(response.status)) {
