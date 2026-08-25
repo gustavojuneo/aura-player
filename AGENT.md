@@ -146,6 +146,19 @@ Read `docs/architecture.md` before creating pages, components, services, or HTTP
 - Validate search parameters and route inputs.
 - Keep page-specific components inside the corresponding page directory.
 
+## Loading States
+
+- Use skeletons as the default loading pattern whenever the UI structure and
+  content shape can be represented before the data is available.
+- Prefer skeletons that preserve the final layout to reduce visual movement and
+  make loading states feel continuous.
+- Use spinners, progress indicators, or other status feedback only when a
+  skeleton is not feasible or does not communicate the state appropriately,
+  such as for an isolated action, an indeterminate operation without a stable
+  layout, or media playback buffering.
+- Loading states must remain accessible and must not be the only way users can
+  understand that an operation is in progress.
+
 ## HTTP Requests
 
 - Use Axios.

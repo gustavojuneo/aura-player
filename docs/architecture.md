@@ -207,6 +207,15 @@ Pages should:
 - avoid implementing Axios details;
 - avoid concentrating complex business rules.
 
+### Loading states
+
+Skeletons are the application's standard loading treatment. Use them whenever
+the expected content structure is known, keeping the placeholder dimensions and
+layout close to the loaded view to minimize layout shift. Use a spinner,
+progress indicator, or another status treatment only when a skeleton is not
+feasible or would not make sense, such as for an isolated action, an
+indeterminate operation without a stable content layout, or media buffering.
+
 ### `utils`
 
 Contains small, pure, generic functions.
