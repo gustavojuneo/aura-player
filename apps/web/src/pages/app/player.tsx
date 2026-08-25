@@ -45,11 +45,7 @@ export function PlayerPage({ kind }: PlayerPageProps) {
   const isLoading = kind === "episode" ? episode.isLoading : movie.isLoading;
   const content = item ?? titles[contentId] ?? { title: contentId };
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
-  const playbackSource = usePlaybackSource(
-    rawStreamUrl,
-    Boolean(rawStreamUrl),
-    kind === "episode",
-  );
+  const playbackSource = usePlaybackSource(rawStreamUrl, Boolean(rawStreamUrl));
   if (playbackSource.error)
     return (
       <main className="grid min-h-screen place-items-center bg-bg p-6 text-center text-sm text-danger-strong">
@@ -82,6 +78,7 @@ export function PlayerPage({ kind }: PlayerPageProps) {
 
   return (
     <MediaPlayer
+      autoPlay={kind === "episode"}
       descriptor={descriptor}
       isLoading={isLoading || playbackSource.isLoading}
       onBack={goBack}

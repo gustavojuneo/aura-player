@@ -20,6 +20,7 @@ import { usePlaybackPreferences } from "../services/playback-preferences";
 import { ProductState } from "./ui";
 
 type MediaPlayerProps = {
+  autoPlay?: boolean;
   descriptor: PlaybackDescriptor;
   isLoading?: boolean;
   onBack: () => void;
@@ -53,6 +54,7 @@ function ControlButton({
 }
 
 export function MediaPlayer({
+  autoPlay = false,
   descriptor,
   isLoading = false,
   onBack,
@@ -61,6 +63,7 @@ export function MediaPlayer({
   const engineRef = useRef<Engine>(null);
   const sessionRef = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(descriptor.position ?? 0);
   const [duration, setDuration] = useState(0);
@@ -86,10 +89,12 @@ export function MediaPlayer({
     void retryKey;
     const video = videoRef.current;
     if (isLoading) {
+      setIsReady(false);
       setError(null);
       return;
     }
     if (!video || !descriptor.streamUrl) {
+      setIsReady(false);
       setError(
         "Nenhuma fonte de reprodução foi configurada para este conteúdo.",
       );
@@ -121,9 +126,21 @@ export function MediaPlayer({
     };
 
     cleanEngine();
+    setIsReady(false);
     setError(null);
+    setIsMuted(false);
+    video.muted = false;
     setCurrentTime(preferences.autoResume ? (descriptor.position ?? 0) : 0);
     setDuration(0);
+
+    const play = (start: () => Promise<void>) => {
+      void start().catch(() => {
+        if (!autoPlay) return;
+        video.muted = true;
+        setIsMuted(true);
+        void start().catch(() => undefined);
+      });
+    };
 
     const fail = () => {
       if (session === sessionRef.current) {
@@ -145,7 +162,7 @@ export function MediaPlayer({
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (preferences.autoResume && descriptor.position && !descriptor.isLive)
           video.currentTime = descriptor.position;
-        void video.play().catch(() => undefined);
+        play(() => video.play());
       });
       hls.attachMedia(video);
       hls.loadSource(url);
@@ -159,7 +176,7 @@ export function MediaPlayer({
       player.on(mpegts.Events.ERROR, fail);
       player.attachMediaElement(video);
       player.load();
-      void Promise.resolve(player.play()).catch(() => undefined);
+      play(() => Promise.resolve(player.play()));
     } else if (descriptor.delivery === "dash") {
       void import("shaka-player")
         .then(({ default: shaka }) => {
@@ -181,7 +198,7 @@ export function MediaPlayer({
                 !descriptor.isLive
               )
                 video.currentTime = descriptor.position;
-              return video.play();
+              play(() => video.play());
             })
             .catch(fail);
         })
@@ -191,17 +208,17 @@ export function MediaPlayer({
       video.canPlayType("application/vnd.apple.mpegurl")
     ) {
       video.src = url;
-      void video.play().catch(() => undefined);
+      play(() => video.play());
     } else {
       video.src = url;
-      void video.play().catch(() => undefined);
+      play(() => video.play());
     }
 
     return () => {
       sessionRef.current += 1;
       cleanEngine();
     };
-  }, [descriptor, isLoading, preferences.autoResume, retryKey]);
+  }, [autoPlay, descriptor, isLoading, preferences.autoResume, retryKey]);
 
   useEffect(() => {
     if (!preferences.hideControls || !isPlaying) {
@@ -223,6 +240,7 @@ export function MediaPlayer({
     const onTimeUpdate = () => setCurrentTime(video.currentTime);
     const onDurationChange = () =>
       setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+    const onCanPlay = () => setIsReady(true);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     const onError = () =>
@@ -230,6 +248,7 @@ export function MediaPlayer({
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("durationchange", onDurationChange);
     video.addEventListener("loadedmetadata", onDurationChange);
+    video.addEventListener("canplay", onCanPlay);
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("error", onError);
@@ -237,11 +256,14 @@ export function MediaPlayer({
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("durationchange", onDurationChange);
       video.removeEventListener("loadedmetadata", onDurationChange);
+      video.removeEventListener("canplay", onCanPlay);
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("error", onError);
     };
   }, []);
+
+  const playerLoading = isLoading || !isReady;
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -281,6 +303,7 @@ export function MediaPlayer({
     >
       <video
         aria-label={descriptor.title}
+        autoPlay={autoPlay}
         className="absolute inset-0 size-full object-cover"
         playsInline
         ref={videoRef}
@@ -324,12 +347,12 @@ export function MediaPlayer({
 
       <button
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
-        className={`absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text focus-visible:outline-2 focus-visible:outline-focus ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${isLoading ? "cursor-wait" : ""} ${preferences.reduceMotion ? "transition-none" : "transition-opacity hover:scale-105"}`}
+        className={`absolute left-1/2 top-1/2 z-10 grid size-[88px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text focus-visible:outline-2 focus-visible:outline-focus ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${playerLoading ? "cursor-wait" : ""} ${preferences.reduceMotion ? "transition-none" : "transition-opacity hover:scale-105"}`}
         onClick={togglePlay}
-        disabled={isLoading}
+        disabled={playerLoading}
         type="button"
       >
-        {isLoading ? (
+        {playerLoading ? (
           <LoaderCircle aria-hidden="true" className="size-8 animate-spin" />
         ) : isPlaying ? (
           <Pause className="size-8" />
