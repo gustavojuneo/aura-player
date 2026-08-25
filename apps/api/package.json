@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "node --watch dist/server.js",
+    "dev": "node --watch --experimental-strip-types src/server.ts",
     "lint": "biome check .",
     "test": "node -e \"console.log('No tests configured')\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
