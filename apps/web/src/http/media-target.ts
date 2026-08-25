@@ -16,5 +16,9 @@ export async function createMediaTarget(url: string) {
 
 export async function resolveMediaUrl(url: string) {
   const response = await httpClient.post("/media-resolve", { url });
-  return mediaResolveSchema.parse(response.data).resolvedUrl;
+  const resolvedUrl = new URL(
+    mediaResolveSchema.parse(response.data).resolvedUrl,
+  );
+  if (resolvedUrl.protocol === "http:") resolvedUrl.protocol = "https:";
+  return resolvedUrl.toString();
 }

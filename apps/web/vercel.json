@@ -3,16 +3,5 @@
   "buildCommand": "cd ../.. && pnpm --filter @iptv/web build",
   "framework": "vite",
   "outputDirectory": "dist",
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "upgrade-insecure-requests"
-        }
-      ]
-    }
-  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
