@@ -36,6 +36,10 @@ import {
   setActiveSourceId,
 } from "./catalog-db";
 
+export const catalogCacheTtlMs = 24 * 60 * 60 * 1000;
+
+const catalogRefreshesInFlight = new Map<string, Promise<CatalogSource>>();
+
 export async function loadCatalogSources() {
   return getSources();
 }
@@ -122,6 +126,41 @@ export async function syncXtreamSource(source: CatalogSource) {
   setActiveSourceId(storedSource.id);
   window.dispatchEvent(new Event("aura-catalog-change"));
   return storedSource;
+}
+
+function isCatalogExpired(source: CatalogSource, now = Date.now()) {
+  if (source.status !== "ready" && source.status !== "empty") return false;
+  if (!source.refreshedAt) return true;
+  const refreshedAt = Date.parse(source.refreshedAt);
+  return (
+    !Number.isFinite(refreshedAt) || now - refreshedAt >= catalogCacheTtlMs
+  );
+}
+
+export function refreshCatalogSource(source: CatalogSource) {
+  const currentRefresh = catalogRefreshesInFlight.get(source.id);
+  if (currentRefresh) return currentRefresh;
+
+  const refresh =
+    source.type === "xtream"
+      ? syncXtreamSource(source)
+      : importM3uSource(source);
+  let trackedRefresh: Promise<CatalogSource>;
+  trackedRefresh = refresh.finally(() => {
+    if (catalogRefreshesInFlight.get(source.id) === trackedRefresh) {
+      catalogRefreshesInFlight.delete(source.id);
+    }
+  });
+  catalogRefreshesInFlight.set(source.id, trackedRefresh);
+  return trackedRefresh;
+}
+
+export function refreshExpiredCatalogSources(sources: CatalogSource[]) {
+  return Promise.allSettled(
+    sources
+      .filter(isCatalogExpired)
+      .map((source) => refreshCatalogSource(source)),
+  );
 }
 
 export function importM3uSource(

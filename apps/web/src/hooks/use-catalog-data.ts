@@ -20,6 +20,7 @@ import {
   loadCatalogSources,
   loadSeries,
   loadSeriesEpisodes,
+  refreshExpiredCatalogSources,
 } from "../services/catalog-service";
 
 function secureAssetUrl(value: unknown) {
@@ -372,14 +373,21 @@ export function useCatalogSources() {
   const load = useCallback(
     () =>
       void loadCatalogSources()
-        .then(setSources)
+        .then((loadedSources) => {
+          setSources(loadedSources);
+          void refreshExpiredCatalogSources(loadedSources);
+        })
         .finally(() => setLoading(false)),
     [],
   );
   useEffect(() => {
     load();
     window.addEventListener("aura-catalog-change", load);
-    return () => window.removeEventListener("aura-catalog-change", load);
+    window.addEventListener("focus", load);
+    return () => {
+      window.removeEventListener("aura-catalog-change", load);
+      window.removeEventListener("focus", load);
+    };
   }, [load]);
   return { sources, isLoading, retry: load };
 }

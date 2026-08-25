@@ -10,10 +10,10 @@ import {
 import {
   getXtreamCredentialsFromM3uUrl,
   importM3uSource,
+  refreshCatalogSource,
   removeM3uSource,
   saveM3uSource,
   saveXtreamSource,
-  syncXtreamSource,
 } from "../../../services/catalog-service";
 import { AppHeader, AppLayout } from "../app-shell";
 import { SourceCard } from "./components/source-card";
@@ -89,11 +89,7 @@ export function SourcesPage() {
       setRollbackId(source.id);
       return;
     }
-    const sync =
-      source.type === "xtream"
-        ? syncXtreamSource(storedSource)
-        : importM3uSource(storedSource);
-    void sync
+    void refreshCatalogSource(storedSource)
       .then((updatedSource) => {
         setNotice(
           updatedSource.ignoredCount > 0
