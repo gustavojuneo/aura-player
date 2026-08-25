@@ -23,6 +23,10 @@ import {
   type FavoriteKind,
   useFavorites,
 } from "../../services/favorites";
+import {
+  markFavoritesOrigin,
+  markPlaybackNavigation,
+} from "../../services/playback-autoplay";
 import { AppLayout } from "./app-shell";
 import { CarouselViewport } from "./components/carousel-viewport";
 import { FavoriteButton } from "./components/favorite-button";
@@ -229,6 +233,10 @@ function FavoriteChannelCard({
       <Link
         aria-label={`Assistir ${channel.title}`}
         className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={() => {
+          markFavoritesOrigin();
+          markPlaybackNavigation();
+        }}
         params={{ channelId: channel.id }}
         to="/app/tv/$channelId/watch"
       />
@@ -386,6 +394,7 @@ const MediaCard = memo(function MediaCard({
       <Link
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={markFavoritesOrigin}
         params={kind === "movie" ? { movieId: item.id } : { seriesId: item.id }}
         to={kind === "movie" ? "/app/movies/$movieId" : "/app/series/$seriesId"}
       />

@@ -16,6 +16,7 @@ import {
 import { usePlaybackSource } from "../../hooks/use-playback-source";
 import { useNextEpisodePreference } from "../../services/next-episode-preferences";
 import {
+  consumeFavoritesOrigin,
   consumePlaybackNavigation,
   markPlaybackNavigation,
 } from "../../services/playback-autoplay";
@@ -50,6 +51,7 @@ export function PlayerPage({ kind }: PlayerPageProps) {
   const [allowAutoplay, setAllowAutoplay] = useState(() =>
     consumePlaybackNavigation(),
   );
+  const [favoritesOrigin] = useState(() => consumeFavoritesOrigin());
   const contentId =
     kind === "live"
       ? (params.channelId ?? "arena-sports")
@@ -166,15 +168,19 @@ export function PlayerPage({ kind }: PlayerPageProps) {
     );
 
   const goBack = () => {
-    if (kind === "live") return void navigate({ to: "/app/tv" });
+    if (favoritesOrigin)
+      return void navigate({ replace: true, to: favoritesOrigin });
+    if (kind === "live") return void navigate({ replace: true, to: "/app/tv" });
     if (kind === "movie")
       return void navigate({
         to: "/app/movies/$movieId",
         params: { movieId: contentId },
+        replace: true,
       });
     return void navigate({
       to: "/app/series/$seriesId",
       params: { seriesId: item?.seriesId ?? "" },
+      replace: true,
     });
   };
 
