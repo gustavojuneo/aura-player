@@ -621,14 +621,6 @@ async function resolveMediaRedirect(
     });
     throw error;
   }
-  if (!response.ok) {
-    const error = new Error("MEDIA_UPSTREAM_UNAVAILABLE");
-    Object.assign(error, {
-      upstreamHost: resolvedUrl.hostname,
-      upstreamStatus: response.status,
-    });
-    throw error;
-  }
   const addresses = await dns.lookup(resolvedUrl.hostname, { all: true });
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("MEDIA_REDIRECT_PRIVATE_TARGET");
