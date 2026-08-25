@@ -665,8 +665,6 @@ app.post<{ Body: { url?: string } }>(
             ? request.headers["user-agent"]
             : undefined,
       });
-      if (resolvedUrl.protocol !== "https:")
-        throw new Error("MEDIA_REDIRECT_NOT_SECURE");
       return reply.send({ resolvedUrl: resolvedUrl.toString() });
     } catch (error) {
       request.log.error(
