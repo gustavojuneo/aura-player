@@ -1,15 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import {
   ProductState,
   ScrollArea,
   SearchField,
   SelectField,
+  VirtualizedGrid,
 } from "../../components/ui";
 import { useCatalogItems } from "../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../hooks/use-infinite-catalog";
-import { useFavorites } from "../../services/favorites";
 import { AppHeader, AppLayout } from "./app-shell";
 import { CatalogGridSkeleton } from "./components/catalog-skeleton";
 import {
@@ -17,7 +17,6 @@ import {
   CategoryFilterTrigger,
   CategorySidebar,
 } from "./components/category-dialog";
-import { FavoriteButton } from "./components/favorite-button";
 
 type Movie = {
   accent: string;
@@ -118,12 +117,10 @@ const _movies: Movie[] = [
   },
 ];
 
-function MovieCard({ movie }: { movie: Movie }) {
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite("movie", movie.id);
+const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
   return (
     <article
-      className={`group relative flex h-[238px] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1`}
+      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
       <Link
@@ -161,16 +158,9 @@ function MovieCard({ movie }: { movie: Movie }) {
           {movie.metadata}
         </p>
       </div>
-      <span className="absolute top-3 right-3 z-20">
-        <FavoriteButton
-          active={favorite}
-          label={`${favorite ? "Remover" : "Adicionar"} ${movie.title} dos favoritos`}
-          onToggle={() => toggleFavorite("movie", movie.id)}
-        />
-      </span>
     </article>
   );
-}
+});
 
 export function MoviesPage() {
   const [genre, setGenre] = useState("Todos");
@@ -277,11 +267,19 @@ export function MoviesPage() {
             {isLoading ? (
               <CatalogGridSkeleton />
             ) : visibleMovies.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 xl:gap-3.5">
-                {visibleMovies.map((movie) => (
-                  <MovieCard key={movie.id} movie={movie} />
-                ))}
-                <div className="col-span-full h-1" ref={sentinelRef} />
+              <div className="relative">
+                <VirtualizedGrid
+                  columnCount={(width) =>
+                    width < 640 ? 2 : width < 1024 ? 4 : width < 1280 ? 5 : 6
+                  }
+                  getItemKey={(movie) => movie.id}
+                  items={visibleMovies}
+                  renderItem={(movie) => <MovieCard movie={movie} />}
+                />
+                <div
+                  className="absolute inset-x-0 bottom-0 h-1"
+                  ref={sentinelRef}
+                />
               </div>
             ) : (
               <ProductState

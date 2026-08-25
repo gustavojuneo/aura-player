@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, HeartOff, Menu, Radio } from "lucide-react";
 import {
+  memo,
   type ReactNode,
   useCallback,
   useEffect,
@@ -9,7 +10,12 @@ import {
   useState,
 } from "react";
 
-import { Button, ProgressBar, Skeleton } from "../../components/ui";
+import {
+  Button,
+  ProgressBar,
+  Skeleton,
+  VirtualizedGrid,
+} from "../../components/ui";
 import type {
   CatalogItem,
   CatalogSeries,
@@ -362,78 +368,118 @@ function MediaGrid({
   onToggle: (kind: FavoriteKind, id: string) => void;
   carousel?: boolean;
 }) {
-  const media = items.map((item) =>
-    kind === "movie"
-      ? {
-          id: item.id,
-          imageUrl: (item as CatalogItem).logoUrl,
-          meta: (item as CatalogItem).year
-            ? String((item as CatalogItem).year)
-            : "Filme",
-          title: item.title,
-        }
-      : {
-          id: item.id,
-          imageUrl: (item as CatalogSeries).posterUrl,
-          meta: `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`,
-          title: item.title,
-        },
+  const media = useMemo(
+    () =>
+      items.map((item) =>
+        kind === "movie"
+          ? {
+              id: item.id,
+              imageUrl: (item as CatalogItem).logoUrl,
+              meta: (item as CatalogItem).year
+                ? String((item as CatalogItem).year)
+                : "Filme",
+              title: item.title,
+            }
+          : {
+              id: item.id,
+              imageUrl: (item as CatalogSeries).posterUrl,
+              meta: `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`,
+              title: item.title,
+            },
+      ),
+    [items, kind],
   );
+  const renderCard = (item: MediaCardItem, index: number) => (
+    <MediaCard
+      carousel={carousel}
+      item={item}
+      kind={kind}
+      onToggle={onToggle}
+      variant={index % 2 ? "amber" : "blue"}
+    />
+  );
+
+  if (!carousel) {
+    return (
+      <VirtualizedGrid
+        columnCount={(width) =>
+          width < 640 ? 2 : width < 1024 ? 4 : width < 1280 ? 5 : 6
+        }
+        getItemKey={(item) => item.id}
+        items={media}
+        renderItem={renderCard}
+      />
+    );
+  }
+
   return (
-    <div
-      className={
-        carousel
-          ? "flex min-w-max flex-nowrap gap-3"
-          : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:gap-3.5"
-      }
-    >
-      {media.map((item, index) => {
-        return (
-          <article
-            className={`group relative flex h-[230px] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 transition-transform hover:-translate-y-1 ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
-            key={item.id}
-          >
-            {item.imageUrl && (
-              <img
-                alt=""
-                className="absolute inset-0 size-full object-cover"
-                src={item.imageUrl}
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-white/5" />
-            <Link
-              aria-label={`Abrir ${item.title}`}
-              className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-focus"
-              params={
-                kind === "movie" ? { movieId: item.id } : { seriesId: item.id }
-              }
-              to={
-                kind === "movie"
-                  ? "/app/movies/$movieId"
-                  : "/app/series/$seriesId"
-              }
-            />
-            <div className="relative min-w-0">
-              <h2 className="truncate text-sm font-bold text-text">
-                {item.title}
-              </h2>
-              <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
-                {item.meta}
-              </p>
-            </div>
-            <span className="absolute top-3 right-3">
-              <FavoriteButton
-                active
-                label={`Remover ${item.title} dos favoritos`}
-                onToggle={() => onToggle(kind, item.id)}
-              />
-            </span>
-          </article>
-        );
-      })}
+    <div className="flex min-w-max flex-nowrap gap-3">
+      {media.map(renderCard)}
     </div>
   );
 }
+
+type MediaCardItem = {
+  id: string;
+  imageUrl?: string;
+  meta: string;
+  title: string;
+};
+
+const MediaCard = memo(function MediaCard({
+  carousel,
+  item,
+  kind,
+  onToggle,
+  variant,
+}: {
+  carousel: boolean;
+  item: MediaCardItem;
+  kind: "movie" | "series";
+  onToggle: (kind: FavoriteKind, id: string) => void;
+  variant: "amber" | "blue";
+}) {
+  const handleToggle = useCallback(
+    () => onToggle(kind, item.id),
+    [item.id, kind, onToggle],
+  );
+  return (
+    <article
+      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${variant === "amber" ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
+    >
+      {item.imageUrl && (
+        <img
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          decoding="async"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          src={item.imageUrl}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-white/5" />
+      <Link
+        aria-label={`Abrir ${item.title}`}
+        className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-focus"
+        params={kind === "movie" ? { movieId: item.id } : { seriesId: item.id }}
+        to={kind === "movie" ? "/app/movies/$movieId" : "/app/series/$seriesId"}
+      />
+      <div className="relative min-w-0">
+        <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
+        <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
+          {item.meta}
+        </p>
+      </div>
+      <span className="absolute top-3 right-3">
+        <FavoriteButton
+          active
+          label={`Remover ${item.title} dos favoritos`}
+          onToggle={handleToggle}
+        />
+      </span>
+    </article>
+  );
+});
 
 function CategoryFavoritesContent({
   category,

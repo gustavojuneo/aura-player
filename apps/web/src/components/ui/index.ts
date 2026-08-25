@@ -8,3 +8,4 @@ export { SelectField } from "./select";
 export { Skeleton } from "./skeleton";
 export { SourceSelector } from "./source-selector";
 export { Switch } from "./switch";
+export { VirtualizedGrid } from "./virtualized-grid";

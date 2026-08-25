@@ -4,13 +4,13 @@ export function CatalogGridSkeleton() {
   return (
     <div
       aria-label="Carregando catálogo"
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 xl:gap-3.5"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 xl:gap-3.5"
       role="status"
     >
       {Array.from({ length: 8 }, (_, index) => `catalog-skeleton-${index}`).map(
         (skeletonId) => (
           <div
-            className="flex h-[238px] flex-col justify-end rounded-xl border border-line bg-panel p-3.5"
+            className="flex aspect-[2/3] flex-col justify-end rounded-xl border border-line bg-panel p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)]"
             key={skeletonId}
           >
             <Skeleton className="h-4 w-3/4" />
