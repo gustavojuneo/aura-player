@@ -32,6 +32,16 @@ export const catalogItemSchema = z.object({
 
 export type CatalogItem = z.infer<typeof catalogItemSchema>;
 
+export const epgProgramSchema = z.object({
+  description: z.string(),
+  id: z.string().min(1),
+  start: z.string().min(1),
+  stop: z.string().min(1),
+  title: z.string().min(1),
+});
+
+export type EpgProgram = z.infer<typeof epgProgramSchema>;
+
 export const catalogSeriesSchema = z.object({
   id: z.string().min(1),
   providerId: z.string().optional(),

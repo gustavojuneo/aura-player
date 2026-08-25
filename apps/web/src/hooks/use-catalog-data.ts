@@ -1,12 +1,16 @@
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import type {
   CatalogItem,
   CatalogSeries,
   CatalogSource,
+  EpgProgram,
 } from "../features/catalog/catalog";
 import {
+  fetchXtreamEpgBatch,
   fetchXtreamMovieDetails,
   fetchXtreamSeriesDetails,
+  fetchXtreamShortEpg,
 } from "../http/xtream/catalog";
 import { getActiveSourceId, getSource } from "../services/catalog-db";
 import {
@@ -27,6 +31,105 @@ function secureAssetUrl(value: unknown) {
   } catch {
     return undefined;
   }
+}
+
+const xtreamEpgCache = new Map<string, EpgProgram[]>();
+
+function epgCacheKey(sourceId: string, channelName: string) {
+  const normalizedName = channelName
+    .toLocaleLowerCase()
+    .replace(/\s+(?:fhd|uhd|hd|sd|4k|8k)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return `${sourceId}:${normalizedName}`;
+}
+
+function cacheEpgPrograms(
+  sourceId: string,
+  programsByProviderId: Record<string, EpgProgram[]>,
+  channels: Array<{ name: string; providerId?: string }>,
+) {
+  for (const channel of channels) {
+    if (!channel.providerId) continue;
+    const programs = programsByProviderId[channel.providerId];
+    if (programs) {
+      xtreamEpgCache.set(epgCacheKey(sourceId, channel.name), programs);
+    }
+  }
+}
+
+export function useXtreamEpg(
+  sourceId: string | undefined,
+  providerId: string | undefined,
+  channelName?: string,
+) {
+  return useQuery({
+    enabled: Boolean(sourceId && providerId),
+    queryFn: async () => {
+      if (!sourceId || !providerId) return [];
+      const cachedPrograms = channelName
+        ? xtreamEpgCache.get(epgCacheKey(sourceId, channelName))
+        : undefined;
+      if (cachedPrograms) return cachedPrograms;
+      const source = await getSource(sourceId);
+      if (!source) throw new Error("Fonte Xtream indisponível.");
+      const programs = await fetchXtreamShortEpg(source, providerId);
+      if (channelName) {
+        xtreamEpgCache.set(epgCacheKey(sourceId, channelName), programs);
+      }
+      return programs;
+    },
+    queryKey: ["xtream-epg", sourceId, providerId],
+    staleTime: 60_000,
+  });
+}
+
+export function useXtreamEpgForChannels(
+  channels: Array<{ name: string; providerId?: string; sourceId: string }>,
+) {
+  const sourceId = channels[0]?.sourceId;
+  const requestChannels = channels.filter(
+    (channel) =>
+      channel.providerId &&
+      channel.sourceId === sourceId &&
+      !xtreamEpgCache.has(epgCacheKey(channel.sourceId, channel.name)),
+  );
+  const providerIds = requestChannels.flatMap((channel) =>
+    channel.providerId ? [channel.providerId] : [],
+  );
+  const query = useQuery({
+    enabled: Boolean(sourceId && providerIds.length > 0),
+    queryFn: async () => {
+      if (!sourceId) return {};
+      const source = await getSource(sourceId);
+      if (!source) throw new Error("Fonte Xtream indisponível.");
+      const programsByProviderId = await fetchXtreamEpgBatch(
+        source,
+        providerIds,
+      );
+      cacheEpgPrograms(sourceId, programsByProviderId, requestChannels);
+      return programsByProviderId;
+    },
+    queryKey: ["xtream-epg-batch", sourceId, providerIds],
+    staleTime: 60_000,
+  });
+  const programsByChannel = new Map<string, EpgProgram[]>();
+  channels.forEach((channel) => {
+    if (channel.providerId) {
+      const cachedPrograms = xtreamEpgCache.get(
+        epgCacheKey(channel.sourceId, channel.name),
+      );
+      programsByChannel.set(
+        `${channel.sourceId}:${channel.providerId}`,
+        cachedPrograms ?? query.data?.[channel.providerId] ?? [],
+      );
+    }
+  });
+  return {
+    hasError: query.isError,
+    isLoading: query.isLoading,
+    programsByChannel,
+  };
 }
 
 export function useCatalogItems(kind: CatalogItem["kind"]) {

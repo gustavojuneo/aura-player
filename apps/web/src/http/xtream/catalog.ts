@@ -5,6 +5,7 @@ import {
   type CatalogSource,
   catalogItemSchema,
   catalogSeriesSchema,
+  epgProgramSchema,
   sourceSchema,
 } from "../../features/catalog/catalog";
 import { httpClient } from "../client";
@@ -66,6 +67,30 @@ export async function fetchXtreamMovieDetails(
   return response.data as {
     info?: Record<string, unknown>;
   };
+}
+
+export async function fetchXtreamEpgBatch(
+  source: CatalogSource,
+  providerIds: string[],
+) {
+  const credentials = credentialsFor(source);
+  const response = await httpClient.post(
+    `/xtream/catalog/${encodeURIComponent(source.id)}/epg`,
+    { ...credentials, providerIds },
+  );
+  return z
+    .object({
+      programsByProviderId: z.record(z.string(), z.array(epgProgramSchema)),
+    })
+    .parse(response.data).programsByProviderId;
+}
+
+export async function fetchXtreamShortEpg(
+  source: CatalogSource,
+  providerId: string,
+) {
+  const programs = await fetchXtreamEpgBatch(source, [providerId]);
+  return programs[providerId] ?? [];
 }
 
 export async function fetchXtreamSeriesDetails(

@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import {
-  Bell,
   Clapperboard,
   Database,
   Heart,
@@ -11,7 +10,6 @@ import {
   Search,
   Settings,
   Tv,
-  User,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -24,7 +22,6 @@ import {
 } from "../../services/catalog-db";
 
 export type IconName =
-  | "bell"
   | "clapperboard"
   | "database"
   | "heart"
@@ -33,11 +30,9 @@ export type IconName =
   | "radio"
   | "search"
   | "settings"
-  | "tv"
-  | "user";
+  | "tv";
 
 const icons: Record<IconName, LucideIcon> = {
-  bell: Bell,
   clapperboard: Clapperboard,
   database: Database,
   heart: Heart,
@@ -47,7 +42,6 @@ const icons: Record<IconName, LucideIcon> = {
   search: Search,
   settings: Settings,
   tv: Tv,
-  user: User,
 };
 
 export function Icon({
@@ -209,20 +203,10 @@ export function AppHeader({
         <Brand />
       </div>
       <div className="hidden flex-1 md:block">{children}</div>
-      <div className="ml-auto flex items-center gap-4 text-muted">
+      <div className="ml-auto flex items-center gap-4 text-muted md:hidden">
         <button aria-label="Buscar" className="md:hidden" type="button">
           <Icon name="search" />
         </button>
-        <button
-          aria-label="Notificações"
-          className="hidden sm:block"
-          type="button"
-        >
-          <Icon name="bell" />
-        </button>
-        <span className="grid size-9 place-items-center rounded-full bg-gold text-xs font-extrabold text-ink">
-          M
-        </span>
       </div>
     </header>
   );

@@ -18,7 +18,7 @@ type XtreamCredentialsInput = z.infer<typeof xtreamCredentialsSchema>;
 
 const app = Fastify({ logger: true });
 await app.register(cors, {
-  origin: env.CLIENT_URL,
+  origin: [env.CLIENT_URL, /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/],
 });
 const targets = new Map<string, Target>();
 const targetTtlMs = 5 * 60 * 1000;
@@ -139,6 +139,86 @@ function numberValue(value: unknown) {
 function yearValue(value: unknown) {
   const match = text(value)?.match(/\b(\d{4})\b/);
   return match ? Number(match[1]) : undefined;
+}
+
+function decodeXtreamText(value: unknown) {
+  const raw = text(value);
+  if (!raw) return "";
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(raw) || raw.length % 4 !== 0) {
+    return raw;
+  }
+  try {
+    const decoded = Buffer.from(raw, "base64").toString("utf8").trim();
+    return decoded && !decoded.includes("\uFFFD") ? decoded : raw;
+  } catch {
+    return raw;
+  }
+}
+
+function epgDate(value: unknown, timestamp: unknown) {
+  const unix = Number(timestamp);
+  if (Number.isFinite(unix) && unix > 0) {
+    const milliseconds = unix > 1_000_000_000_000 ? unix : unix * 1000;
+    return new Date(milliseconds).toISOString();
+  }
+  const raw = text(value);
+  if (!raw) return undefined;
+  const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+  const withTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
+    ? normalized
+    : `${normalized}Z`;
+  const parsed = Date.parse(withTimezone);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : undefined;
+}
+
+function normalizeEpgPrograms(payload: unknown) {
+  const rows =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? (payload as { epg_listings?: unknown }).epg_listings
+      : undefined;
+  const listings = Array.isArray(rows)
+    ? rows
+    : rows && typeof rows === "object"
+      ? Object.values(rows)
+      : [];
+  const normalizedPrograms = listings
+    .flatMap((value, index) => {
+      if (!value || typeof value !== "object") return [];
+      const row = value as Record<string, unknown>;
+      const start = epgDate(row.start, row.start_timestamp);
+      const stop = epgDate(row.stop ?? row.end, row.stop_timestamp);
+      if (!start || !stop || Date.parse(stop) <= Date.parse(start)) return [];
+      return [
+        {
+          description: decodeXtreamText(row.description),
+          id: text(row.id) ?? String(index),
+          start,
+          stop,
+          title: decodeXtreamText(row.title) || "Sem título",
+        },
+      ];
+    })
+    .sort(
+      (first, second) => Date.parse(first.start) - Date.parse(second.start),
+    );
+
+  return normalizedPrograms.reduce<typeof normalizedPrograms>(
+    (result, program) => {
+      const previous = result.at(-1);
+      if (!previous) return [program];
+
+      const programStart = Date.parse(program.start);
+      const previousStart = Date.parse(previous.start);
+      const previousStop = Date.parse(previous.stop);
+      if (programStart <= previousStart) return result;
+      if (programStart < previousStop) {
+        result[result.length - 1] = { ...previous, stop: program.start };
+      }
+      result.push(program);
+      return result;
+    },
+    [],
+  );
 }
 
 function categoryMap(payload: unknown) {
@@ -382,6 +462,67 @@ app.post<{
       .code(502)
       .send({ message: "Não foi possível sincronizar o catálogo Xtream." });
   }
+});
+
+async function loadXtreamEpg(
+  credentials: XtreamCredentials,
+  providerId: string,
+) {
+  let payload = await fetchXtream<unknown>(
+    credentials,
+    "get_simple_data_table",
+    {
+      stream_id: providerId,
+    },
+  ).catch(() => null);
+  if (normalizeEpgPrograms(payload).length === 0) {
+    payload = await fetchXtream<unknown>(credentials, "get_simple_date_table", {
+      stream_id: providerId,
+    }).catch(() => null);
+  }
+  if (normalizeEpgPrograms(payload).length === 0) {
+    payload = await fetchXtream<unknown>(credentials, "get_short_epg", {
+      limit: "10",
+      stream_id: providerId,
+    }).catch(() => null);
+  }
+  return normalizeEpgPrograms(payload);
+}
+
+app.post<{
+  Body: XtreamCredentialsInput & { providerIds?: string[] };
+  Params: { sourceId: string };
+}>("/xtream/catalog/:sourceId/epg", async (request, reply) => {
+  const credentials = await credentialsFromBody(request.body).catch(() => null);
+  if (!credentials)
+    return reply.code(400).send({ message: "Invalid Xtream credentials" });
+  const providerIds = [
+    ...new Set(
+      (request.body.providerIds ?? []).filter(
+        (providerId): providerId is string =>
+          typeof providerId === "string" && providerId.trim().length > 0,
+      ),
+    ),
+  ];
+  if (providerIds.length === 0) return reply.send({ programsByProviderId: {} });
+  const programsByProviderId: Record<
+    string,
+    ReturnType<typeof normalizeEpgPrograms>
+  > = {};
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < providerIds.length) {
+      const providerId = providerIds[cursor++];
+      programsByProviderId[providerId] = await loadXtreamEpg(
+        credentials,
+        providerId,
+      );
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(8, providerIds.length) }, () => worker()),
+  );
+  return reply.send({ programsByProviderId });
 });
 
 app.post<{

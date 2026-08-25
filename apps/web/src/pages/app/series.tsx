@@ -214,7 +214,7 @@ export function SeriesPage() {
   return (
     <AppLayout>
       <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
-        <AppHeader className="sticky top-0 z-30 -mx-4 bg-bg/95 px-4 py-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-[30px] lg:px-[30px]">
+        <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
               Séries

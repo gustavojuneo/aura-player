@@ -12,8 +12,12 @@ import mpegts from "mpegts.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ScrollArea, SearchField } from "../../components/ui";
-import type { CatalogItem } from "../../features/catalog/catalog";
-import { useCatalogItems } from "../../hooks/use-catalog-data";
+import type { CatalogItem, EpgProgram } from "../../features/catalog/catalog";
+import {
+  useCatalogItems,
+  useXtreamEpg,
+  useXtreamEpgForChannels,
+} from "../../hooks/use-catalog-data";
 import { useCatalogState } from "../../hooks/use-catalog-state";
 import { usePlaybackSource } from "../../hooks/use-playback-source";
 import { useFavorites } from "../../services/favorites";
@@ -23,31 +27,49 @@ import {
   CategoryDialog,
   CategoryFilterTrigger,
 } from "./components/category-dialog";
+import { AllChannelsGuide, ProgramGuide } from "./components/program-guide";
 
 type Channel = {
   current: string;
   delivery: CatalogItem["delivery"];
   id: string;
   name: string;
+  providerId?: string;
   logoUrl?: string;
+  sourceId: string;
   streamUrl: string;
+  variantCount?: number;
 };
+
+function channelGroupName(name: string) {
+  return (
+    name
+      .replace(
+        /\s*(?:\(|\[)?\s*(?:8K|4K|UHD|FHD|QHD|HD|SD)\s*(?:\)|\])?\s*$/i,
+        "",
+      )
+      .replace(/\s{2,}/g, " ")
+      .trim() || name
+  );
+}
 
 function ChannelRow({
   channel,
   favorite,
   onToggle,
   onSelect,
+  selected,
 }: {
   channel: Channel;
   favorite: boolean;
   onToggle: () => void;
   onSelect: () => void;
+  selected: boolean;
 }) {
   return (
     <button
-      aria-pressed={favorite}
-      className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${favorite ? "border-gold bg-[#3b2d18]" : "border-line bg-panel hover:border-gold/50"}`}
+      aria-current={selected ? "true" : undefined}
+      className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${selected ? "border-gold bg-[#3b2d18]" : favorite ? "border-gold/60 bg-[#2d2417]" : "border-line bg-panel hover:border-gold/50"}`}
       onClick={onSelect}
       type="button"
     >
@@ -74,6 +96,9 @@ function ChannelRow({
         </strong>
         <span className="mt-1 block truncate text-[11px] text-muted">
           {channel.current}
+          {channel.variantCount && channel.variantCount > 1
+            ? ` · ${channel.variantCount} versões`
+            : ""}
         </span>
       </span>
       <button
@@ -112,7 +137,7 @@ function CategoryList({
 }) {
   return (
     <aside
-      className={`sticky top-20 mb-6 h-[calc(100dvh-8rem)] overflow-hidden rounded-xl bg-search lg:w-[250px] lg:shrink-0 ${className ?? ""}`}
+      className={`sticky top-20 mb-6 h-[calc(100dvh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[23%] ${className ?? ""}`}
     >
       <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
@@ -124,13 +149,14 @@ function CategoryList({
         <div className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {categories.map(([label, count]) => (
             <button
-              className={`flex min-h-10 h-auto shrink-0 items-center rounded-[9px] px-3 py-2 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
+              className={`flex min-h-10 h-auto shrink-0 items-center justify-between gap-3 rounded-[9px] px-3 py-2 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
               key={label}
               onClick={() => onSelect(label)}
               type="button"
             >
-              <span className="min-w-0 break-words">
-                {label} {count}
+              <span className="min-w-0 break-words">{label}</span>
+              <span className="shrink-0 text-xs font-bold text-muted">
+                {count}
               </span>
             </button>
           ))}
@@ -290,7 +316,15 @@ function ChannelPreview({
   );
 }
 
-function ProgramPanel({ channel }: { channel?: Channel }) {
+function ProgramPanel({
+  channel,
+  guides,
+  isEpgLoading,
+}: {
+  channel?: Channel;
+  guides: Array<{ channel: string; programs: EpgProgram[] }>;
+  isEpgLoading: boolean;
+}) {
   const navigate = useNavigate();
   const watchChannel = () => {
     if (!channel) return;
@@ -299,27 +333,46 @@ function ProgramPanel({ channel }: { channel?: Channel }) {
       params: { channelId: channel.id },
     });
   };
+  const epg = useXtreamEpg(
+    channel?.sourceId,
+    channel?.providerId,
+    channel?.name,
+  );
 
   return (
-    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-full lg:flex-1">
-      <ChannelPreview channel={channel} onOpen={watchChannel} />
-      <div>
-        <h2 className="m-0 font-display text-[21px] font-bold tracking-[-0.04em] text-text">
-          {channel?.name ?? "Selecione um canal"}
-        </h2>
-        <p className="m-1.5 mb-0 text-sm font-bold text-gold-bright">
-          {channel?.current ?? "Nenhum canal selecionado"}
-        </p>
-        <p className="m-1.5 mb-0 text-xs text-muted">
-          20:00 <span className="text-line">·</span> 22:15
-          <span className="text-line"> · </span>38 decorridos
-        </p>
-      </div>
+    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 overflow-hidden rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-[calc(100dvh-8rem)] lg:w-auto lg:flex-none lg:basis-[38%]">
+      {channel ? (
+        <>
+          <ChannelPreview channel={channel} onOpen={watchChannel} />
+          <div className="shrink-0">
+            <h2 className="m-0 font-display text-[21px] font-bold tracking-[-0.04em] text-text">
+              {channel.name}
+            </h2>
+            <div className="mt-1.5 flex min-w-0 items-center justify-between gap-3">
+              <p className="m-0 min-w-0 truncate text-sm font-bold text-gold-bright">
+                {channel.current}
+              </p>
+              <p className="m-0 shrink-0 text-xs text-muted">
+                20:00 <span className="text-line">·</span> 22:15
+                <span className="text-line"> · </span>38 decorridos
+              </p>
+            </div>
+          </div>
+          <ProgramGuide
+            error={epg.error}
+            isLoading={epg.isLoading}
+            programs={epg.data ?? []}
+          />
+        </>
+      ) : (
+        <AllChannelsGuide guides={guides} isLoading={isEpgLoading} />
+      )}
     </section>
   );
 }
 
 export function TvPage() {
+  const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isLoading } = useCatalogState();
   const { items } = useCatalogItems("live");
@@ -327,14 +380,18 @@ export function TvPage() {
   const [category, setCategory] = useState("Todos");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string>();
-  const categories = useMemo<Array<[string, number]>>(() => {
-    const counts = new Map<string, number>();
-    for (const item of items) {
-      const group = item.groupTitle ?? item.categories?.[0] ?? "Sem categoria";
-      counts.set(group, (counts.get(group) ?? 0) + 1);
+  const handleChannelSelect = (channelId: string) => {
+    if (window.matchMedia("(min-width: 1024px)").matches) {
+      setSelectedChannelId((currentId) =>
+        currentId === channelId ? undefined : channelId,
+      );
+      return;
     }
-    return [["Todos", items.length], ...counts.entries()];
-  }, [items]);
+    void navigate({
+      to: "/app/tv/$channelId/watch",
+      params: { channelId },
+    });
+  };
   const channels = useMemo<Channel[]>(
     () =>
       items.map((item) => ({
@@ -343,10 +400,19 @@ export function TvPage() {
         id: item.id,
         logoUrl: item.logoUrl,
         name: item.title,
+        providerId: item.providerId,
+        sourceId: item.sourceId,
         streamUrl: item.streamUrl,
       })),
     [items],
   );
+  const categories = useMemo<Array<[string, number]>>(() => {
+    const counts = new Map<string, number>();
+    for (const channel of channels) {
+      counts.set(channel.current, (counts.get(channel.current) ?? 0) + 1);
+    }
+    return [["Todos", channels.length], ...counts.entries()];
+  }, [channels]);
   const visibleChannels = useMemo<Channel[]>(() => {
     return channels.filter(
       (channel) =>
@@ -356,11 +422,58 @@ export function TvPage() {
           channel.current === category),
     );
   }, [category, channels, query]);
+  const epgChannelsForView = useMemo(() => {
+    const grouped = new Map<string, Channel>();
+    for (const channel of visibleChannels) {
+      const name = channelGroupName(channel.name);
+      const key = `${channel.sourceId}:${name.toLocaleLowerCase()}`;
+      const existing = grouped.get(key);
+      if (!existing) {
+        grouped.set(key, { ...channel, name, variantCount: 1 });
+        continue;
+      }
+      grouped.set(key, {
+        ...existing,
+        logoUrl: existing.logoUrl ?? channel.logoUrl,
+        variantCount: (existing.variantCount ?? 1) + 1,
+      });
+    }
+    return [...grouped.values()];
+  }, [visibleChannels]);
+  const epgChannelsForRequest = useMemo(() => {
+    if (category !== "Todos") return epgChannelsForView;
+    const categoriesSeen = new Set<string>();
+    return epgChannelsForView.filter((channel) => {
+      if (categoriesSeen.has(channel.current)) return false;
+      categoriesSeen.add(channel.current);
+      return true;
+    });
+  }, [category, epgChannelsForView]);
+  const epgForChannels = useXtreamEpgForChannels(epgChannelsForRequest);
+  const guides = epgChannelsForRequest.map((channel) => ({
+    category: channel.current,
+    channel: channel.name,
+    programs:
+      epgForChannels.programsByChannel.get(
+        `${channel.sourceId}:${channel.providerId}`,
+      ) ?? [],
+  }));
+  const displayGuides = useMemo(() => {
+    if (category !== "Todos") {
+      return guides.filter((guide) => guide.category === category);
+    }
+    const categoriesSeen = new Set<string>();
+    return guides.filter((guide) => {
+      if (categoriesSeen.has(guide.category)) return false;
+      categoriesSeen.add(guide.category);
+      return true;
+    });
+  }, [category, guides]);
 
   return (
     <AppLayout fixedViewport>
       <div className="flex h-dvh w-full flex-col gap-5 overflow-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
-        <AppHeader className="sticky top-0 z-30 -mx-4 bg-bg/95 px-4 py-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-[30px] lg:px-[30px]">
+        <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
               TV ao vivo
@@ -403,7 +516,7 @@ export function TvPage() {
               onSelect={setCategory}
               selected={category}
             />
-            <section className="flex h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 flex-col lg:w-[500px] lg:flex-none">
+            <section className="flex h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 flex-col">
               <h2 className="m-0 shrink-0 px-1 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
                 Canais
               </h2>
@@ -415,7 +528,8 @@ export function TvPage() {
                       favorite={isFavorite("channel", channel.id)}
                       key={channel.id}
                       onToggle={() => toggleFavorite("channel", channel.id)}
-                      onSelect={() => setSelectedChannelId(channel.id)}
+                      onSelect={() => handleChannelSelect(channel.id)}
+                      selected={selectedChannelId === channel.id}
                     />
                   ))}
                 </div>
@@ -423,6 +537,8 @@ export function TvPage() {
             </section>
             <ProgramPanel
               channel={channels.find(({ id }) => id === selectedChannelId)}
+              guides={displayGuides}
+              isEpgLoading={epgForChannels.isLoading}
             />
           </div>
         )}
