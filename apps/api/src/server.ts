@@ -4,17 +4,23 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
+import { z } from "zod";
 import { env } from "./env.js";
 
 type Target = { expiresAt: number; url: URL };
 type XtreamCredentials = { server: URL; username: string; password: string };
+const xtreamCredentialsSchema = z.object({
+  password: z.string().min(1),
+  server: z.url(),
+  username: z.string().min(1),
+});
+type XtreamCredentialsInput = z.infer<typeof xtreamCredentialsSchema>;
 
 const app = Fastify({ logger: true });
 await app.register(cors, {
   origin: env.CLIENT_URL,
 });
 const targets = new Map<string, Target>();
-const xtreamSources = new Map<string, XtreamCredentials>();
 const targetTtlMs = 5 * 60 * 1000;
 const allowedHosts = new Set(
   env.IPTV_PROXY_ALLOWED_HOSTS.split(",")
@@ -52,6 +58,15 @@ async function validateProviderServer(rawServer: unknown) {
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("PRIVATE_TARGET");
   return server;
+}
+
+async function credentialsFromBody(body: unknown) {
+  const input = xtreamCredentialsSchema.parse(body);
+  return {
+    password: input.password,
+    server: await validateProviderServer(input.server),
+    username: input.username,
+  } satisfies XtreamCredentials;
 }
 
 function providerUrl(
@@ -286,22 +301,16 @@ app.post<{
   };
 }>("/xtream/catalog", async (request, reply) => {
   try {
-    const server = await validateProviderServer(request.body?.server);
-    const username = text(request.body?.username);
-    const password = text(request.body?.password);
-    if (!username || !password)
-      return reply.code(400).send({ message: "Invalid Xtream credentials" });
-    const credentials = { server, username, password };
+    const credentials = await credentialsFromBody(request.body);
     const sourceId = `xtream-${crypto.randomUUID()}`;
     const catalog = await mapXtreamCatalog(sourceId, credentials);
-    xtreamSources.set(sourceId, credentials);
     return reply.code(201).send({
       source: {
         id: sourceId,
         name: text(request.body?.name) ?? "Xtream",
         type: "xtream",
-        server: server.toString(),
-        username,
+        server: credentials.server.toString(),
+        username: credentials.username,
         status: catalog.items.length ? "ready" : "empty",
         ...catalog.counts,
       },
@@ -318,10 +327,8 @@ app.post<{
   Params: { sourceId: string };
   Body: { name?: string };
 }>("/xtream/catalog/:sourceId/refresh", async (request, reply) => {
-  const credentials = xtreamSources.get(request.params.sourceId);
-  if (!credentials)
-    return reply.code(404).send({ message: "Source unavailable" });
   try {
+    const credentials = await credentialsFromBody(request.body);
     const catalog = await mapXtreamCatalog(
       request.params.sourceId,
       credentials,
@@ -345,147 +352,147 @@ app.post<{
   }
 });
 
-app.get<{ Params: { sourceId: string; providerId: string } }>(
-  "/xtream/catalog/:sourceId/movie/:providerId",
-  async (request, reply) => {
-    const credentials = xtreamSources.get(request.params.sourceId);
-    if (!credentials)
-      return reply.code(404).send({ message: "Source unavailable" });
-    const details = await fetchXtream<unknown>(credentials, "get_vod_info", {
-      vod_id: request.params.providerId,
-    }).catch(() => null);
-    if (!details)
-      return reply.code(502).send({ message: "Provider unavailable" });
-    const payload = details as Record<string, unknown>;
-    const info =
-      payload.info &&
-      typeof payload.info === "object" &&
-      !Array.isArray(payload.info)
-        ? (payload.info as Record<string, unknown>)
+app.post<{
+  Body: XtreamCredentialsInput;
+  Params: { sourceId: string; providerId: string };
+}>("/xtream/catalog/:sourceId/movie/:providerId", async (request, reply) => {
+  const credentials = await credentialsFromBody(request.body).catch(() => null);
+  if (!credentials)
+    return reply.code(400).send({ message: "Invalid Xtream credentials" });
+  const details = await fetchXtream<unknown>(credentials, "get_vod_info", {
+    vod_id: request.params.providerId,
+  }).catch(() => null);
+  if (!details)
+    return reply.code(502).send({ message: "Provider unavailable" });
+  const payload = details as Record<string, unknown>;
+  const info =
+    payload.info &&
+    typeof payload.info === "object" &&
+    !Array.isArray(payload.info)
+      ? (payload.info as Record<string, unknown>)
+      : {};
+  const rawEpisodes =
+    payload.episodes &&
+    typeof payload.episodes === "object" &&
+    !Array.isArray(payload.episodes)
+      ? Object.values(payload.episodes as Record<string, unknown>).flatMap(
+          (value) => (Array.isArray(value) ? value : []),
+        )
+      : [];
+  const seriesTitle = text(info.name) ?? "Série";
+  const episodes = rawEpisodes.flatMap((value) => {
+    if (!value || typeof value !== "object") return [];
+    const episode = value as Record<string, unknown>;
+    const providerId = text(episode.id);
+    if (!providerId) return [];
+    const episodeInfo =
+      episode.info &&
+      typeof episode.info === "object" &&
+      !Array.isArray(episode.info)
+        ? (episode.info as Record<string, unknown>)
         : {};
-    const rawEpisodes =
-      payload.episodes &&
-      typeof payload.episodes === "object" &&
-      !Array.isArray(payload.episodes)
-        ? Object.values(payload.episodes as Record<string, unknown>).flatMap(
-            (value) => (Array.isArray(value) ? value : []),
-          )
-        : [];
-    const seriesTitle = text(info.name) ?? "Série";
-    const episodes = rawEpisodes.flatMap((value) => {
-      if (!value || typeof value !== "object") return [];
-      const episode = value as Record<string, unknown>;
-      const providerId = text(episode.id);
-      if (!providerId) return [];
-      const episodeInfo =
-        episode.info &&
-        typeof episode.info === "object" &&
-        !Array.isArray(episode.info)
-          ? (episode.info as Record<string, unknown>)
-          : {};
-      const seasonNumber = Math.max(1, numberValue(episode.season) ?? 1);
-      const episodeNumber = Math.max(1, numberValue(episode.episode_num) ?? 1);
-      return [
-        {
-          id: `${request.params.sourceId}:episode:${providerId}`,
-          sourceId: request.params.sourceId,
-          kind: "episode",
+    const seasonNumber = Math.max(1, numberValue(episode.season) ?? 1);
+    const episodeNumber = Math.max(1, numberValue(episode.episode_num) ?? 1);
+    return [
+      {
+        id: `${request.params.sourceId}:episode:${providerId}`,
+        sourceId: request.params.sourceId,
+        kind: "episode",
+        providerId,
+        title: text(episode.title) ?? `Episódio ${episodeNumber}`,
+        categories: [],
+        seriesId: `${request.params.sourceId}:series:${request.params.providerId}`,
+        seriesTitle,
+        seasonNumber,
+        episodeNumber,
+        logoUrl: url(episodeInfo.movie_image),
+        stillUrl: url(episodeInfo.movie_image),
+        description: text(episodeInfo.plot ?? episodeInfo.description),
+        durationSecs: numberValue(episodeInfo.duration_secs),
+        rating: numberValue(episodeInfo.rating),
+        streamUrl: mediaUrl(
+          credentials,
+          "episode",
           providerId,
-          title: text(episode.title) ?? `Episódio ${episodeNumber}`,
-          categories: [],
-          seriesId: `${request.params.sourceId}:series:${request.params.providerId}`,
-          seriesTitle,
-          seasonNumber,
-          episodeNumber,
-          logoUrl: url(episodeInfo.movie_image),
-          stillUrl: url(episodeInfo.movie_image),
-          description: text(episodeInfo.plot ?? episodeInfo.description),
-          durationSecs: numberValue(episodeInfo.duration_secs),
-          rating: numberValue(episodeInfo.rating),
-          streamUrl: mediaUrl(
-            credentials,
-            "episode",
-            providerId,
-            text(episode.container_extension) ?? "mp4",
-          ),
-          delivery: "native",
-        },
-      ];
-    });
-    return reply.send({ info, episodes });
-  },
-);
+          text(episode.container_extension) ?? "mp4",
+        ),
+        delivery: "native",
+      },
+    ];
+  });
+  return reply.send({ info, episodes });
+});
 
-app.get<{ Params: { sourceId: string; providerId: string } }>(
-  "/xtream/catalog/:sourceId/series/:providerId",
-  async (request, reply) => {
-    const credentials = xtreamSources.get(request.params.sourceId);
-    if (!credentials)
-      return reply.code(404).send({ message: "Source unavailable" });
-    const details = await fetchXtream<unknown>(credentials, "get_series_info", {
-      series_id: request.params.providerId,
-    }).catch(() => null);
-    if (!details)
-      return reply.code(502).send({ message: "Provider unavailable" });
-    const payload = details as Record<string, unknown>;
-    const info =
-      payload.info &&
-      typeof payload.info === "object" &&
-      !Array.isArray(payload.info)
-        ? (payload.info as Record<string, unknown>)
+app.post<{
+  Body: XtreamCredentialsInput;
+  Params: { sourceId: string; providerId: string };
+}>("/xtream/catalog/:sourceId/series/:providerId", async (request, reply) => {
+  const credentials = await credentialsFromBody(request.body).catch(() => null);
+  if (!credentials)
+    return reply.code(400).send({ message: "Invalid Xtream credentials" });
+  const details = await fetchXtream<unknown>(credentials, "get_series_info", {
+    series_id: request.params.providerId,
+  }).catch(() => null);
+  if (!details)
+    return reply.code(502).send({ message: "Provider unavailable" });
+  const payload = details as Record<string, unknown>;
+  const info =
+    payload.info &&
+    typeof payload.info === "object" &&
+    !Array.isArray(payload.info)
+      ? (payload.info as Record<string, unknown>)
+      : {};
+  const rawEpisodes =
+    payload.episodes &&
+    typeof payload.episodes === "object" &&
+    !Array.isArray(payload.episodes)
+      ? Object.values(payload.episodes as Record<string, unknown>).flatMap(
+          (value) => (Array.isArray(value) ? value : []),
+        )
+      : [];
+  const seriesTitle = text(info.name) ?? "Série";
+  const episodes = rawEpisodes.flatMap((value) => {
+    if (!value || typeof value !== "object") return [];
+    const episode = value as Record<string, unknown>;
+    const providerId = text(episode.id);
+    if (!providerId) return [];
+    const episodeInfo =
+      episode.info &&
+      typeof episode.info === "object" &&
+      !Array.isArray(episode.info)
+        ? (episode.info as Record<string, unknown>)
         : {};
-    const rawEpisodes =
-      payload.episodes &&
-      typeof payload.episodes === "object" &&
-      !Array.isArray(payload.episodes)
-        ? Object.values(payload.episodes as Record<string, unknown>).flatMap(
-            (value) => (Array.isArray(value) ? value : []),
-          )
-        : [];
-    const seriesTitle = text(info.name) ?? "Série";
-    const episodes = rawEpisodes.flatMap((value) => {
-      if (!value || typeof value !== "object") return [];
-      const episode = value as Record<string, unknown>;
-      const providerId = text(episode.id);
-      if (!providerId) return [];
-      const episodeInfo =
-        episode.info &&
-        typeof episode.info === "object" &&
-        !Array.isArray(episode.info)
-          ? (episode.info as Record<string, unknown>)
-          : {};
-      const seasonNumber = Math.max(1, numberValue(episode.season) ?? 1);
-      const episodeNumber = Math.max(1, numberValue(episode.episode_num) ?? 1);
-      return [
-        {
-          id: `${request.params.sourceId}:episode:${providerId}`,
-          sourceId: request.params.sourceId,
-          kind: "episode",
+    const seasonNumber = Math.max(1, numberValue(episode.season) ?? 1);
+    const episodeNumber = Math.max(1, numberValue(episode.episode_num) ?? 1);
+    return [
+      {
+        id: `${request.params.sourceId}:episode:${providerId}`,
+        sourceId: request.params.sourceId,
+        kind: "episode",
+        providerId,
+        title: text(episode.title) ?? `Episódio ${episodeNumber}`,
+        categories: [],
+        seriesId: `${request.params.sourceId}:series:${request.params.providerId}`,
+        seriesTitle,
+        seasonNumber,
+        episodeNumber,
+        logoUrl: url(episodeInfo.movie_image),
+        stillUrl: url(episodeInfo.movie_image),
+        description: text(episodeInfo.plot ?? episodeInfo.description),
+        durationSecs: numberValue(episodeInfo.duration_secs),
+        rating: numberValue(episodeInfo.rating),
+        streamUrl: mediaUrl(
+          credentials,
+          "episode",
           providerId,
-          title: text(episode.title) ?? `Episódio ${episodeNumber}`,
-          categories: [],
-          seriesId: `${request.params.sourceId}:series:${request.params.providerId}`,
-          seriesTitle,
-          seasonNumber,
-          episodeNumber,
-          logoUrl: url(episodeInfo.movie_image),
-          stillUrl: url(episodeInfo.movie_image),
-          description: text(episodeInfo.plot ?? episodeInfo.description),
-          durationSecs: numberValue(episodeInfo.duration_secs),
-          rating: numberValue(episodeInfo.rating),
-          streamUrl: mediaUrl(
-            credentials,
-            "episode",
-            providerId,
-            text(episode.container_extension) ?? "mp4",
-          ),
-          delivery: "native",
-        },
-      ];
-    });
-    return reply.send({ info, episodes });
-  },
-);
+          text(episode.container_extension) ?? "mp4",
+        ),
+        delivery: "native",
+      },
+    ];
+  });
+  return reply.send({ info, episodes });
+});
 
 async function validateTarget(rawUrl: unknown) {
   if (typeof rawUrl !== "string") throw new Error("INVALID_TARGET");

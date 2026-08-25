@@ -64,7 +64,12 @@ export async function saveXtreamSource(input: {
   password: string;
 }) {
   const imported = await importXtreamCatalog(input);
-  await putSource(imported.source);
+  await putSource({
+    ...imported.source,
+    password: input.password,
+    server: input.server,
+    username: input.username,
+  });
   await clearCatalogSource(imported.source.id);
   await putCatalogBatch(imported.items, imported.series);
   const storedMovies = await getCatalogItems(imported.source.id, "movie");
@@ -72,6 +77,9 @@ export async function saveXtreamSource(input: {
   const storedLive = await getCatalogItems(imported.source.id, "live");
   const storedSource = sourceSchema.parse({
     ...imported.source,
+    password: input.password,
+    server: input.server,
+    username: input.username,
     itemCount: storedLive.length + storedMovies.length + storedEpisodes.length,
     liveCount: storedLive.length,
     movieCount: storedMovies.length,
@@ -89,7 +97,7 @@ export async function saveXtreamSource(input: {
 }
 
 export async function syncXtreamSource(source: CatalogSource) {
-  const imported = await refreshXtreamCatalog(source.id, source.name);
+  const imported = await refreshXtreamCatalog(source);
   await clearCatalogSource(imported.source.id);
   await putCatalogBatch(imported.items, imported.series);
   const storedMovies = await getCatalogItems(imported.source.id, "movie");
@@ -97,6 +105,9 @@ export async function syncXtreamSource(source: CatalogSource) {
   const storedLive = await getCatalogItems(imported.source.id, "live");
   const storedSource = sourceSchema.parse({
     ...imported.source,
+    password: source.password,
+    server: source.server,
+    username: source.username,
     itemCount: storedLive.length + storedMovies.length + storedEpisodes.length,
     liveCount: storedLive.length,
     movieCount: storedMovies.length,

@@ -65,6 +65,14 @@ export async function getSources() {
   );
 }
 
+export async function getSource(sourceId: string) {
+  return transaction<CatalogSource | undefined>(
+    sourceStore,
+    "readonly",
+    (store) => store.get(sourceId),
+  );
+}
+
 export async function deleteSourceData(sourceId: string) {
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {

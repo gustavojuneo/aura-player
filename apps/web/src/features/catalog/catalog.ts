@@ -56,6 +56,7 @@ export const sourceSchema = z.object({
   url: z.string().url().optional(),
   server: z.string().url().optional(),
   username: z.string().optional(),
+  password: z.string().optional(),
   status: z.enum(["idle", "importing", "ready", "empty", "error"]),
   itemCount: z.number().int().nonnegative().default(0),
   liveCount: z.number().int().nonnegative().default(0),

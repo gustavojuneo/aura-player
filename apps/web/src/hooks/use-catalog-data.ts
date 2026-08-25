@@ -8,7 +8,7 @@ import {
   fetchXtreamMovieDetails,
   fetchXtreamSeriesDetails,
 } from "../http/xtream/catalog";
-import { getActiveSourceId } from "../services/catalog-db";
+import { getActiveSourceId, getSource } from "../services/catalog-db";
 import {
   loadActiveCatalog,
   loadActiveSeries,
@@ -92,7 +92,11 @@ export function useCatalogItem(id: string | undefined) {
         return;
       }
       setMetadataLoading(true);
-      void fetchXtreamMovieDetails(loaded.sourceId, loaded.providerId)
+      void getSource(loaded.sourceId)
+        .then((source) => {
+          if (!source) throw new Error("Source unavailable");
+          return fetchXtreamMovieDetails(source, loaded.providerId as string);
+        })
         .then((details) => {
           if (cancelled) return;
           const info = details.info;
@@ -148,7 +152,9 @@ export function useCatalogEpisode(
         const sourceId = episodeId.split(":episode:")[0];
         const providerId = seriesId.split(":series:").at(-1);
         if (!sourceId || !providerId) return localItem;
-        const remote = await fetchXtreamSeriesDetails(sourceId, providerId);
+        const source = await getSource(sourceId);
+        if (!source) return localItem;
+        const remote = await fetchXtreamSeriesDetails(source, providerId);
         return remote.episodes.find((episode) => episode.id === episodeId);
       })
       .then((loaded) => {
@@ -187,20 +193,24 @@ export function useCatalogSeriesDetails(id: string | undefined) {
     setLoading(true);
     setError(null);
     let cancelled = false;
-    void Promise.all([loadSeries(id), loadSeriesEpisodes(sourceId, id)])
-      .then(([loadedSeries, localEpisodes]) => {
+    void Promise.all([
+      loadSeries(id),
+      loadSeriesEpisodes(sourceId, id),
+      getSource(sourceId),
+    ])
+      .then(([loadedSeries, localEpisodes, source]) => {
         if (cancelled) return;
         setSeries(loadedSeries);
         setEpisodes(localEpisodes);
         setLoading(false);
         const providerId =
           loadedSeries?.providerId ?? id.split(":").at(-1) ?? undefined;
-        if (!loadedSeries || !providerId) {
+        if (!loadedSeries || !providerId || !source) {
           setMetadataLoading(false);
           return;
         }
         setMetadataLoading(true);
-        void fetchXtreamSeriesDetails(sourceId, providerId)
+        void fetchXtreamSeriesDetails(source, providerId)
           .then((remote) => {
             if (cancelled) return;
             const info = remote.info ?? {};

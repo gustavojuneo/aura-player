@@ -165,6 +165,9 @@ export function SourcesPage() {
                         : ("available" as const),
                 detail: `${source.type === "xtream" ? "Xtream" : "M3U"} · ${source.status}`,
                 contentCount: source.itemCount,
+                password: source.password,
+                server: source.server,
+                username: source.username,
                 url: source.url,
               })),
             ].map((source) => (

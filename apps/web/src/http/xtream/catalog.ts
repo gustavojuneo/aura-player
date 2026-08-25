@@ -29,20 +29,39 @@ export async function importXtreamCatalog(input: {
   return responseSchema.parse(response.data);
 }
 
-export async function refreshXtreamCatalog(sourceId: string, name: string) {
+function credentialsFor(source: CatalogSource) {
+  if (
+    source.type !== "xtream" ||
+    !source.server ||
+    !source.username ||
+    !source.password
+  ) {
+    throw new Error("As credenciais da fonte não estão disponíveis.");
+  }
+  return {
+    password: source.password,
+    server: source.server,
+    username: source.username,
+  };
+}
+
+export async function refreshXtreamCatalog(source: CatalogSource) {
+  const credentials = credentialsFor(source);
   const response = await httpClient.post(
-    `/xtream/catalog/${encodeURIComponent(sourceId)}/refresh`,
-    { name },
+    `/xtream/catalog/${encodeURIComponent(source.id)}/refresh`,
+    { ...credentials, name: source.name },
   );
   return responseSchema.parse(response.data);
 }
 
 export async function fetchXtreamMovieDetails(
-  sourceId: string,
+  source: CatalogSource,
   providerId: string,
 ) {
-  const response = await httpClient.get(
-    `/xtream/catalog/${encodeURIComponent(sourceId)}/movie/${encodeURIComponent(providerId)}`,
+  const credentials = credentialsFor(source);
+  const response = await httpClient.post(
+    `/xtream/catalog/${encodeURIComponent(source.id)}/movie/${encodeURIComponent(providerId)}`,
+    credentials,
   );
   return response.data as {
     info?: Record<string, unknown>;
@@ -50,11 +69,13 @@ export async function fetchXtreamMovieDetails(
 }
 
 export async function fetchXtreamSeriesDetails(
-  sourceId: string,
+  source: CatalogSource,
   providerId: string,
 ) {
-  const response = await httpClient.get(
-    `/xtream/catalog/${encodeURIComponent(sourceId)}/series/${encodeURIComponent(providerId)}`,
+  const credentials = credentialsFor(source);
+  const response = await httpClient.post(
+    `/xtream/catalog/${encodeURIComponent(source.id)}/series/${encodeURIComponent(providerId)}`,
+    credentials,
   );
   return response.data as {
     info?: Record<string, unknown>;
