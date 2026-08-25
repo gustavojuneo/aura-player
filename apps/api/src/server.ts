@@ -523,17 +523,14 @@ async function validateRedirect(rawUrl: string, previous: URL) {
 
 async function fetchMedia(url: URL, range: string | undefined) {
   let current = url;
+  let finalReached = false;
   for (let redirects = 0; redirects <= 5; redirects += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
     let response: Response;
     try {
       response = await fetch(current, {
-        headers: {
-          Accept: "*/*",
-          ...(range ? { Range: range } : {}),
-          "User-Agent": env.IPTV_STREAM_USER_AGENT,
-        },
+        headers: range ? { Range: range } : undefined,
         redirect: "manual",
         signal: controller.signal,
       });
@@ -541,22 +538,24 @@ async function fetchMedia(url: URL, range: string | undefined) {
       clearTimeout(timeout);
     }
     if (![301, 302, 303, 307, 308].includes(response.status)) {
-      return response;
+      await response.body?.cancel();
+      finalReached = true;
+      break;
     }
     const location = response.headers.get("location");
     if (!location) return response;
-    await response.body?.cancel();
     current = await validateRedirect(location, current);
+    if (net.isIP(current.hostname)) {
+      finalReached = true;
+      break;
+    }
   }
+  if (!finalReached) throw new Error("TOO_MANY_REDIRECTS");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
   try {
     return await fetch(url, {
-      headers: {
-        Accept: "*/*",
-        ...(range ? { Range: range } : {}),
-        "User-Agent": env.IPTV_STREAM_USER_AGENT,
-      },
+      headers: range ? { Range: range } : undefined,
       redirect: "follow",
       signal: controller.signal,
     });
@@ -624,7 +623,11 @@ app.get<{ Params: { targetId: string } }>(
         if (!reply.raw.writableFinished) body.destroy();
       });
       return reply.send(body);
-    } catch {
+    } catch (error) {
+      request.log.error(
+        { error, targetHost: target.url.hostname },
+        "Media proxy failed",
+      );
       return reply.code(502).send({ message: "Media unavailable" });
     }
   },
@@ -636,5 +639,11 @@ export { app };
 export default app;
 
 if (!env.VERCEL) {
+  const shutdown = async () => {
+    await app.close();
+    process.exit(0);
+  };
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
   await app.listen({ host: "0.0.0.0", port: env.PORT });
 }
