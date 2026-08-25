@@ -523,14 +523,17 @@ async function validateRedirect(rawUrl: string, previous: URL) {
 
 async function fetchMedia(url: URL, range: string | undefined) {
   let current = url;
-  let finalReached = false;
   for (let redirects = 0; redirects <= 5; redirects += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
     let response: Response;
     try {
       response = await fetch(current, {
-        headers: range ? { Range: range } : undefined,
+        headers: {
+          Accept: "*/*",
+          ...(range ? { Range: range } : {}),
+          "User-Agent": env.IPTV_STREAM_USER_AGENT,
+        },
         redirect: "manual",
         signal: controller.signal,
       });
@@ -538,30 +541,13 @@ async function fetchMedia(url: URL, range: string | undefined) {
       clearTimeout(timeout);
     }
     if (![301, 302, 303, 307, 308].includes(response.status)) {
-      await response.body?.cancel();
-      finalReached = true;
-      break;
+      return response;
     }
     const location = response.headers.get("location");
     if (!location) return response;
     current = await validateRedirect(location, current);
-    if (net.isIP(current.hostname)) {
-      finalReached = true;
-      break;
-    }
   }
-  if (!finalReached) throw new Error("TOO_MANY_REDIRECTS");
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
-  try {
-    return await fetch(url, {
-      headers: range ? { Range: range } : undefined,
-      redirect: "follow",
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeout);
-  }
+  throw new Error("TOO_MANY_REDIRECTS");
 }
 
 function cleanupTargets() {
