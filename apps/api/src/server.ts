@@ -169,6 +169,23 @@ function mediaUrl(
   ).toString();
 }
 
+function episodeMediaUrl(
+  credentials: XtreamCredentials,
+  episode: Record<string, unknown>,
+  episodeInfo: Record<string, unknown>,
+) {
+  const directSource = url(episode.direct_source);
+  if (directSource) return directSource;
+  return mediaUrl(
+    credentials,
+    "episode",
+    text(episode.id) ?? "",
+    text(episode.container_extension) ??
+      text(episodeInfo.container_extension) ??
+      "mp4",
+  );
+}
+
 async function mapXtreamCatalog(
   sourceId: string,
   credentials: XtreamCredentials,
@@ -410,12 +427,7 @@ app.post<{
         description: text(episodeInfo.plot ?? episodeInfo.description),
         durationSecs: numberValue(episodeInfo.duration_secs),
         rating: numberValue(episodeInfo.rating),
-        streamUrl: mediaUrl(
-          credentials,
-          "episode",
-          providerId,
-          text(episode.container_extension) ?? "mp4",
-        ),
+        streamUrl: episodeMediaUrl(credentials, episode, episodeInfo),
         delivery: "native",
       },
     ];
@@ -481,12 +493,7 @@ app.post<{
         description: text(episodeInfo.plot ?? episodeInfo.description),
         durationSecs: numberValue(episodeInfo.duration_secs),
         rating: numberValue(episodeInfo.rating),
-        streamUrl: mediaUrl(
-          credentials,
-          "episode",
-          providerId,
-          text(episode.container_extension) ?? "mp4",
-        ),
+        streamUrl: episodeMediaUrl(credentials, episode, episodeInfo),
         delivery: "native",
       },
     ];
