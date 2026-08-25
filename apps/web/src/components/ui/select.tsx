@@ -77,7 +77,7 @@ export function SelectField({
         </BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
-        <BaseSelect.Positioner sideOffset={6}>
+        <BaseSelect.Positioner className="z-[100]" side="top" sideOffset={6}>
           <BaseSelect.Popup className="z-50 max-h-[min(360px,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl outline-none data-[open]:animate-in data-[closed]:animate-out">
             {options.map((option) => (
               <BaseSelect.Item

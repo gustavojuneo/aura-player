@@ -36,13 +36,16 @@ export function PlayerPage({ kind }: PlayerPageProps) {
       : kind === "movie"
         ? (params.movieId ?? "alem-veu-1")
         : (params.episodeId ?? "episode-4");
-  const movie = useCatalogItem(kind === "movie" ? contentId : undefined);
+  const catalogItem = useCatalogItem(
+    kind === "episode" ? undefined : contentId,
+  );
   const episode = useCatalogEpisode(
     kind === "episode" ? contentId : undefined,
     kind === "episode" ? params.seriesId : undefined,
   );
-  const item = kind === "episode" ? episode.item : movie.item;
-  const isLoading = kind === "episode" ? episode.isLoading : movie.isLoading;
+  const item = kind === "episode" ? episode.item : catalogItem.item;
+  const isLoading =
+    kind === "episode" ? episode.isLoading : catalogItem.isLoading;
   const content = item ?? titles[contentId] ?? { title: contentId };
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
   const playbackSource = usePlaybackSource(rawStreamUrl, Boolean(rawStreamUrl));
@@ -78,7 +81,7 @@ export function PlayerPage({ kind }: PlayerPageProps) {
 
   return (
     <MediaPlayer
-      autoPlay={kind === "episode"}
+      autoPlay={kind !== "movie"}
       descriptor={descriptor}
       isLoading={isLoading || playbackSource.isLoading}
       onBack={goBack}

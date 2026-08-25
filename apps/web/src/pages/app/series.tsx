@@ -198,7 +198,8 @@ export function SeriesPage() {
   } = useInfiniteCatalog(
     seriesCatalog,
     (item, search, category) =>
-      (category === "Todos" ||
+      (search.length > 0 ||
+        category === "Todos" ||
         (item.categories?.length ? item.categories : [item.genre]).includes(
           category,
         )) &&
@@ -227,17 +228,6 @@ export function SeriesPage() {
                 value={query}
               />
               <SelectField
-                aria-label="Filtrar por gênero"
-                className="min-w-[112px]"
-                onValueChange={setGenre}
-                options={categories.map((item) => ({
-                  label: item,
-                  value: item,
-                }))}
-                value={genre}
-                valueLabel="Gênero"
-              />
-              <SelectField
                 aria-label="Ordenar séries"
                 className="min-w-[132px]"
                 onValueChange={(value) => setSort(value as SortOption)}
@@ -257,17 +247,6 @@ export function SeriesPage() {
           </h1>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {categories.slice(0, 3).map((item) => (
-            <button
-              aria-pressed={genre === item}
-              className={`h-9 shrink-0 rounded-[9px] border px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus ${genre === item ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-panel text-text hover:border-gold/60"}`}
-              key={item}
-              onClick={() => setGenre(item)}
-              type="button"
-            >
-              {item}
-            </button>
-          ))}
           <CategoryFilterTrigger onClick={() => setCategoryDialogOpen(true)} />
         </div>
         <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-start">

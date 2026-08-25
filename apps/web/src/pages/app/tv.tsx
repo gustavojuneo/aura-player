@@ -1,10 +1,21 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Heart, Play, Radio } from "lucide-react";
-import { useMemo, useState } from "react";
+import Hls from "hls.js";
+import {
+  Heart,
+  LoaderCircle,
+  Play,
+  Radio,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import mpegts from "mpegts.js";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Button, ScrollArea, SearchField } from "../../components/ui";
+import { ScrollArea, SearchField } from "../../components/ui";
+import type { CatalogItem } from "../../features/catalog/catalog";
 import { useCatalogItems } from "../../hooks/use-catalog-data";
 import { useCatalogState } from "../../hooks/use-catalog-state";
+import { usePlaybackSource } from "../../hooks/use-playback-source";
 import { useFavorites } from "../../services/favorites";
 import { AppHeader, AppLayout } from "./app-shell";
 import { LivePageSkeleton } from "./components/catalog-skeleton";
@@ -15,27 +26,29 @@ import {
 
 type Channel = {
   current: string;
+  delivery: CatalogItem["delivery"];
   id: string;
   name: string;
   logoUrl?: string;
+  streamUrl: string;
 };
 
 function ChannelRow({
   channel,
   favorite,
   onToggle,
-  onWatch,
+  onSelect,
 }: {
   channel: Channel;
   favorite: boolean;
   onToggle: () => void;
-  onWatch: () => void;
+  onSelect: () => void;
 }) {
   return (
     <button
       aria-pressed={favorite}
       className={`flex min-w-0 items-center gap-3 rounded-[11px] border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${favorite ? "border-gold bg-[#3b2d18]" : "border-line bg-panel hover:border-gold/50"}`}
-      onClick={onWatch}
+      onClick={onSelect}
       type="button"
     >
       <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
@@ -127,15 +140,169 @@ function CategoryList({
   );
 }
 
-function ProgramPanel({ channel }: { channel?: Channel }) {
-  const navigate = useNavigate();
+function ChannelPreview({
+  channel,
+  onOpen,
+}: {
+  channel?: Channel;
+  onOpen: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const engineRef = useRef<Hls | mpegts.Player | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const playbackSource = usePlaybackSource(
+    channel?.streamUrl,
+    Boolean(channel?.streamUrl),
+  );
+  const previewError = hasError || Boolean(playbackSource.error);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !playbackSource.source || !channel) return;
+    const url = playbackSource.source;
+    const cleanEngine = () => {
+      const engine = engineRef.current;
+      if (engine instanceof Hls) engine.destroy();
+      if (engine && "detachMediaElement" in engine) {
+        engine.pause();
+        engine.unload();
+        engine.detachMediaElement();
+        engine.destroy();
+      }
+      engineRef.current = null;
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
+
+    cleanEngine();
+    setIsReady(false);
+    setHasError(false);
+    video.muted = false;
+    video.volume = 1;
+    setIsMuted(false);
+
+    const play = () => {
+      void video.play().catch(() => undefined);
+    };
+    const fail = () => setHasError(true);
+
+    if (channel.delivery === "hls" && Hls.isSupported()) {
+      const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+      engineRef.current = hls;
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (data.fatal) fail();
+      });
+      hls.on(Hls.Events.MANIFEST_PARSED, play);
+      hls.attachMedia(video);
+      hls.loadSource(url);
+    } else if (channel.delivery === "mpeg-ts" && mpegts.isSupported()) {
+      const player = mpegts.createPlayer({ type: "mpegts", isLive: true, url });
+      engineRef.current = player;
+      player.on(mpegts.Events.ERROR, fail);
+      player.attachMediaElement(video);
+      player.load();
+      void Promise.resolve(player.play()).catch(() => undefined);
+    } else {
+      video.src = url;
+      video.addEventListener("loadedmetadata", play, { once: true });
+    }
+
+    return () => cleanEngine();
+  }, [channel, playbackSource.source]);
+
   return (
-    <section className="sticky top-20 hidden min-w-0 self-start flex-col gap-3 rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:flex-1">
-      <div className="flex h-[190px] items-center justify-center rounded-xl bg-gradient-to-br from-[#74451f] to-[#191713] sm:h-[230px]">
-        <span className="grid size-11 place-items-center rounded-full bg-black/20 text-text">
+    <div className="group relative flex aspect-video min-w-0 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#74451f] to-[#191713]">
+      <video
+        aria-label={channel?.name ?? "Preview do canal"}
+        className={`absolute size-full object-cover ${isReady ? "opacity-100" : "opacity-0"}`}
+        playsInline
+        onCanPlay={() => setIsReady(true)}
+        ref={videoRef}
+      >
+        <track
+          kind="captions"
+          label="Português"
+          src="data:text/vtt,WEBVTT"
+          srcLang="pt-BR"
+        />
+      </video>
+      {channel?.logoUrl && !isReady && (
+        <img
+          alt=""
+          className="absolute size-full object-contain p-10 opacity-35"
+          decoding="async"
+          src={channel.logoUrl}
+        />
+      )}
+      {(playbackSource.isLoading || (channel && !isReady && !previewError)) && (
+        <LoaderCircle
+          aria-hidden="true"
+          className="size-8 animate-spin text-text"
+        />
+      )}
+      {previewError && (
+        <span className="px-5 text-center text-xs text-muted">
+          Preview indisponível. Clique para abrir o canal.
+        </span>
+      )}
+      {channel && !playbackSource.isLoading && (
+        <span className="absolute bottom-3 left-3 rounded-full bg-black/65 px-2.5 py-1 text-[9px] font-extrabold tracking-[0.08em] text-text">
+          ● AO VIVO
+        </span>
+      )}
+      <button
+        aria-label={
+          channel ? `Assistir ${channel.name}` : "Nenhum canal selecionado"
+        }
+        className="absolute inset-0 grid place-items-center focus-visible:outline-2 focus-visible:outline-focus"
+        disabled={!channel}
+        onClick={onOpen}
+        type="button"
+      >
+        <span className="grid size-11 place-items-center rounded-full bg-black/45 text-text opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
           <Play aria-hidden="true" className="ml-0.5 size-5 fill-current" />
         </span>
-      </div>
+      </button>
+      {channel && (
+        <button
+          aria-label={isMuted ? "Ativar som do preview" : "Silenciar preview"}
+          className="absolute right-3 bottom-3 z-20 grid size-9 place-items-center rounded-full bg-black/65 text-text transition-colors hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-focus"
+          onClick={(event) => {
+            event.stopPropagation();
+            const video = videoRef.current;
+            if (!video) return;
+            video.muted = !video.muted;
+            setIsMuted(video.muted);
+          }}
+          type="button"
+        >
+          {isMuted ? (
+            <VolumeX aria-hidden="true" className="size-4" />
+          ) : (
+            <Volume2 aria-hidden="true" className="size-4" />
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ProgramPanel({ channel }: { channel?: Channel }) {
+  const navigate = useNavigate();
+  const watchChannel = () => {
+    if (!channel) return;
+    void navigate({
+      to: "/app/tv/$channelId/watch",
+      params: { channelId: channel.id },
+    });
+  };
+
+  return (
+    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-full lg:flex-1">
+      <ChannelPreview channel={channel} onOpen={watchChannel} />
       <div>
         <h2 className="m-0 font-display text-[21px] font-bold tracking-[-0.04em] text-text">
           {channel?.name ?? "Selecione um canal"}
@@ -148,31 +315,18 @@ function ProgramPanel({ channel }: { channel?: Channel }) {
           <span className="text-line"> · </span>38 decorridos
         </p>
       </div>
-      <Button
-        className="h-10 self-start px-4 text-xs"
-        onClick={() =>
-          void navigate({
-            to: "/app/tv/$channelId/watch",
-            params: { channelId: channel?.id ?? "" },
-          })
-        }
-        variant="primary"
-      >
-        <Play aria-hidden="true" className="size-4 fill-current" />
-        Assistir ao vivo
-      </Button>
     </section>
   );
 }
 
 export function TvPage() {
-  const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isLoading } = useCatalogState();
   const { items } = useCatalogItems("live");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Todos");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [selectedChannelId, setSelectedChannelId] = useState<string>();
   const categories = useMemo<Array<[string, number]>>(() => {
     const counts = new Map<string, number>();
     for (const item of items) {
@@ -181,19 +335,27 @@ export function TvPage() {
     }
     return [["Todos", items.length], ...counts.entries()];
   }, [items]);
+  const channels = useMemo<Channel[]>(
+    () =>
+      items.map((item) => ({
+        current: item.groupTitle ?? item.categories?.[0] ?? "Sem categoria",
+        delivery: item.delivery,
+        id: item.id,
+        logoUrl: item.logoUrl,
+        name: item.title,
+        streamUrl: item.streamUrl,
+      })),
+    [items],
+  );
   const visibleChannels = useMemo<Channel[]>(() => {
-    const importedChannels = items.map((item) => ({
-      current: item.groupTitle ?? item.categories?.[0] ?? "Sem categoria",
-      id: item.id,
-      logoUrl: item.logoUrl,
-      name: item.title,
-    }));
-    return importedChannels.filter(
+    return channels.filter(
       (channel) =>
         channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
-        (category === "Todos" || channel.current === category),
+        (query.trim().length > 0 ||
+          category === "Todos" ||
+          channel.current === category),
     );
-  }, [category, items, query]);
+  }, [category, channels, query]);
 
   return (
     <AppLayout fixedViewport>
@@ -241,25 +403,27 @@ export function TvPage() {
               onSelect={setCategory}
               selected={category}
             />
-            <ScrollArea className="h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 lg:w-[500px] lg:flex-none">
-              <div className="flex flex-col gap-2">
-                {visibleChannels.map((channel) => (
-                  <ChannelRow
-                    channel={channel}
-                    favorite={isFavorite("channel", channel.id)}
-                    key={channel.id}
-                    onToggle={() => toggleFavorite("channel", channel.id)}
-                    onWatch={() =>
-                      void navigate({
-                        to: "/app/tv/$channelId/watch",
-                        params: { channelId: channel.id },
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-            <ProgramPanel channel={visibleChannels[0]} />
+            <section className="flex h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 flex-col lg:w-[500px] lg:flex-none">
+              <h2 className="m-0 shrink-0 px-1 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
+                Canais
+              </h2>
+              <ScrollArea className="min-h-0 min-w-0 flex-1">
+                <div className="flex flex-col gap-2">
+                  {visibleChannels.map((channel) => (
+                    <ChannelRow
+                      channel={channel}
+                      favorite={isFavorite("channel", channel.id)}
+                      key={channel.id}
+                      onToggle={() => toggleFavorite("channel", channel.id)}
+                      onSelect={() => setSelectedChannelId(channel.id)}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </section>
+            <ProgramPanel
+              channel={channels.find(({ id }) => id === selectedChannelId)}
+            />
           </div>
         )}
       </div>
