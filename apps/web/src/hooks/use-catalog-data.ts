@@ -18,6 +18,17 @@ import {
   loadSeriesEpisodes,
 } from "../services/catalog-service";
 
+function secureAssetUrl(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "http:") parsed.protocol = "https:";
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export function useCatalogItems(kind: CatalogItem["kind"]) {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [isLoading, setLoading] = useState(true);
@@ -111,13 +122,10 @@ export function useCatalogItem(id: string | undefined) {
               (typeof info.description === "string" && info.description) ||
               loaded.description,
             logoUrl:
-              (typeof info.cover_big === "string" && info.cover_big) ||
-              (typeof info.movie_image === "string" && info.movie_image) ||
+              secureAssetUrl(info.cover_big) ||
+              secureAssetUrl(info.movie_image) ||
               loaded.logoUrl,
-            backdropUrl:
-              typeof firstBackdrop === "string"
-                ? firstBackdrop
-                : loaded.backdropUrl,
+            backdropUrl: secureAssetUrl(firstBackdrop) ?? loaded.backdropUrl,
           });
         })
         .catch(() => undefined)
@@ -220,13 +228,11 @@ export function useCatalogSeriesDetails(id: string | undefined) {
                 (typeof info.plot === "string" && info.plot) ||
                 (typeof info.description === "string" && info.description) ||
                 loadedSeries.description,
-              posterUrl:
-                (typeof info.cover === "string" && info.cover) ||
-                loadedSeries.posterUrl,
+              posterUrl: secureAssetUrl(info.cover) || loadedSeries.posterUrl,
               backdropUrl:
                 Array.isArray(info.backdrop_path) &&
-                typeof info.backdrop_path[0] === "string"
-                  ? info.backdrop_path[0]
+                secureAssetUrl(info.backdrop_path[0])
+                  ? secureAssetUrl(info.backdrop_path[0])
                   : loadedSeries.backdropUrl,
               seasonCount:
                 new Set(remote.episodes.map((episode) => episode.seasonNumber))

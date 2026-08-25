@@ -123,6 +123,14 @@ function url(value: unknown) {
   }
 }
 
+function assetUrl(value: unknown) {
+  const candidate = url(value);
+  if (!candidate) return undefined;
+  const parsed = new URL(candidate);
+  if (parsed.protocol === "http:") parsed.protocol = "https:";
+  return parsed.toString();
+}
+
 function numberValue(value: unknown) {
   const result = Number(value);
   return Number.isFinite(result) && result >= 0 ? result : undefined;
@@ -238,7 +246,7 @@ async function mapXtreamCatalog(
       title: text(row.name) ?? `Canal ${index + 1}`,
       groupTitle: category,
       categories: category ? [category] : [],
-      logoUrl: url(row.stream_icon),
+      logoUrl: assetUrl(row.stream_icon),
       streamUrl: mediaUrl(credentials, "live", id, extension),
       delivery: "mpeg-ts",
       providerId: id,
@@ -264,7 +272,7 @@ async function mapXtreamCatalog(
       title,
       groupTitle: category,
       categories: category ? [category] : [],
-      logoUrl: url(row.stream_icon),
+      logoUrl: assetUrl(row.stream_icon),
       streamUrl: mediaUrl(
         credentials,
         "movie",
@@ -295,7 +303,7 @@ async function mapXtreamCatalog(
       title,
       groupTitle: category,
       categories: category ? [category] : [],
-      posterUrl: url(row.cover),
+      posterUrl: assetUrl(row.cover),
       seasonCount: numberValue(row.num) ?? 0,
       episodeCount: 0,
     });
@@ -429,8 +437,8 @@ app.post<{
         seriesTitle,
         seasonNumber,
         episodeNumber,
-        logoUrl: url(episodeInfo.movie_image),
-        stillUrl: url(episodeInfo.movie_image),
+        logoUrl: assetUrl(episodeInfo.movie_image),
+        stillUrl: assetUrl(episodeInfo.movie_image),
         description: text(episodeInfo.plot ?? episodeInfo.description),
         durationSecs: numberValue(episodeInfo.duration_secs),
         rating: numberValue(episodeInfo.rating),
@@ -495,8 +503,8 @@ app.post<{
         seriesTitle,
         seasonNumber,
         episodeNumber,
-        logoUrl: url(episodeInfo.movie_image),
-        stillUrl: url(episodeInfo.movie_image),
+        logoUrl: assetUrl(episodeInfo.movie_image),
+        stillUrl: assetUrl(episodeInfo.movie_image),
         description: text(episodeInfo.plot ?? episodeInfo.description),
         durationSecs: numberValue(episodeInfo.duration_secs),
         rating: numberValue(episodeInfo.rating),
@@ -645,6 +653,8 @@ app.post<{ Body: { url?: string } }>(
           ? request.headers["user-agent"]
           : undefined,
       );
+      if (resolvedUrl.protocol !== "https:")
+        throw new Error("MEDIA_REDIRECT_NOT_SECURE");
       return reply.send({ resolvedUrl: resolvedUrl.toString() });
     } catch (error) {
       request.log.error(
