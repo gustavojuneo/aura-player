@@ -665,6 +665,14 @@ app.post<{ Body: { url?: string } }>(
             ? request.headers["user-agent"]
             : undefined,
       });
+      if (
+        resolvedUrl.protocol === "http:" &&
+        typeof request.headers.origin === "string" &&
+        request.headers.origin.startsWith("https://") &&
+        resolvedUrl.hostname !== url.hostname
+      ) {
+        resolvedUrl.protocol = "https:";
+      }
       return reply.send({ resolvedUrl: resolvedUrl.toString() });
     } catch (error) {
       request.log.error(
