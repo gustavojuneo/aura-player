@@ -47,7 +47,8 @@ export function PlayerPage({ kind }: PlayerPageProps) {
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
   const playbackSource = usePlaybackSource(
     rawStreamUrl,
-    kind !== "episode" && Boolean(rawStreamUrl),
+    Boolean(rawStreamUrl),
+    kind === "episode",
   );
   if (playbackSource.error)
     return (

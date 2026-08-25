@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { env } from "../env";
-import { createMediaTarget } from "../http/media-target";
+import { createMediaTarget, resolveMediaUrl } from "../http/media-target";
 
 export function usePlaybackSource(
   url: string | undefined,
   shouldProxy: boolean,
+  resolveRedirect = false,
 ) {
   const [source, setSource] = useState<string | undefined>();
   const [error, setError] = useState<Error | null>(null);
@@ -17,9 +18,14 @@ export function usePlaybackSource(
     }
     setSource(undefined);
     setError(null);
-    void createMediaTarget(url)
-      .then((targetId) => {
-        if (!cancelled) setSource(`${env.VITE_API_URL}/media/${targetId}`);
+    const sourcePromise = resolveRedirect
+      ? resolveMediaUrl(url)
+      : createMediaTarget(url).then(
+          (targetId) => `${env.VITE_API_URL}/media/${targetId}`,
+        );
+    void sourcePromise
+      .then((resolvedSource) => {
+        if (!cancelled) setSource(resolvedSource);
       })
       .catch((caught) => {
         if (!cancelled)
@@ -32,7 +38,7 @@ export function usePlaybackSource(
     return () => {
       cancelled = true;
     };
-  }, [shouldProxy, url]);
+  }, [resolveRedirect, shouldProxy, url]);
   return {
     source,
     error,

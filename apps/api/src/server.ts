@@ -175,9 +175,16 @@ function episodeMediaUrl(
   episodeInfo: Record<string, unknown>,
 ) {
   const directSource = url(episode.direct_source);
-  if (directSource) return directSource;
+  if (directSource) {
+    const parsed = new URL(directSource);
+    if (parsed.hostname === credentials.server.hostname)
+      parsed.protocol = "http:";
+    return parsed.toString();
+  }
+  const episodeServer = new URL(credentials.server);
+  episodeServer.protocol = "http:";
   return mediaUrl(
-    credentials,
+    { ...credentials, server: episodeServer },
     "episode",
     text(episode.id) ?? "",
     text(episode.container_extension) ??
@@ -575,6 +582,31 @@ async function fetchMedia(
   throw new Error("TOO_MANY_REDIRECTS");
 }
 
+async function resolveMediaRedirect(
+  url: URL,
+  requestUserAgent: string | undefined,
+) {
+  let current = url;
+  const userAgent =
+    requestUserAgent?.trim() ||
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
+  for (let redirects = 0; redirects <= 5; redirects += 1) {
+    const response = await fetch(current, {
+      headers: { Accept: "*/*", "User-Agent": userAgent },
+      redirect: "manual",
+    });
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      await response.body?.cancel();
+      return current;
+    }
+    const location = response.headers.get("location");
+    await response.body?.cancel();
+    if (!location) throw new Error("REDIRECT_WITHOUT_LOCATION");
+    current = await validateRedirect(location, current);
+  }
+  throw new Error("TOO_MANY_REDIRECTS");
+}
+
 function cleanupTargets() {
   const now = Date.now();
   for (const [id, target] of targets)
@@ -598,6 +630,31 @@ app.post<{ Body: { url?: string } }>(
         .send({ targetId, expiresAt: Date.now() + targetTtlMs });
     } catch {
       return reply.code(400).send({ message: "Invalid media target" });
+    }
+  },
+);
+
+app.post<{ Body: { url?: string } }>(
+  "/media-resolve",
+  async (request, reply) => {
+    try {
+      const url = await validateTarget(request.body?.url);
+      const resolvedUrl = await resolveMediaRedirect(
+        url,
+        typeof request.headers["user-agent"] === "string"
+          ? request.headers["user-agent"]
+          : undefined,
+      );
+      return reply.send({ resolvedUrl: resolvedUrl.toString() });
+    } catch (error) {
+      request.log.error(
+        {
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorName: error instanceof Error ? error.name : undefined,
+        },
+        "Media redirect resolution failed",
+      );
+      return reply.code(502).send({ message: "Media unavailable" });
     }
   },
 );
