@@ -592,23 +592,43 @@ async function fetchMedia(
 
 async function resolveMediaRedirect(
   url: URL,
-  requestUserAgent: string | undefined,
+  headers: {
+    origin?: string;
+    referer?: string;
+    userAgent?: string;
+  },
 ) {
   const userAgent =
-    requestUserAgent?.trim() ||
+    headers.userAgent?.trim() ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
   const response = await fetch(url, {
     headers: {
       Accept: "*/*",
       Range: "bytes=0-0",
       "User-Agent": userAgent,
+      ...(headers.origin ? { Origin: headers.origin } : {}),
+      ...(headers.referer ? { Referer: headers.referer } : {}),
     },
     redirect: "follow",
   });
   const resolvedUrl = new URL(response.url);
   await response.body?.cancel();
-  if (resolvedUrl.protocol !== "https:")
-    throw new Error("MEDIA_REDIRECT_NOT_SECURE");
+  if (resolvedUrl.protocol !== "https:") {
+    const error = new Error("MEDIA_REDIRECT_NOT_SECURE");
+    Object.assign(error, {
+      upstreamHost: resolvedUrl.hostname,
+      upstreamStatus: response.status,
+    });
+    throw error;
+  }
+  if (!response.ok) {
+    const error = new Error("MEDIA_UPSTREAM_UNAVAILABLE");
+    Object.assign(error, {
+      upstreamHost: resolvedUrl.hostname,
+      upstreamStatus: response.status,
+    });
+    throw error;
+  }
   const addresses = await dns.lookup(resolvedUrl.hostname, { all: true });
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("MEDIA_REDIRECT_PRIVATE_TARGET");
@@ -647,12 +667,20 @@ app.post<{ Body: { url?: string } }>(
   async (request, reply) => {
     try {
       const url = await validateTarget(request.body?.url);
-      const resolvedUrl = await resolveMediaRedirect(
-        url,
-        typeof request.headers["user-agent"] === "string"
-          ? request.headers["user-agent"]
-          : undefined,
-      );
+      const resolvedUrl = await resolveMediaRedirect(url, {
+        origin:
+          typeof request.headers.origin === "string"
+            ? request.headers.origin
+            : undefined,
+        referer:
+          typeof request.headers.referer === "string"
+            ? request.headers.referer
+            : undefined,
+        userAgent:
+          typeof request.headers["user-agent"] === "string"
+            ? request.headers["user-agent"]
+            : undefined,
+      });
       if (resolvedUrl.protocol !== "https:")
         throw new Error("MEDIA_REDIRECT_NOT_SECURE");
       return reply.send({ resolvedUrl: resolvedUrl.toString() });
@@ -661,6 +689,14 @@ app.post<{ Body: { url?: string } }>(
         {
           errorMessage: error instanceof Error ? error.message : String(error),
           errorName: error instanceof Error ? error.name : undefined,
+          upstreamHost:
+            error instanceof Error
+              ? (error as Error & { upstreamHost?: string }).upstreamHost
+              : undefined,
+          upstreamStatus:
+            error instanceof Error
+              ? (error as Error & { upstreamStatus?: number }).upstreamStatus
+              : undefined,
         },
         "Media redirect resolution failed",
       );
