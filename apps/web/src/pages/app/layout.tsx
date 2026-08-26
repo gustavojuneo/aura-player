@@ -1,8 +1,10 @@
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
 import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
 
 export function AppLayout() {
+  useTvDirectionalNavigation();
   const [sessionExpired, setSessionExpired] = useState(false);
   const { pathname } = useLocation();
   const isPlayerRoute =
@@ -29,7 +31,7 @@ export function AppLayout() {
       }
     >
       {!isShelllessRoute && <Sidebar />}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1" data-tv-app-content>
         <Outlet />
       </div>
       {!isShelllessRoute && <MobileNavigation />}

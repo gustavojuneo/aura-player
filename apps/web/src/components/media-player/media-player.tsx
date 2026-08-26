@@ -83,9 +83,15 @@ export function MediaPlayer({
 
   return (
     <main
+      data-player-root
       className={`relative flex h-dvh min-h-[560px] w-full flex-col overflow-hidden bg-[#080806] text-text ${preferences.reduceMotion ? "[&_button]:transition-none" : ""}`}
       onClick={(event) => handleSurfaceAction(event.target as HTMLElement)}
       onKeyDown={(event) => {
+        if (event.key === "Escape" || event.keyCode === 461) {
+          event.preventDefault();
+          onBack();
+          return;
+        }
         if (
           (event.key === "Enter" || event.key === " ") &&
           !isInteractiveTarget(event.target as HTMLElement)

@@ -343,6 +343,9 @@ function ClearDialog({
       aria-labelledby="clear-data-title"
       aria-modal="true"
       className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" || event.keyCode === 461) onCancel();
+      }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onCancel();
       }}
