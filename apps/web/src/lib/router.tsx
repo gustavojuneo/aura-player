@@ -1,4 +1,5 @@
 import {
+  createHashHistory,
   createRootRoute,
   createRoute,
   createRouter,
@@ -214,5 +215,6 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 export const router = createRouter({
+  history: createHashHistory(),
   routeTree,
 });
