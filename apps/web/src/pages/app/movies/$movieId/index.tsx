@@ -1,6 +1,7 @@
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useMemo } from "react";
+import { BrandLogo } from "../../../../components/brand-logo";
 import { Carousel } from "../../../../components/carousel";
 import {
   DetailCard,
@@ -76,9 +77,10 @@ export function MovieDetailsPage() {
           <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />
           <span>Voltar</span>
         </button>
-        <span className="font-display text-[17px] font-extrabold text-text">
-          AURA
-        </span>
+        <BrandLogo
+          markClassName="size-7"
+          textClassName="text-[17px] font-extrabold"
+        />
       </header>
       <DetailHero
         badge={`Filme · ${item.year ?? "Destaque"}`}

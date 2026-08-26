@@ -6,6 +6,6 @@
   "allowCrossDomain": true,
   "main": "index.html",
   "title": "AURA IPTV",
-  "icon": "episode-no-image.png",
-  "largeIcon": "episode-no-image.png"
+  "icon": "logo.png",
+  "largeIcon": "large-logo.png"
 }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">AURA</title>
+  <desc id="description">Símbolo minimalista temporário da AURA, formado por uma letra A dourada.</desc>
+  <rect width="512" height="512" rx="112" fill="#15130F"/>
+  <path d="M256 112 112 400h67l77-154 77 154h67L256 112Z" fill="#E3A83B"/>
+  <path d="M211 320h90l28 56H183l28-56Z" fill="#15130F"/>
+</svg>

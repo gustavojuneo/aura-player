@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/brand-logo";
 import { Button } from "../../components/ui";
 import { Icon } from "./icon";
 
@@ -8,10 +9,10 @@ function AuraMark() {
       href="#inicio"
       aria-label="AURA, início"
     >
-      <span className="size-6 rounded-full bg-[conic-gradient(from_20deg,#e3a83b,#fff0b0,#8a5c13,#e3a83b)]" />
-      <span className="font-display text-xl font-extrabold tracking-[0.06em] text-text">
-        AURA
-      </span>
+      <BrandLogo
+        markClassName="size-8"
+        textClassName="font-extrabold tracking-[0.06em]"
+      />
     </a>
   );
 }

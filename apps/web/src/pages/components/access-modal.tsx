@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+import { BrandLogo } from "../../components/brand-logo";
 import { Button } from "../../components/ui";
 import { Icon } from "./icon";
 
@@ -37,7 +38,10 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
         >
           <Icon name="close" />
         </button>
-        <p className="m-0 text-base font-extrabold text-gold-bright">AURA</p>
+        <BrandLogo
+          markClassName="size-7"
+          textClassName="text-base font-extrabold text-gold-bright"
+        />
         <div className="flex flex-col gap-2">
           <h2
             className="m-0 pr-8 text-[26px] font-[750] tracking-[-0.03em] text-text"

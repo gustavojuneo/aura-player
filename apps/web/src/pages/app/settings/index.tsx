@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "../../../components/brand-logo";
 import { Button, Switch } from "../../../components/ui";
 import { clearFavorites } from "../../../services/favorites";
 import {
@@ -91,9 +92,10 @@ export function SettingsPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-5 sm:px-6 lg:gap-5 lg:px-9 lg:pb-10">
       <header className="flex items-center justify-between">
-        <span className="font-display text-lg font-extrabold text-text lg:text-[19px]">
-          ◉ AURA
-        </span>
+        <BrandLogo
+          markClassName="size-7"
+          textClassName="text-lg font-extrabold lg:text-[19px]"
+        />
         <button
           className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
           onClick={() => router.history.back()}
