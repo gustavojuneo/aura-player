@@ -5,7 +5,15 @@ const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function isTextEntry(element: Element | null) {
-  return element?.matches("input, textarea, select") ?? false;
+  return (
+    element?.matches(
+      'input:not([type="checkbox"]):not([type="radio"]), textarea',
+    ) ?? false
+  );
+}
+
+function usesNativeDirectionalNavigation(element: Element | null) {
+  return element?.matches("select") ?? false;
 }
 
 function isVisible(element: HTMLElement) {
@@ -105,13 +113,17 @@ export function useTvDirectionalNavigation() {
       }
       if (!event.key.startsWith("Arrow")) return;
       const current = document.activeElement;
-      if (!(current instanceof HTMLElement) || isTextEntry(current)) return;
+      if (!(current instanceof HTMLElement)) return;
       if (current.closest("[data-player-root]")) return;
 
-      const next = findNextFocusable(
-        current,
-        event.key.slice("Arrow".length).toLowerCase(),
-      );
+      const direction = event.key.slice("Arrow".length).toLowerCase();
+      if (
+        usesNativeDirectionalNavigation(current) ||
+        (isTextEntry(current) && (direction === "left" || direction === "right"))
+      )
+        return;
+
+      const next = findNextFocusable(current, direction);
       if (!next) return;
       event.preventDefault();
       next.focus();

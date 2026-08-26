@@ -1,18 +1,24 @@
 import { useNavigate } from "@tanstack/react-router";
 
+import { useTvDirectionalNavigation } from "../hooks/use-tv-directional-navigation";
 import { LandingHeader } from "./components/landing-header";
 import { LandingHero } from "./components/landing-hero";
 import { PlatformHighlights } from "./components/platform-highlights";
 
 export function LandingPage() {
   const navigate = useNavigate();
+  useTvDirectionalNavigation();
 
   function handleAccess() {
     void navigate({ to: "/app" });
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-bg text-text" id="inicio">
+    <main
+      className="min-h-screen overflow-hidden bg-bg text-text"
+      data-tv-app-content
+      id="inicio"
+    >
       <LandingHeader />
       <LandingHero onAccess={handleAccess} />
       <PlatformHighlights />

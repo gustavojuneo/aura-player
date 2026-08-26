@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "vendor": "AURA",
   "type": "web",
+  "allowCrossDomain": true,
   "main": "index.html",
   "title": "AURA IPTV",
   "icon": "episode-no-image.png",

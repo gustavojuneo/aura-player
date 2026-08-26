@@ -56,6 +56,9 @@ pnpm webos:package
 The command builds the web application and packages it with `ares-package`.
 The webOS build uses the published backend at
 `https://aura-api-ia1i.onrender.com`, injected by the package script.
+The packaged application enables the webOS cross-domain capability so it can
+reach the API and user-configured IPTV providers from its local application
+origin.
 The generated package is written to:
 
 ```text
@@ -172,6 +175,13 @@ Check the package build output and inspect the application with the webOS
 debugging tools. Also verify that the TV model meets the webOS 5 compatibility
 baseline and that the API URL configured for the web application is reachable
 from the TV.
+
+### Adding a source reports a network error
+
+Rebuild and reinstall the package after confirming that `allowCrossDomain` is
+enabled in `apps/web/public/appinfo.json`. Packaged webOS applications run from
+a local application origin and need this capability to reach the Render API
+and external IPTV providers.
 
 ### Streaming does not start
 
