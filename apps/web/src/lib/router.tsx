@@ -4,21 +4,106 @@ import {
   createRouter,
   Outlet,
 } from "@tanstack/react-router";
+import { type ComponentType, lazy, Suspense } from "react";
 
-import { LandingPage } from "../pages";
-import { HomePage } from "../pages/app";
-import { FavoritesPage } from "../pages/app/favorites";
 import { AppLayout } from "../pages/app/layout";
-import { MoviesPage } from "../pages/app/movies";
-import { MovieDetailsPage } from "../pages/app/movies/$movieId";
-import { MoviePlayerPage } from "../pages/app/movies/$movieId/watch";
-import { SeriesPage } from "../pages/app/series";
-import { SeriesDetailsPage } from "../pages/app/series/$seriesId";
-import { EpisodePlayerPage } from "../pages/app/series/$seriesId/episodes/$episodeId/watch";
-import { SettingsPage } from "../pages/app/settings";
-import { SourcesPage } from "../pages/app/sources";
-import { TvPage } from "../pages/app/tv";
-import { LivePlayerPage } from "../pages/app/tv/$channelId/watch";
+
+function LoadingRoute() {
+  return (
+    <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
+      Carregando…
+    </main>
+  );
+}
+
+function lazyPage(load: () => Promise<{ default: ComponentType }>) {
+  const Page = lazy(load);
+  return function LazyPage() {
+    return (
+      <Suspense fallback={<LoadingRoute />}>
+        <Page />
+      </Suspense>
+    );
+  };
+}
+
+const LandingPage = lazyPage(() =>
+  import("../pages").then(({ LandingPage: page }) => ({ default: page })),
+);
+const HomePage = lazyPage(() =>
+  import("../pages/app").then(({ HomePage: page }) => ({ default: page })),
+);
+const FavoritesPage = lazyPage(() =>
+  import("../pages/app/favorites").then(({ FavoritesPage: page }) => ({
+    default: page,
+  })),
+);
+const FavoriteMoviesPage = lazyPage(async () => {
+  const { FavoritesPage: Page } = await import("../pages/app/favorites");
+  return { default: () => <Page category="movie" /> };
+});
+const FavoriteSeriesPage = lazyPage(async () => {
+  const { FavoritesPage: Page } = await import("../pages/app/favorites");
+  return { default: () => <Page category="series" /> };
+});
+const FavoriteChannelsPage = lazyPage(async () => {
+  const { FavoritesPage: Page } = await import("../pages/app/favorites");
+  return { default: () => <Page category="channel" /> };
+});
+const MoviesPage = lazyPage(() =>
+  import("../pages/app/movies").then(({ MoviesPage: page }) => ({
+    default: page,
+  })),
+);
+const MovieDetailsPage = lazyPage(() =>
+  import("../pages/app/movies/$movieId").then(({ MovieDetailsPage: page }) => ({
+    default: page,
+  })),
+);
+const MoviePlayerPage = lazyPage(() =>
+  import("../pages/app/movies/$movieId/watch").then(
+    ({ MoviePlayerPage: page }) => ({
+      default: page,
+    }),
+  ),
+);
+const SeriesPage = lazyPage(() =>
+  import("../pages/app/series").then(({ SeriesPage: page }) => ({
+    default: page,
+  })),
+);
+const SeriesDetailsPage = lazyPage(() =>
+  import("../pages/app/series/$seriesId").then(
+    ({ SeriesDetailsPage: page }) => ({
+      default: page,
+    }),
+  ),
+);
+const EpisodePlayerPage = lazyPage(() =>
+  import("../pages/app/series/$seriesId/episodes/$episodeId/watch").then(
+    ({ EpisodePlayerPage: page }) => ({ default: page }),
+  ),
+);
+const SettingsPage = lazyPage(() =>
+  import("../pages/app/settings").then(({ SettingsPage: page }) => ({
+    default: page,
+  })),
+);
+const SourcesPage = lazyPage(() =>
+  import("../pages/app/sources").then(({ SourcesPage: page }) => ({
+    default: page,
+  })),
+);
+const TvPage = lazyPage(() =>
+  import("../pages/app/tv").then(({ TvPage: page }) => ({ default: page })),
+);
+const LivePlayerPage = lazyPage(() =>
+  import("../pages/app/tv/$channelId/watch").then(
+    ({ LivePlayerPage: page }) => ({
+      default: page,
+    }),
+  ),
+);
 
 const rootRoute = createRootRoute({ component: Outlet });
 const landingRoute = createRoute({
@@ -57,17 +142,17 @@ const favoritesRoute = createRoute({
   path: "favorites",
 });
 const favoriteMoviesRoute = createRoute({
-  component: () => <FavoritesPage category="movie" />,
+  component: FavoriteMoviesPage,
   getParentRoute: () => appRoute,
   path: "favorites/movies",
 });
 const favoriteSeriesRoute = createRoute({
-  component: () => <FavoritesPage category="series" />,
+  component: FavoriteSeriesPage,
   getParentRoute: () => appRoute,
   path: "favorites/series",
 });
 const favoriteChannelsRoute = createRoute({
-  component: () => <FavoritesPage category="channel" />,
+  component: FavoriteChannelsPage,
   getParentRoute: () => appRoute,
   path: "favorites/channels",
 });
