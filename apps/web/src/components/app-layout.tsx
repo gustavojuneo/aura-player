@@ -37,7 +37,7 @@ const navigation: Array<{
   { icon: "clapperboard", label: "Filmes", to: "/app/movies" },
   { icon: "tv", label: "Séries", to: "/app/series" },
   { icon: "heart", label: "Favoritos", to: "/app/favorites" },
-  { icon: "database", label: "Fontes IPTV", to: "/app/sources" },
+  { icon: "database", label: "Listas IPTV", to: "/app/sources" },
 ];
 
 const itemClassName =

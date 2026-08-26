@@ -77,7 +77,7 @@ const emptyValues: SourceFormValues = {
 };
 
 export function SourceForm({
-  description = "Teste a conexão antes de salvar.",
+  description = "Informe os dados da lista IPTV que deseja adicionar.",
   initialSource,
   onCancel,
   onSave,
@@ -111,7 +111,7 @@ export function SourceForm({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="m-0 font-display text-[21px] font-bold text-text">
-            {title ?? (initialSource ? "Editar fonte" : "Adicionar fonte")}
+            {title ?? (initialSource ? "Editar fonte" : "Adicionar Lista")}
           </h2>
           <p className="mt-1 mb-0 text-xs text-muted">{description}</p>
         </div>

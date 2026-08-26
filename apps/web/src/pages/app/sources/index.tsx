@@ -1,11 +1,10 @@
-import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppHeader, AppLayout } from "../../../components/app-layout";
 import {
   SourceForm,
   type SourceFormValues,
 } from "../../../components/source-form";
-import { Button, ProductState } from "../../../components/ui";
+import { ProductState } from "../../../components/ui";
 import { useCatalogSources } from "../../../hooks/use-catalog-data";
 import {
   getActiveSourceId,
@@ -41,10 +40,6 @@ export function SourcesPage() {
     }
   }, [activeId, importedSources]);
 
-  const openCreate = () => {
-    setEditing(undefined);
-    setFormOpen(true);
-  };
   const openEdit = (source: Source) => {
     setEditing(source);
     setFormOpen(true);
@@ -110,27 +105,12 @@ export function SourcesPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]">
-              Fontes IPTV
+              Listas IPTV
             </h1>
             <p className="mt-1 mb-0 text-[13px] text-muted">
-              Gerencie conexões sem expor credenciais.
+              Adicione e gerencie suas listas IPTV neste navegador.
             </p>
           </div>
-          <Button
-            className="hidden h-10 shrink-0 px-4 text-xs lg:inline-flex"
-            onClick={openCreate}
-            variant="primary"
-          >
-            <Plus className="size-4" />
-            Adicionar fonte
-          </Button>
-          <button
-            className="shrink-0 pt-1 text-xs font-bold text-gold-bright lg:hidden"
-            onClick={openCreate}
-            type="button"
-          >
-            <Plus className="inline size-3.5" /> Adicionar
-          </button>
         </div>
         {notice && (
           <p
@@ -143,7 +123,7 @@ export function SourcesPage() {
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,650px)_minmax(330px,1fr)]">
           <section
             className="flex min-w-0 flex-col gap-2.5"
-            aria-label="Fontes cadastradas"
+            aria-label="Playlists cadastradas"
           >
             {[
               ...sources,
@@ -173,7 +153,7 @@ export function SourcesPage() {
                   onActivate={() => {
                     setActiveId(source.id);
                     setActiveSourceId(source.id);
-                    setNotice(`${source.name} agora é a fonte ativa.`);
+                    setNotice(`${source.name} agora é a playlist ativa.`);
                   }}
                   onDelete={() => {
                     void removeM3uSource(source.id);
