@@ -51,6 +51,6 @@ export function consumeFavoritesOrigin(): FavoritesOrigin | null {
     }
     return null;
   } catch {
-    return false;
+    return null;
   }
 }

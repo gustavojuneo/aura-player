@@ -10,45 +10,10 @@ catalog cache and playback preferences in the browser.
 
 ## Product tour
 
-The screenshots below were captured from the deployed application after adding
-a temporary demo source. Credentials and source URLs are intentionally omitted
-from this repository.
-
-### Landing page
-
-![AURA landing page](docs/screenshots/landing-page.png)
-
-### Source management
-
-![Source management](docs/screenshots/source-management.png)
-
-### Home and catalog browsing
-
-![Home dashboard](docs/screenshots/home.png)
-
-![Live TV catalog](docs/screenshots/tv.png)
-
-![Movies catalog](docs/screenshots/movies.png)
-
-![Series catalog](docs/screenshots/series.png)
-
-### Details and playback
-
-![Movie details](docs/screenshots/movie-details.png)
-
-![Series details and episodes](docs/screenshots/series-details.png)
-
-![Movie player](docs/screenshots/movie-player.png)
-
-![Series player](docs/screenshots/series-player.png)
-
-### Supporting screens
-
-![Onboarding](docs/screenshots/onboarding.png)
-
-![Favorites](docs/screenshots/favorites.png)
-
-![Settings](docs/screenshots/settings.png)
+The deployed application includes a public landing page, first-source
+onboarding, source management, live TV, movie and series catalogs, detail
+pages, episode navigation, playback, favorites, and settings. The route list
+below is the canonical product tour.
 
 ## Routes
 
@@ -134,6 +99,5 @@ credentials or `.env` files.
 
 ## Responsible use
 
-Only connect sources that you own or are authorized to use. The demo source
-used to capture the screenshots is not part of the codebase, and no provider
-credentials are stored in this README.
+Only connect sources that you own or are authorized to use. Never commit real
+source credentials or provider URLs to the repository.
