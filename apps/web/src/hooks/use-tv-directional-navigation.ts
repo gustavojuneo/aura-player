@@ -12,8 +12,18 @@ function isTextEntry(element: Element | null) {
   );
 }
 
-function usesNativeDirectionalNavigation(element: Element | null) {
-  return element?.matches("select") ?? false;
+function getDirection(event: KeyboardEvent) {
+  const key = event.key.toLowerCase();
+  if (key === "arrowup" || key === "up") return "up";
+  if (key === "arrowdown" || key === "down") return "down";
+  if (key === "arrowleft" || key === "left") return "left";
+  if (key === "arrowright" || key === "right") return "right";
+  return (
+    { 37: "left", 38: "up", 39: "right", 40: "down" } as Record<
+      number,
+      string
+    >
+  )[event.keyCode];
 }
 
 function isVisible(element: HTMLElement) {
@@ -85,6 +95,21 @@ export function useTvDirectionalNavigation() {
   }, [pathname]);
 
   useEffect(() => {
+    const focusDialog = () => {
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+      if (!dialog || dialog.contains(document.activeElement)) return;
+      const first = Array.from(
+        dialog.querySelectorAll<HTMLElement>(focusableSelector),
+      ).find(isVisible);
+      first?.focus();
+    };
+    const observer = new MutationObserver(focusDialog);
+    observer.observe(document.body, { childList: true, subtree: true });
+    focusDialog();
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" || event.keyCode === 461) {
         const dialog = document.querySelector('[role="dialog"]');
@@ -111,20 +136,23 @@ export function useTvDirectionalNavigation() {
         }
         return;
       }
-      if (!event.key.startsWith("Arrow")) return;
+      const direction = getDirection(event);
+      if (!direction) return;
       const current = document.activeElement;
       if (!(current instanceof HTMLElement)) return;
       if (current.closest("[data-player-root]")) return;
+      if (current.closest('[role="option"]')) return;
 
-      const direction = event.key.slice("Arrow".length).toLowerCase();
       if (
-        usesNativeDirectionalNavigation(current) ||
         (isTextEntry(current) && (direction === "left" || direction === "right"))
       )
         return;
 
       const next = findNextFocusable(current, direction);
-      if (!next) return;
+      if (!next) {
+        if (current.matches('[role="combobox"]')) event.preventDefault();
+        return;
+      }
       event.preventDefault();
       next.focus();
       next.scrollIntoView({ block: "nearest", inline: "nearest" });
