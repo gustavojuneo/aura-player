@@ -1,5 +1,6 @@
 import {
   type CatalogItem,
+  type CatalogSeries,
   type CatalogSource,
   sourceSchema,
 } from "../features/catalog/catalog";
@@ -179,6 +180,8 @@ export function importM3uSource(
         type: string;
         phase?: string;
         source?: CatalogSource;
+        items?: CatalogItem[];
+        series?: CatalogSeries[];
         message?: string;
       }>,
     ) => {
@@ -186,11 +189,22 @@ export function importM3uSource(
         handlers?.onProgress?.(event.data.phase);
       if (event.data.type === "complete" && event.data.source) {
         worker.terminate();
-        window.dispatchEvent(new Event("aura-catalog-change"));
-        resolve(event.data.source);
+        clearCatalogSource(source.id);
+        void putCatalogBatch(event.data.items ?? [], event.data.series ?? [])
+          .then(() => putSource(event.data.source as CatalogSource))
+          .then(() => {
+            window.dispatchEvent(new Event("aura-catalog-change"));
+            resolve(event.data.source as CatalogSource);
+          })
+          .catch(reject);
       }
       if (event.data.type === "error") {
         worker.terminate();
+        void putSource({
+          ...source,
+          status: "error",
+          errorMessage: event.data.message,
+        }).catch(() => undefined);
         reject(
           new Error(event.data.message ?? "Não foi possível importar a fonte."),
         );

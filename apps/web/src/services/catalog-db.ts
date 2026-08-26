@@ -5,217 +5,156 @@ import type {
 } from "../features/catalog/catalog";
 
 const databaseName = "aura-catalog";
-const databaseVersion = 1;
+const databaseVersion = 2;
 const sourceStore = "sources";
-const itemStore = "items";
-const seriesStore = "series";
 const activeSourceKey = "aura:active-source";
 
-type StoreRecord = CatalogItem | CatalogSeries | CatalogSource;
+// Catalog records are intentionally kept only in the page heap. The database
+// contains source configuration only, so its size does not depend on the
+// number of channels, movies, series, or episodes.
+const catalogItems = new Map<string, CatalogItem>();
+const catalogSeries = new Map<string, CatalogSeries>();
 
-function openDatabase() {
+function openSourceDatabase() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(databaseName, databaseVersion);
     request.onupgradeneeded = () => {
       const database = request.result;
-      const sources = database.createObjectStore(sourceStore, {
-        keyPath: "id",
-      });
-      sources.createIndex("status", "status");
-      const items = database.createObjectStore(itemStore, { keyPath: "id" });
-      items.createIndex("sourceId", "sourceId");
-      items.createIndex("sourceKind", ["sourceId", "kind"]);
-      items.createIndex("sourceSeries", ["sourceId", "seriesId"]);
-      const series = database.createObjectStore(seriesStore, { keyPath: "id" });
-      series.createIndex("sourceId", "sourceId");
+      if (!database.objectStoreNames.contains(sourceStore)) {
+        const sources = database.createObjectStore(sourceStore, {
+          keyPath: "id",
+        });
+        sources.createIndex("status", "status");
+      }
+      for (const storeName of ["items", "series"]) {
+        if (database.objectStoreNames.contains(storeName))
+          database.deleteObjectStore(storeName);
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () =>
-      reject(
-        request.error ?? new Error("Não foi possível abrir o catálogo local."),
-      );
+      reject(request.error ?? new Error("Não foi possível abrir as fontes."));
   });
 }
 
-async function transaction<T>(
-  storeName: string,
+async function sourceTransaction<T>(
   mode: IDBTransactionMode,
   operation: (store: IDBObjectStore) => IDBRequest<T>,
 ) {
-  const database = await openDatabase();
+  const database = await openSourceDatabase();
   return new Promise<T>((resolve, reject) => {
     const request = operation(
-      database.transaction(storeName, mode).objectStore(storeName),
+      database.transaction(sourceStore, mode).objectStore(sourceStore),
     );
     request.onsuccess = () => resolve(request.result);
     request.onerror = () =>
-      reject(request.error ?? new Error("Falha no catálogo local."));
+      reject(request.error ?? new Error("Falha ao acessar as fontes."));
   });
 }
 
 export async function putSource(source: CatalogSource) {
-  await transaction(sourceStore, "readwrite", (store) => store.put(source));
+  await sourceTransaction("readwrite", (store) => store.put(source));
 }
 
 export async function getSources() {
   return (
-    (await transaction<CatalogSource[]>(sourceStore, "readonly", (store) =>
+    (await sourceTransaction<CatalogSource[]>("readonly", (store) =>
       store.getAll(),
     )) ?? []
   );
 }
 
 export async function getSource(sourceId: string) {
-  return transaction<CatalogSource | undefined>(
-    sourceStore,
-    "readonly",
-    (store) => store.get(sourceId),
+  return sourceTransaction<CatalogSource | undefined>("readonly", (store) =>
+    store.get(sourceId),
   );
 }
 
 export async function deleteSourceData(sourceId: string) {
-  const database = await openDatabase();
-  await new Promise<void>((resolve, reject) => {
-    const transaction = database.transaction(
-      [sourceStore, itemStore, seriesStore],
-      "readwrite",
-    );
-    transaction.objectStore(sourceStore).delete(sourceId);
-    for (const storeName of [itemStore, seriesStore]) {
-      const store = transaction.objectStore(storeName);
-      const index = store.index("sourceId");
-      index.openCursor(IDBKeyRange.only(sourceId)).onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
-        if (cursor) {
-          cursor.delete();
-          cursor.continue();
-        }
-      };
-    }
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () =>
-      reject(transaction.error ?? new Error("Falha ao remover a fonte."));
-  });
+  await sourceTransaction("readwrite", (store) => store.delete(sourceId));
+  clearCatalogSource(sourceId);
 }
 
 export async function putCatalogBatch(
   items: CatalogItem[],
   series: CatalogSeries[],
 ) {
-  const database = await openDatabase();
-  await new Promise<void>((resolve, reject) => {
-    const transaction = database.transaction(
-      [itemStore, seriesStore],
-      "readwrite",
-    );
-    const itemObjectStore = transaction.objectStore(itemStore);
-    const seriesObjectStore = transaction.objectStore(seriesStore);
-    for (const item of items) itemObjectStore.put(item);
-    for (const item of series) seriesObjectStore.put(item);
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () =>
-      reject(transaction.error ?? new Error("Falha ao salvar o catálogo."));
-  });
+  for (const item of items) catalogItems.set(item.id, item);
+  for (const item of series) catalogSeries.set(item.id, item);
 }
 
-export async function clearCatalogSource(sourceId: string) {
-  const database = await openDatabase();
-  await new Promise<void>((resolve, reject) => {
-    const databaseTransaction = database.transaction(
-      [itemStore, seriesStore],
-      "readwrite",
-    );
-    for (const storeName of [itemStore, seriesStore]) {
-      const store = databaseTransaction.objectStore(storeName);
-      const cursorRequest = store
-        .index("sourceId")
-        .openCursor(IDBKeyRange.only(sourceId));
-      cursorRequest.onsuccess = () => {
-        const cursor = cursorRequest.result;
-        if (cursor) {
-          cursor.delete();
-          cursor.continue();
-        }
-      };
-    }
-    databaseTransaction.oncomplete = () => resolve();
-    databaseTransaction.onerror = () =>
-      reject(
-        databaseTransaction.error ??
-          new Error("Falha ao substituir o catálogo."),
-      );
-  });
+export function clearCatalogSource(sourceId: string) {
+  for (const [id, item] of catalogItems) {
+    if (item.sourceId === sourceId) catalogItems.delete(id);
+  }
+  for (const [id, item] of catalogSeries) {
+    if (item.sourceId === sourceId) catalogSeries.delete(id);
+  }
+}
+
+export function clearCatalogMemory() {
+  catalogItems.clear();
+  catalogSeries.clear();
 }
 
 export async function getCatalogItems(
   sourceId: string,
   kind: CatalogItem["kind"],
 ) {
-  const database = await openDatabase();
-  return new Promise<CatalogItem[]>((resolve, reject) => {
-    const request = database
-      .transaction(itemStore, "readonly")
-      .objectStore(itemStore)
-      .index("sourceKind")
-      .getAll([sourceId, kind]);
-    request.onsuccess = () => resolve(request.result as CatalogItem[]);
-    request.onerror = () =>
-      reject(request.error ?? new Error("Falha ao consultar o catálogo."));
-  });
+  return [...catalogItems.values()].filter(
+    (item) => item.sourceId === sourceId && item.kind === kind,
+  );
 }
 
 export async function getCatalogSeries(sourceId: string) {
-  const database = await openDatabase();
-  return new Promise<CatalogSeries[]>((resolve, reject) => {
-    const request = database
-      .transaction(seriesStore, "readonly")
-      .objectStore(seriesStore)
-      .index("sourceId")
-      .getAll(sourceId);
-    request.onsuccess = () => resolve(request.result as CatalogSeries[]);
-    request.onerror = () =>
-      reject(request.error ?? new Error("Falha ao consultar as séries."));
-  });
+  return [...catalogSeries.values()].filter(
+    (item) => item.sourceId === sourceId,
+  );
 }
 
 export async function getCatalogEpisodes(sourceId: string, seriesId: string) {
-  const database = await openDatabase();
-  return new Promise<CatalogItem[]>((resolve, reject) => {
-    const request = database
-      .transaction(itemStore, "readonly")
-      .objectStore(itemStore)
-      .index("sourceSeries")
-      .getAll([sourceId, seriesId]);
-    request.onsuccess = () => resolve(request.result as CatalogItem[]);
-    request.onerror = () =>
-      reject(request.error ?? new Error("Falha ao consultar os episódios."));
-  });
+  return [...catalogItems.values()].filter(
+    (item) =>
+      item.sourceId === sourceId &&
+      item.kind === "episode" &&
+      item.seriesId === seriesId,
+  );
 }
 
 export async function getCatalogItem(id: string) {
-  return transaction<StoreRecord | undefined>(itemStore, "readonly", (store) =>
-    store.get(id),
-  ) as Promise<CatalogItem | undefined>;
+  return catalogItems.get(id);
 }
 
 export async function getSeries(id: string) {
-  return transaction<StoreRecord | undefined>(
-    seriesStore,
-    "readonly",
-    (store) => store.get(id),
-  ) as Promise<CatalogSeries | undefined>;
+  return catalogSeries.get(id);
 }
 
 export function getActiveSourceId() {
-  return localStorage.getItem(activeSourceKey);
+  try {
+    return window.localStorage.getItem(activeSourceKey) ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function setActiveSourceId(sourceId: string) {
-  localStorage.setItem(activeSourceKey, sourceId);
-  window.dispatchEvent(new Event("aura-catalog-change"));
+  try {
+    window.localStorage.setItem(activeSourceKey, sourceId);
+  } catch {
+    // The source remains active for this process if persistent storage fails.
+  }
+  notifyCatalogChanged();
 }
 
 export function clearActiveSourceId() {
-  localStorage.removeItem(activeSourceKey);
+  try {
+    window.localStorage.removeItem(activeSourceKey);
+  } catch {
+    // Storage may be unavailable in restricted WebOS environments.
+  }
+  notifyCatalogChanged();
+}
+
+function notifyCatalogChanged() {
   window.dispatchEvent(new Event("aura-catalog-change"));
 }

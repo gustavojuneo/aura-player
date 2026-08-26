@@ -3,11 +3,6 @@ import {
   normalizeM3uEntries,
   parseM3uEntries,
 } from "../features/catalog/catalog";
-import {
-  clearCatalogSource,
-  putCatalogBatch,
-  putSource,
-} from "../services/catalog-db";
 
 type ImportMessage = { type: "import"; source: CatalogSource };
 
@@ -27,14 +22,6 @@ self.onmessage = async (event: MessageEvent<ImportMessage>) => {
       phase: "saving",
       total: parsed.items.length,
     });
-    await clearCatalogSource(source.id);
-    const batchSize = 1000;
-    for (let index = 0; index < parsed.items.length; index += batchSize) {
-      await putCatalogBatch(
-        parsed.items.slice(index, index + batchSize),
-        index === 0 ? parsed.series : [],
-      );
-    }
     const nextSource: CatalogSource = {
       ...source,
       status: parsed.items.length === 0 ? "empty" : "ready",
@@ -47,11 +34,14 @@ self.onmessage = async (event: MessageEvent<ImportMessage>) => {
       refreshedAt: new Date().toISOString(),
       errorMessage: undefined,
     };
-    await putSource(nextSource);
-    self.postMessage({ type: "complete", source: nextSource });
+    self.postMessage({
+      type: "complete",
+      items: parsed.items,
+      series: parsed.series,
+      source: nextSource,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "IMPORT_FAILED";
-    await putSource({ ...source, status: "error", errorMessage: message });
     self.postMessage({ type: "error", message });
   }
 };
