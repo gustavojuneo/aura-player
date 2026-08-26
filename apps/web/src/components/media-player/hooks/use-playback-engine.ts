@@ -246,6 +246,18 @@ export function usePlaybackEngine({
     const onPause = () => setIsPlaying(false);
     const onError = () =>
       setError("O navegador não conseguiu decodificar este formato ou codec.");
+    const onVisibilityChange = () => {
+      if (document.hidden) video.pause();
+    };
+    const onPageHide = () => {
+      if (engineRef.current) {
+        destroyEngine(engineRef.current, video);
+        engineRef.current = null;
+        qualityEngineRef.current = null;
+      } else {
+        video.pause();
+      }
+    };
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("durationchange", onDurationChange);
     video.addEventListener("loadedmetadata", onDurationChange);
@@ -253,6 +265,8 @@ export function usePlaybackEngine({
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("error", onError);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onPageHide);
     return () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("durationchange", onDurationChange);
@@ -261,6 +275,8 @@ export function usePlaybackEngine({
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("error", onError);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onPageHide);
     };
   }, [attemptAutoplay]);
 

@@ -1,9 +1,11 @@
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useAppLifecycle } from "../../hooks/use-app-lifecycle";
 import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
 import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
 
 export function AppLayout() {
+  useAppLifecycle();
   useTvDirectionalNavigation();
   const [sessionExpired, setSessionExpired] = useState(false);
   const { pathname } = useLocation();

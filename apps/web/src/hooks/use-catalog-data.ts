@@ -37,6 +37,10 @@ function secureAssetUrl(value: unknown) {
 
 const xtreamEpgCache = new Map<string, EpgProgram[]>();
 
+export function clearCatalogDataCaches() {
+  xtreamEpgCache.clear();
+}
+
 function epgCacheKey(sourceId: string, channelName: string) {
   const normalizedName = channelName
     .toLocaleLowerCase()

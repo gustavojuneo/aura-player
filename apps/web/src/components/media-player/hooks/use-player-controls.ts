@@ -126,9 +126,17 @@ export function usePlayerControls({
 
   const toggleFullscreen = useCallback(() => {
     const element = videoRef.current?.parentElement;
-    if (element && !document.fullscreenElement)
+    if (
+      element &&
+      !document.fullscreenElement &&
+      typeof element.requestFullscreen === "function"
+    )
       void element.requestFullscreen();
-    else if (document.fullscreenElement) void document.exitFullscreen();
+    else if (
+      document.fullscreenElement &&
+      typeof document.exitFullscreen === "function"
+    )
+      void document.exitFullscreen();
   }, [videoRef]);
 
   useEffect(() => {
