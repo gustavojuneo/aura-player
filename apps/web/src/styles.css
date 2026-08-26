@@ -91,6 +91,11 @@ html::-webkit-scrollbar {
   box-sizing: border-box;
 }
 
+:focus {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;

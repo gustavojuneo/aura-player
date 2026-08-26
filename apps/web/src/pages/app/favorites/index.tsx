@@ -373,7 +373,7 @@ const MediaCard = memo(function MediaCard({
   );
   return (
     <article
-      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${variant === "amber" ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
+      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${variant === "amber" ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
     >
       {item.imageUrl && (
         <img

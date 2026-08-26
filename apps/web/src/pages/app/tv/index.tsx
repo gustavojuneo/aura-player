@@ -74,7 +74,7 @@ function ChannelRow({
 }) {
   return (
     <article
-      className={`relative flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
+      className={`relative flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
     >
       <button
         aria-current={selected ? "true" : undefined}

@@ -60,7 +60,7 @@ function MediaCard({
     : `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`;
   return (
     <article
-      className={`group relative flex aspect-[2/3] w-[190px] min-w-[190px] shrink-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 sm:w-[220px] sm:min-w-[220px] ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
+      className={`group relative flex aspect-[2/3] w-[190px] min-w-[190px] shrink-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus sm:w-[220px] sm:min-w-[220px] ${index % 2 ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
     >
       {imageUrl && (
         <img
@@ -88,7 +88,7 @@ function MediaCard({
 
 function ChannelCard({ channel }: { channel: RecentChannel }) {
   return (
-    <article className="relative flex min-h-[126px] w-[220px] min-w-[220px] shrink-0 cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60">
+    <article className="relative flex min-h-[126px] w-[220px] min-w-[220px] shrink-0 cursor-pointer flex-col gap-2 rounded-[10px] border border-line bg-panel p-3 transition-colors hover:border-gold/60 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus">
       <Link
         aria-label={`Assistir ${channel.title}`}
         className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"

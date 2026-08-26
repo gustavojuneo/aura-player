@@ -120,7 +120,7 @@ const _movies: Movie[] = [
 const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
   return (
     <article
-      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1`}
+      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
       <Link
