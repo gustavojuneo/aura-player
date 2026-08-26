@@ -59,6 +59,9 @@ The webOS build uses the published backend at
 The packaged application enables the webOS cross-domain capability so it can
 reach the API and user-configured IPTV providers from its local application
 origin.
+Provider thumbnails and streams retain their original HTTP or HTTPS protocol;
+the webOS build plays provider streams directly instead of routing them through
+the API media proxy.
 The generated package is written to:
 
 ```text

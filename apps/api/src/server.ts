@@ -124,11 +124,7 @@ function url(value: unknown) {
 }
 
 function assetUrl(value: unknown) {
-  const candidate = url(value);
-  if (!candidate) return undefined;
-  const parsed = new URL(candidate);
-  if (parsed.protocol === "http:") parsed.protocol = "https:";
-  return parsed.toString();
+  return url(value);
 }
 
 function numberValue(value: unknown) {

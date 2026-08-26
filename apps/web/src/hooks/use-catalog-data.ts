@@ -24,12 +24,10 @@ import {
 } from "../services/catalog-service";
 import { useCatalogStore } from "../stores/catalog-store";
 
-function secureAssetUrl(value: unknown) {
+function validAssetUrl(value: unknown) {
   if (typeof value !== "string") return undefined;
   try {
-    const parsed = new URL(value);
-    if (parsed.protocol === "http:") parsed.protocol = "https:";
-    return parsed.toString();
+    return new URL(value).toString();
   } catch {
     return undefined;
   }
@@ -243,10 +241,10 @@ export function useCatalogItem(id: string | undefined) {
               (typeof info.description === "string" && info.description) ||
               loaded.description,
             logoUrl:
-              secureAssetUrl(info.cover_big) ||
-              secureAssetUrl(info.movie_image) ||
+              validAssetUrl(info.cover_big) ||
+              validAssetUrl(info.movie_image) ||
               loaded.logoUrl,
-            backdropUrl: secureAssetUrl(firstBackdrop) ?? loaded.backdropUrl,
+            backdropUrl: validAssetUrl(firstBackdrop) ?? loaded.backdropUrl,
           };
           setCatalogItem(enrichedItem);
           setItem(enrichedItem);
@@ -375,11 +373,11 @@ export function useCatalogSeriesDetails(id: string | undefined) {
                 (typeof info.plot === "string" && info.plot) ||
                 (typeof info.description === "string" && info.description) ||
                 loadedSeries.description,
-              posterUrl: secureAssetUrl(info.cover) || loadedSeries.posterUrl,
+              posterUrl: validAssetUrl(info.cover) || loadedSeries.posterUrl,
               backdropUrl:
                 Array.isArray(info.backdrop_path) &&
-                secureAssetUrl(info.backdrop_path[0])
-                  ? secureAssetUrl(info.backdrop_path[0])
+                validAssetUrl(info.backdrop_path[0])
+                  ? validAssetUrl(info.backdrop_path[0])
                   : loadedSeries.backdropUrl,
               seasonCount:
                 new Set(remote.episodes.map((episode) => episode.seasonNumber))

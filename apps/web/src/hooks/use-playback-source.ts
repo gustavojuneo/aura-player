@@ -11,7 +11,8 @@ export function usePlaybackSource(
   const [error, setError] = useState<Error | null>(null);
   useEffect(() => {
     let cancelled = false;
-    if (!url || !shouldProxy) {
+    const useDirectSource = import.meta.env.MODE === "webos";
+    if (!url || !shouldProxy || useDirectSource) {
       setSource(url);
       setError(null);
       return;
