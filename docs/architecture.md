@@ -182,6 +182,10 @@ Responsibilities:
 - make no HTTP requests;
 - have no knowledge of specific pages.
 
+All dialogs and modals must use the shadcn/Base UI dialog primitives from
+`components/ui/dialog.tsx`. Manual overlays, focus traps, Escape handlers, and
+scroll-lock implementations are not permitted.
+
 Use `tailwind-variants` when there are multiple visual variant combinations. Use `cn` for conditional classes.
 
 ### `components`

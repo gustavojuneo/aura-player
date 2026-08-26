@@ -1,6 +1,10 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppHeader, AppLayout } from "../../../components/app-layout";
+import {
+  SourceForm,
+  type SourceFormValues,
+} from "../../../components/source-form";
 import { Button, ProductState } from "../../../components/ui";
 import { useCatalogSources } from "../../../hooks/use-catalog-data";
 import {
@@ -16,8 +20,7 @@ import {
   saveXtreamSource,
 } from "../../../services/catalog-service";
 import { SourceCard } from "./components/source-card";
-import { SourceForm } from "./components/source-form";
-import type { Source, SourceFormValues } from "./types";
+import type { Source } from "./types";
 
 const initialSources: Source[] = [];
 
@@ -46,37 +49,35 @@ export function SourcesPage() {
     setEditing(source);
     setFormOpen(true);
   };
-  const saveSource = (values: SourceFormValues) => {
-    void (async () => {
-      try {
-        const m3uXtream =
-          values.type === "m3u"
-            ? getXtreamCredentialsFromM3uUrl(values.url)
-            : null;
-        const source =
-          values.type === "xtream" || m3uXtream
-            ? await saveXtreamSource({
-                name: values.name,
-                ...(m3uXtream ?? {
-                  server: values.server,
-                  username: values.username,
-                  password: values.password,
-                }),
-              })
-            : await saveM3uSource({ name: values.name, url: values.url });
-        if (values.type === "m3u" && !m3uXtream) await importM3uSource(source);
-        setActiveId(source.id);
-        setActiveSourceId(source.id);
-        setFormOpen(false);
-        setNotice(`${source.name} foi importada.`);
-      } catch (error) {
-        setNotice(
-          error instanceof Error
-            ? `Falha na importação: ${error.message}`
-            : "Falha na importação.",
-        );
-      }
-    })();
+  const saveSource = async (values: SourceFormValues) => {
+    try {
+      const m3uXtream =
+        values.type === "m3u"
+          ? getXtreamCredentialsFromM3uUrl(values.url)
+          : null;
+      const source =
+        values.type === "xtream" || m3uXtream
+          ? await saveXtreamSource({
+              name: values.name,
+              ...(m3uXtream ?? {
+                server: values.server,
+                username: values.username,
+                password: values.password,
+              }),
+            })
+          : await saveM3uSource({ name: values.name, url: values.url });
+      if (values.type === "m3u" && !m3uXtream) await importM3uSource(source);
+      setActiveId(source.id);
+      setActiveSourceId(source.id);
+      setFormOpen(false);
+      setNotice(`${source.name} foi importada.`);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? `Falha na importação: ${error.message}`
+          : "Falha na importação.",
+      );
+    }
   };
 
   const refreshSource = (source: Source) => {

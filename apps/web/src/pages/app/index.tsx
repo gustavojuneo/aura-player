@@ -3,7 +3,10 @@ import { Info, Radio } from "lucide-react";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { AppLayout } from "../../components/app-layout";
 import { Carousel } from "../../components/carousel";
+import { HomePageSkeleton } from "../../components/catalog-skeleton";
 import { Icon } from "../../components/icon";
+import type { SourceFormValues } from "../../components/source-form";
+import { SourceOnboardingDialog } from "../../components/source-onboarding-dialog";
 import { ProductState } from "../../components/ui";
 import type {
   CatalogItem,
@@ -12,11 +15,18 @@ import type {
 import {
   useCatalogItems,
   useCatalogSeries,
+  useCatalogSources,
 } from "../../hooks/use-catalog-data";
 import {
   defaultHeroAspectRatio,
   useImageAspectRatio,
 } from "../../hooks/use-image-aspect-ratio";
+import {
+  getXtreamCredentialsFromM3uUrl,
+  importM3uSource,
+  saveM3uSource,
+  saveXtreamSource,
+} from "../../services/catalog-service";
 import {
   loadRecentChannels,
   type RecentChannel,
@@ -178,6 +188,9 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
 }
 
 export function HomePage() {
+  const { isLoading: sourcesLoading, sources } = useCatalogSources();
+  const [progress, setProgress] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const {
     items: liveItems,
     isLoading: liveLoading,
@@ -217,15 +230,56 @@ export function HomePage() {
     retryMovies();
     retrySeries();
   };
+
+  async function saveFirstSource(values: SourceFormValues) {
+    setError(null);
+    try {
+      setProgress("Carregando catálogo Xtream...");
+      const m3uXtream =
+        values.type === "m3u"
+          ? getXtreamCredentialsFromM3uUrl(values.url)
+          : null;
+      if (values.type === "xtream" || m3uXtream) {
+        await saveXtreamSource({
+          name: values.name,
+          ...(m3uXtream ?? {
+            server: values.server,
+            username: values.username,
+            password: values.password,
+          }),
+        });
+      } else {
+        const source = await saveM3uSource({
+          name: values.name,
+          url: values.url,
+        });
+        await importM3uSource(source, {
+          onProgress: (phase) =>
+            setProgress(
+              phase === "fetching"
+                ? "Baixando playlist..."
+                : phase === "parsing"
+                  ? "Analisando conteúdo..."
+                  : "Indexando catálogo...",
+            ),
+        });
+      }
+      setProgress(null);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Não foi possível importar a fonte.",
+      );
+      setProgress(null);
+    }
+  }
+
   return (
     <AppLayout>
       <div className="flex min-h-screen w-full flex-col gap-4 px-4 pb-24 sm:px-6 lg:gap-5 lg:px-8 lg:pb-10">
         {isLoading ? (
-          <ProductState
-            action={{ label: "Tentar novamente", onClick: retry }}
-            className="min-h-[420px] justify-center"
-            kind="loading"
-          />
+          <HomePageSkeleton onRetry={retry} />
         ) : (
           <>
             <FeaturedHero item={featured} />
@@ -290,6 +344,13 @@ export function HomePage() {
           </>
         )}
       </div>
+      {!sourcesLoading && !sources.length && (
+        <SourceOnboardingDialog
+          error={error}
+          onSave={saveFirstSource}
+          progress={progress}
+        />
+      )}
     </AppLayout>
   );
 }

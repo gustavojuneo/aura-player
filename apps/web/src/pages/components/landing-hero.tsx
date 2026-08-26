@@ -42,9 +42,6 @@ export function LandingHero({ onAccess }: { onAccess: () => void }) {
           >
             Entrar
           </Button>
-          <Button className="h-12 w-full md:w-auto" variant="secondary">
-            Continuar como convidado
-          </Button>
         </div>
       </div>
     </section>

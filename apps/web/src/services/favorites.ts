@@ -86,3 +86,12 @@ export function clearFavorites() {
     // Storage may be unavailable in restricted browser contexts.
   }
 }
+
+export function removeFavoritesByIds(ids: readonly string[]) {
+  const idsToRemove = new Set(ids);
+  const current = readFavorites();
+  const next = current.filter((favorite) => !idsToRemove.has(favorite.id));
+  if (next.length === current.length) return;
+  persistFavorites(next);
+  notifyFavoritesChanged();
+}

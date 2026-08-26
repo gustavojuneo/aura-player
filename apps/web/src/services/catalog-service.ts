@@ -35,6 +35,8 @@ import {
   putSource,
   setActiveSourceId,
 } from "./catalog-db";
+import { removeFavoritesByIds } from "./favorites";
+import { removeRecentChannelsBySource } from "./recent-channels";
 
 export const catalogCacheTtlMs = 24 * 60 * 60 * 1000;
 
@@ -203,6 +205,19 @@ export function importM3uSource(
 }
 
 export async function removeM3uSource(sourceId: string) {
+  const [liveItems, movieItems, episodeItems, series] = await Promise.all([
+    getCatalogItems(sourceId, "live"),
+    getCatalogItems(sourceId, "movie"),
+    getCatalogItems(sourceId, "episode"),
+    getCatalogSeries(sourceId),
+  ]);
+  removeFavoritesByIds([
+    ...liveItems.map((item) => item.id),
+    ...movieItems.map((item) => item.id),
+    ...episodeItems.map((item) => item.id),
+    ...series.map((item) => item.id),
+  ]);
+  removeRecentChannelsBySource(sourceId);
   await deleteSourceData(sourceId);
   if (getActiveSourceId() === sourceId) clearActiveSourceId();
   window.dispatchEvent(new Event("aura-catalog-change"));

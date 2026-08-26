@@ -1,7 +1,15 @@
 import { SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useRef } from "react";
 import { cn } from "../utils/cn";
-import { ScrollArea, Skeleton } from "./ui";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPopup,
+  DialogPortal,
+  DialogTitle,
+  DialogViewport,
+  ScrollArea,
+  Skeleton,
+} from "./ui";
 
 export function CategoryDialog({
   categories,
@@ -14,79 +22,73 @@ export function CategoryDialog({
   onSelect: (category: string) => void;
   selected: string;
 }) {
-  const firstOptionRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    firstOptionRef.current?.focus();
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   return (
-    <div
-      aria-labelledby="category-dialog-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-end bg-bg/80 p-3 backdrop-blur-sm sm:items-center sm:justify-center sm:p-5"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
-      role="dialog"
     >
-      <div className="w-full max-w-[360px] rounded-2xl border border-line bg-panel p-4 shadow-2xl sm:max-w-[420px]">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold">
-              Catálogo
-            </p>
-            <h2
-              className="mt-1 mb-0 font-display text-lg font-bold text-text"
-              id="category-dialog-title"
+      <DialogPortal>
+        <DialogBackdrop />
+        <DialogViewport className="items-end sm:items-center">
+          <DialogPopup className="max-w-[360px] p-4 shadow-2xl sm:max-w-[420px]">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold">
+                  Catálogo
+                </p>
+                <DialogTitle
+                  className="mt-1 mb-0 font-display text-lg font-bold text-text"
+                  id="category-dialog-title"
+                >
+                  Selecionar categoria
+                </DialogTitle>
+              </div>
+              <button
+                aria-label="Fechar categorias"
+                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-panel-2 hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
+                onClick={onClose}
+                type="button"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </button>
+            </div>
+            <div
+              aria-label="Categorias"
+              className="mt-4 grid gap-2"
+              role="listbox"
             >
-              Selecionar categoria
-            </h2>
-          </div>
-          <button
-            aria-label="Fechar categorias"
-            className="grid size-9 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-panel-2 hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
-            onClick={onClose}
-            type="button"
-          >
-            <X aria-hidden="true" className="size-4" />
-          </button>
-        </div>
-        <div aria-label="Categorias" className="mt-4 grid gap-2" role="listbox">
-          {categories.map((category, index) => (
-            <button
-              aria-selected={selected === category}
-              className={cn(
-                "flex min-h-11 items-center justify-between rounded-xl border px-3.5 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus",
-                selected === category
-                  ? "border-gold bg-[#3a2b16] text-text"
-                  : "border-line bg-transparent text-muted hover:border-gold/60 hover:bg-panel-2 hover:text-text",
-              )}
-              key={category}
-              onClick={() => {
-                onSelect(category);
-                onClose();
-              }}
-              ref={index === 0 ? firstOptionRef : undefined}
-              role="option"
-              type="button"
-            >
-              <span>{category}</span>
-              {selected === category && (
-                <span aria-hidden="true" className="text-gold-bright">
-                  ✓
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+              {categories.map((category) => (
+                <button
+                  aria-selected={selected === category}
+                  className={cn(
+                    "flex min-h-11 items-center justify-between rounded-xl border px-3.5 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-focus",
+                    selected === category
+                      ? "border-gold bg-[#3a2b16] text-text"
+                      : "border-line bg-transparent text-muted hover:border-gold/60 hover:bg-panel-2 hover:text-text",
+                  )}
+                  key={category}
+                  onClick={() => {
+                    onSelect(category);
+                    onClose();
+                  }}
+                  role="option"
+                  type="button"
+                >
+                  <span>{category}</span>
+                  {selected === category && (
+                    <span aria-hidden="true" className="text-gold-bright">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </DialogPopup>
+        </DialogViewport>
+      </DialogPortal>
+    </Dialog>
   );
 }
 

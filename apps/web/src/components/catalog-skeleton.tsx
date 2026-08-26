@@ -22,6 +22,55 @@ export function CatalogGridSkeleton() {
   );
 }
 
+export function HomePageSkeleton({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      aria-label="Carregando página inicial"
+      className="flex flex-col gap-4"
+      role="status"
+    >
+      <section className="relative min-h-[500px] overflow-hidden rounded-b-xl bg-panel sm:min-h-[650px]">
+        <Skeleton className="absolute inset-0 size-full rounded-none" />
+        <div className="absolute inset-x-5 bottom-8 flex max-w-[720px] flex-col gap-3.5 sm:inset-x-10 sm:bottom-10 lg:inset-x-[70px]">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-10 w-4/5 max-w-[520px]" />
+          <Skeleton className="h-4 w-3/5 max-w-[470px]" />
+          <Skeleton className="h-11 w-28 rounded-xl" />
+        </div>
+      </section>
+      {[
+        "home-skeleton-continue",
+        "home-skeleton-channels",
+        "home-skeleton-movies",
+        "home-skeleton-series",
+      ].map((sectionId) => (
+        <section className="flex flex-col gap-3" key={sectionId}>
+          <Skeleton className="h-6 w-44" />
+          <div className="flex gap-3 overflow-hidden">
+            {["one", "two", "three", "four", "five"].map((cardId) => (
+              <div
+                className="flex w-[220px] min-w-[220px] flex-col gap-3 rounded-xl border border-line bg-panel p-3"
+                key={`${sectionId}-${cardId}`}
+              >
+                <Skeleton className="aspect-[2/3] w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+      <button
+        className="self-start text-xs font-bold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={onRetry}
+        type="button"
+      >
+        Tentar novamente
+      </button>
+    </div>
+  );
+}
+
 export function LivePageSkeleton() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row lg:items-stretch">

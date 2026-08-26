@@ -125,6 +125,8 @@ Read `docs/architecture.md` before creating pages, components, services, or HTTP
   owns a boundary/subtree but consumers must control its JSX. Prefer hooks for
   ordinary data sharing.
 - Keep components focused on presentation and interaction.
+- Use the shadcn `Dialog` component for every dialog or modal. Do not create
+  manual dialog overlays or custom scroll-lock behavior.
 - Do not implement HTTP communication rules directly in components.
 
 ### AURA TV UI System
@@ -155,6 +157,9 @@ Read `docs/architecture.md` before creating pages, components, services, or HTTP
 ## Forms
 
 - Use React Hook Form for form state management.
+- Use the shadcn `Field` component inside every form to group each label,
+  control, description, and validation message. `Input` is a control inside a
+  `Field`, not a replacement for the field wrapper.
 - Use Zod to define schemas.
 - Integrate React Hook Form and Zod through `zodResolver`.
 - The schema must be the source of truth for validation and input type inference.

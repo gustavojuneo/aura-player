@@ -13,12 +13,3 @@ export type Source = {
   password?: string;
   url?: string;
 };
-
-export type SourceFormValues = {
-  name: string;
-  type: SourceType;
-  server: string;
-  username: string;
-  password: string;
-  url: string;
-};

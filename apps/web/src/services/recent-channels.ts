@@ -53,4 +53,12 @@ export function recordRecentChannel(channel: CatalogItem) {
   window.dispatchEvent(new Event(recentChannelsEvent));
 }
 
+export function removeRecentChannelsBySource(sourceId: string) {
+  const next = readRecentChannels().filter(
+    (channel) => channel.sourceId !== sourceId,
+  );
+  window.localStorage.setItem(storageKey, JSON.stringify(next));
+  window.dispatchEvent(new Event(recentChannelsEvent));
+}
+
 export { recentChannelsEvent };
