@@ -161,7 +161,10 @@ export function SeriesDetailsPage() {
             {seasonEpisodes.length} episódios
           </span>
         </div>
-        <div className="grid grid-cols-1 gap-3.5 sm:[grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+        <div
+          className="grid grid-cols-1 gap-3.5 sm:[grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]"
+          data-tv-navigation-region="catalog-grid"
+        >
           {paginatedEpisodes.map((episode) => (
             <Link
               className="group min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"

@@ -25,6 +25,7 @@ let initialized = false;
 type NavigationRegion =
   | "catalog-categories"
   | "catalog-grid"
+  | "catalog-preview"
   | "content"
   | "dialog"
   | "player"
@@ -82,7 +83,8 @@ function getRegion(element: HTMLElement): NavigationRegion | undefined {
   if (
     explicitRegion === "sidebar" ||
     explicitRegion === "catalog-categories" ||
-    explicitRegion === "catalog-grid"
+    explicitRegion === "catalog-grid" ||
+    explicitRegion === "catalog-preview"
   ) {
     return explicitRegion;
   }
@@ -185,6 +187,56 @@ function findClosestByRow(current: HTMLElement, candidates: HTMLElement[]) {
   })[0];
 }
 
+function findClosestAbove(current: HTMLElement, candidates: HTMLElement[]) {
+  const currentRect = current.getBoundingClientRect();
+  const currentX = currentRect.left + currentRect.width / 2;
+  const currentY = currentRect.top + currentRect.height / 2;
+  return candidates
+    .filter((candidate) => {
+      if (!isVisible(candidate)) return false;
+      const rect = candidate.getBoundingClientRect();
+      return rect.top + rect.height / 2 < currentY - 4;
+    })
+    .sort((first, second) => {
+      const firstRect = first.getBoundingClientRect();
+      const secondRect = second.getBoundingClientRect();
+      const firstX = firstRect.left + firstRect.width / 2;
+      const secondX = secondRect.left + secondRect.width / 2;
+      const firstY = firstRect.top + firstRect.height / 2;
+      const secondY = secondRect.top + secondRect.height / 2;
+      return (
+        Math.abs(firstX - currentX) -
+        Math.abs(secondX - currentX) +
+        (Math.abs(firstY - currentY) - Math.abs(secondY - currentY)) * 0.2
+      );
+    })[0];
+}
+
+function findClosestBelow(current: HTMLElement, candidates: HTMLElement[]) {
+  const currentRect = current.getBoundingClientRect();
+  const currentX = currentRect.left + currentRect.width / 2;
+  const currentY = currentRect.top + currentRect.height / 2;
+  return candidates
+    .filter((candidate) => {
+      if (!isVisible(candidate)) return false;
+      const rect = candidate.getBoundingClientRect();
+      return rect.top + rect.height / 2 > currentY + 4;
+    })
+    .sort((first, second) => {
+      const firstRect = first.getBoundingClientRect();
+      const secondRect = second.getBoundingClientRect();
+      const firstX = firstRect.left + firstRect.width / 2;
+      const secondX = secondRect.left + secondRect.width / 2;
+      const firstY = firstRect.top + firstRect.height / 2;
+      const secondY = secondRect.top + secondRect.height / 2;
+      return (
+        Math.abs(firstY - currentY) -
+        Math.abs(secondY - currentY) +
+        (Math.abs(firstX - currentX) - Math.abs(secondX - currentX)) * 0.2
+      );
+    })[0];
+}
+
 function focusElement(element: HTMLElement | undefined) {
   if (!element) return;
   const focusKey = focusKeys.get(element);
@@ -238,13 +290,21 @@ function createRegionResolver(region: NavigationRegion) {
 
     const currentElement = elementByFocusKey.get(currentFocusKey);
     if (!currentElement) return null;
-    const candidate = findAxisAlignedElement(
+    const elements = siblings
+      .map((item) => elementByFocusKey.get(item.focusKey))
+      .filter((element): element is HTMLElement => Boolean(element));
+    const axisAlignedCandidate = findAxisAlignedElement(
       currentElement,
       direction,
-      siblings
-        .map((item) => elementByFocusKey.get(item.focusKey))
-        .filter((element): element is HTMLElement => Boolean(element)),
+      elements,
     );
+    const candidate =
+      axisAlignedCandidate ??
+      (region === "content" && direction === "up"
+        ? findClosestAbove(currentElement, elements)
+        : region === "content" && direction === "down"
+          ? findClosestBelow(currentElement, elements)
+          : undefined);
     if (!candidate) return null;
     const candidateKey = focusKeys.get(candidate);
     return siblings.find((item) => item.focusKey === candidateKey) ?? null;
@@ -271,8 +331,13 @@ function handleRegionExit(
   if (region === "catalog-categories") {
     if (direction === "right") {
       focusElement(findClosestByRow(element, getRegionItems("catalog-grid")));
+      return false;
     }
-    return direction === "up" || direction === "down";
+    if (direction === "left") {
+      focusElement(findClosestByRow(element, getRegionItems("sidebar")));
+      return false;
+    }
+    return true;
   }
 
   const group = element.dataset.tvNavigationGroup;
@@ -319,6 +384,70 @@ function handleRegionExit(
         findClosestByRow(element, getRegionItems("sidebar"));
       focusElement(destination);
       return false;
+    }
+  }
+
+  if (region === "catalog-grid" && direction === "right") {
+    const sameRowItem = findAxisAlignedElement(
+      element,
+      "right",
+      getRegionItems("catalog-grid"),
+    );
+    if (!sameRowItem) {
+      const previewItem = findClosestByRow(
+        element,
+        getRegionItems("catalog-preview"),
+      );
+      if (previewItem) focusElement(previewItem);
+      return false;
+    }
+  }
+
+  if (region === "catalog-grid" && direction === "up") {
+    const previousRowItem = findAxisAlignedElement(
+      element,
+      "up",
+      getRegionItems("catalog-grid"),
+    );
+    if (!previousRowItem) {
+      focusElement(findClosestAbove(element, getRegionItems("content")));
+      return false;
+    }
+  }
+
+  if (region === "catalog-grid" && direction === "down") {
+    const nextRowItem = findAxisAlignedElement(
+      element,
+      "down",
+      getRegionItems("catalog-grid"),
+    );
+    if (!nextRowItem) {
+      const contentItem = findClosestBelow(element, getRegionItems("content"));
+      if (contentItem) focusElement(contentItem);
+      return false;
+    }
+  }
+
+  if (region === "catalog-preview" && direction === "left") {
+    focusElement(findClosestByRow(element, getRegionItems("catalog-grid")));
+    return false;
+  }
+
+  if (region === "content" && direction === "down") {
+    const nextContentItem = findAxisAlignedElement(
+      element,
+      "down",
+      getRegionItems("content"),
+    );
+    if (!nextContentItem) {
+      const gridItem = findClosestBelow(
+        element,
+        getRegionItems("catalog-grid"),
+      );
+      if (gridItem) {
+        focusElement(gridItem);
+        return false;
+      }
     }
   }
 
@@ -405,6 +534,7 @@ async function registerFocusableTree() {
     "sidebar",
     "catalog-categories",
     "catalog-grid",
+    "catalog-preview",
     "content",
     "dialog",
     "player",
@@ -528,7 +658,11 @@ export function useTvDirectionalNavigation() {
       ) {
         event.preventDefault();
         event.stopPropagation();
-        void navigateByDirection(direction, { event });
+        const region = getRegion(activeElement);
+        const shouldNavigate = region
+          ? handleRegionExit(activeElement, region, direction)
+          : true;
+        if (shouldNavigate) void navigateByDirection(direction, { event });
         return;
       }
 

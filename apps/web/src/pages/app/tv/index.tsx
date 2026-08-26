@@ -372,7 +372,10 @@ function ProgramPanel({
   );
 
   return (
-    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 overflow-hidden rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-[calc(100vh-8rem)] lg:w-auto lg:flex-none lg:basis-[38%]">
+    <section
+      className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 overflow-hidden rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-[calc(100vh-8rem)] lg:w-auto lg:flex-none lg:basis-[38%]"
+      data-tv-navigation-region="catalog-preview"
+    >
       {channel ? (
         <>
           <ChannelPreview channel={channel} onOpen={watchChannel} />

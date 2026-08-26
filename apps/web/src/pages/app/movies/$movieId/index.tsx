@@ -102,7 +102,10 @@ export function MovieDetailsPage() {
           Você também pode gostar
         </h2>
         <Carousel ariaLabel="Filmes relacionados" edgeToEdge>
-          <div className="flex min-w-max flex-nowrap gap-3">
+          <div
+            className="flex min-w-max flex-nowrap gap-3"
+            data-tv-navigation-region="catalog-grid"
+          >
             {relatedMovies.map((movie, index) => (
               <Link
                 className="w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] min-w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] shrink-0"
