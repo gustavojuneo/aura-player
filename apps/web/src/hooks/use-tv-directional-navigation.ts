@@ -39,14 +39,15 @@ function isVisible(element: HTMLElement) {
   );
 }
 
-function findNextFocusable(current: HTMLElement, direction: string) {
-  const scope = current.closest('[role="dialog"]') ?? document;
+function findDirectionalCandidate(
+  current: HTMLElement,
+  direction: string,
+  elements: HTMLElement[],
+) {
   const currentRect = current.getBoundingClientRect();
   const currentX = currentRect.left + currentRect.width / 2;
   const currentY = currentRect.top + currentRect.height / 2;
-  const candidates = Array.from(
-    scope.querySelectorAll<HTMLElement>(focusableSelector),
-  ).filter((element) => {
+  const candidates = elements.filter((element) => {
     if (element === current || !isVisible(element)) return false;
     const rect = element.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
@@ -83,6 +84,15 @@ function findNextFocusable(current: HTMLElement, direction: string) {
   })[0];
 }
 
+function findNextFocusable(current: HTMLElement, direction: string) {
+  const scope = current.closest('[role="dialog"]') ?? document;
+  return findDirectionalCandidate(
+    current,
+    direction,
+    Array.from(scope.querySelectorAll<HTMLElement>(focusableSelector)),
+  );
+}
+
 function findNextInNavigationGroup(
   current: HTMLElement,
   direction: string,
@@ -106,6 +116,19 @@ function findNextInNavigationZone(
   direction: string,
 ) {
   const currentZone = current.dataset.tvNavigationZone;
+  const scope = document.querySelector("[data-tv-app-content]") ?? document;
+  if (currentZone === "catalog-items") {
+    const nextItem = findDirectionalCandidate(
+      current,
+      direction,
+      Array.from(
+        scope.querySelectorAll<HTMLElement>(
+          '[data-tv-navigation-zone="catalog-items"]',
+        ),
+      ),
+    );
+    if (nextItem) return nextItem;
+  }
   const targetZone =
     direction === "right" && currentZone === "catalog-categories"
       ? "catalog-items"
@@ -113,7 +136,6 @@ function findNextInNavigationZone(
         ? "catalog-categories"
         : undefined;
   if (!targetZone) return undefined;
-  const scope = document.querySelector("[data-tv-app-content]") ?? document;
   const currentRect = current.getBoundingClientRect();
   const currentY = currentRect.top + currentRect.height / 2;
   return Array.from(
