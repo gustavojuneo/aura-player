@@ -73,40 +73,44 @@ function ChannelRow({
   selected: boolean;
 }) {
   return (
-    <button
-      aria-current={selected ? "true" : undefined}
-      className={`flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 focus-visible:outline-2 focus-visible:outline-focus ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
-      onClick={onSelect}
-      type="button"
+    <article
+      className={`relative flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
     >
-      <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
-        {channel.logoUrl ? (
-          <img
-            alt=""
-            className="size-full object-cover"
-            decoding="async"
-            loading="lazy"
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-            referrerPolicy="no-referrer"
-            src={channel.logoUrl}
-          />
-        ) : (
-          <Radio aria-hidden="true" className="size-5" strokeWidth={1.8} />
-        )}
-      </span>
-      <span className="min-w-0 flex-1">
-        <strong className="block truncate text-sm font-bold text-text">
-          {channel.name}
-        </strong>
-        <span className="mt-1 block truncate text-[11px] text-muted">
-          {channel.current}
-          {channel.variantCount && channel.variantCount > 1
-            ? ` · ${channel.variantCount} versões`
-            : ""}
+      <button
+        aria-current={selected ? "true" : undefined}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-focus"
+        onClick={onSelect}
+        type="button"
+      >
+        <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
+          {channel.logoUrl ? (
+            <img
+              alt=""
+              className="size-full object-cover"
+              decoding="async"
+              loading="lazy"
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+              referrerPolicy="no-referrer"
+              src={channel.logoUrl}
+            />
+          ) : (
+            <Radio aria-hidden="true" className="size-5" strokeWidth={1.8} />
+          )}
         </span>
-      </span>
+        <span className="min-w-0 flex-1">
+          <strong className="block truncate text-sm font-bold text-text">
+            {channel.name}
+          </strong>
+          <span className="mt-1 block truncate text-[11px] text-muted">
+            {channel.current}
+            {channel.variantCount && channel.variantCount > 1
+              ? ` · ${channel.variantCount} versões`
+              : ""}
+          </span>
+        </span>
+      </button>
       <button
         aria-label={
           favorite
@@ -126,7 +130,7 @@ function ChannelRow({
           strokeWidth={1.8}
         />
       </button>
-    </button>
+    </article>
   );
 }
 

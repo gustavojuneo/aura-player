@@ -38,6 +38,7 @@ export function PlayerVideo({
       aria-label={descriptor.title}
       autoPlay={autoPlay}
       className={className}
+      preload={descriptor.isLive ? "none" : "metadata"}
       playsInline
       ref={videoRef}
       style={style}

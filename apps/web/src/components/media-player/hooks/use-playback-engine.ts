@@ -108,7 +108,16 @@ export function usePlaybackEngine({
     setCurrentTime(preferences.autoResume ? (descriptor.position ?? 0) : 0);
     setDuration(0);
 
-    if (descriptor.delivery === "hls" && Hls.isSupported()) {
+    const nativeHlsSupported = Boolean(
+      video.canPlayType("application/vnd.apple.mpegurl") ||
+        video.canPlayType("application/x-mpegURL"),
+    );
+
+    if (descriptor.delivery === "hls" && nativeHlsSupported) {
+      video.src = streamUrl;
+      video.load();
+      play(() => video.play());
+    } else if (descriptor.delivery === "hls" && Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: descriptor.isLive,

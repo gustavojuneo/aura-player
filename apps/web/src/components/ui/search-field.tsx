@@ -24,8 +24,10 @@ export const SearchField = forwardRef<
         aria-keyshortcuts="/"
         className="min-w-0 flex-1 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
         id="aura-search"
+        inputMode="search"
+        enterKeyHint="search"
         ref={ref}
-        type="search"
+        type="text"
       />
     </div>
   );
