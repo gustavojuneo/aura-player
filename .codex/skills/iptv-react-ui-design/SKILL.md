@@ -12,12 +12,17 @@ one file.
 Inspect existing pages and shared components before adding markup. Keep data
 loading and mutations in services/hooks, not presentational components.
 
-- Put route-level composition in `apps/web/src/pages/<page>/index.tsx`.
-- Put page-only UI in `apps/web/src/pages/<page>/components/`.
-- Promote a component to `apps/web/src/components/` only after more than one
-  page uses it.
-- Keep primitives in `apps/web/src/components/ui/`, exported through its barrel,
-  and independent from page-specific behavior.
+- Put route-level composition in `apps/web/src/pages/<route>/index.tsx`; keep
+  nested routes nested and use `layout.tsx` for route-wide layouts.
+- Put page-only UI in `apps/web/src/pages/<route>/components/`.
+- Put every shared composed component in `apps/web/src/components/`, and every
+  reusable UI element in `apps/web/src/components/ui/`.
+- Never define meaningful child components inside a parent file. Extract them
+  and use Compound Components for coordinated subparts.
+- Keep primitives exported through their barrel and independent from
+  page-specific behavior.
+- Keep fixed options in `apps/web/src/utils/constants.ts` as
+  `UPPER_SNAKE_CASE` exports.
 - Split a screen by meaningful responsibilities such as header, hero, dialog,
   list, and empty state; do not accumulate the entire screen in `App` or a page
   entry file.

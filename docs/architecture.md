@@ -103,12 +103,16 @@ Planned structure for `apps/web/src/`:
 src/
 |-- components/
 |   |-- ui/
+|   |-- carousel.tsx
+|   |-- catalog.tsx
 |   |-- header.tsx
-|   |-- footer.tsx
-|   `-- app-layout.tsx
+|   `-- ...shared-components.tsx
 |-- pages/
+|   |-- components/                 landing-page-only components
 |   |-- app/
-|   |   |-- components/
+|   |   |-- layout.tsx              /app and descendant layout
+|   |   |-- onboarding/index.tsx
+|   |   |-- (favorites|movies|series|channels|player)/index.tsx
 |   |   `-- index.tsx
 |   `-- index.tsx
 |-- utils/
@@ -133,9 +137,19 @@ src/
 
 This tree is a reference. Create files and directories as the application requires them.
 
+Routes are represented as a cascading filesystem hierarchy. `pages/index.tsx`
+maps to `/`; `pages/app/index.tsx` maps to `/app`; and
+`pages/app/onboarding/index.tsx` maps to `/app/onboarding`. Route groups may be
+used for organization without changing the URL. Every route page is named
+`index.tsx`. A `layout.tsx` in a route directory wraps that route and all child
+routes; the app shell belongs at `pages/app/layout.tsx`.
+
 ### `components/ui`
 
-Contains reusable visual primitives and shadcn components based on Base UI.
+Contains all reusable UI elements and primitives used by the application,
+including shadcn components based on Base UI. Examples include `Button`,
+`ProgressBar`, `ScrollArea`, `SearchField`, `Select`, `Skeleton`, `Switch`, and
+`VirtualizedGrid`.
 
 Examples:
 
@@ -160,7 +174,7 @@ Use `tailwind-variants` when there are multiple visual variant combinations. Use
 
 ### `components`
 
-Contains components shared across pages or application areas.
+Contains all composed components shared across pages or application areas.
 
 Examples:
 
@@ -168,8 +182,18 @@ Examples:
 components/header.tsx
 components/footer.tsx
 components/sidebar.tsx
-components/app-layout.tsx
+components/app-navigation.tsx
 components/user-menu.tsx
+components/carousel.tsx
+components/catalog.tsx
+components/hero.tsx
+components/favorite-button.tsx
+components/player-content-list.tsx
+components/player-live-guide.tsx
+components/player-next-episode.tsx
+components/program-guide.tsx
+components/icon.tsx
+components/source-selector.tsx
 ```
 
 A component belongs here when:
@@ -180,9 +204,18 @@ A component belongs here when:
 
 Do not place page-specific components here in advance.
 
+Shared means used by more than one page or by a stable application area. A
+component that is duplicated or clearly reusable should be promoted during the
+refactor. Do not define meaningful child components inside a parent component's
+file; extract them into named modules. Use the Compound Components Pattern for
+coordinated subparts such as `Catalog.Root`, `Catalog.Header`, and
+`Catalog.Grid`.
+
 ### `pages`
 
-Contains pages and components exclusive to each page.
+Contains route entries and components exclusive to each route. The landing page
+has its own `pages/components/` directory. Nested routes must remain nested
+under their URL parent; do not flatten `/app/*` pages beside `/app`.
 
 Example:
 
@@ -195,9 +228,12 @@ pages/
     `-- index.tsx
 ```
 
-`pages/app/index.tsx` composes the page. `pages/app/components/` contains only components used by that page or area.
+`pages/app/index.tsx` composes the page. `pages/app/components/` is reserved
+for components used only by that route; shared application components belong in
+`src/components/`.
 
-When multiple pages begin using a local component, it may be promoted to `src/components/`.
+When multiple pages use a local component, it must be promoted to
+`src/components/` or `src/components/ui/` according to its responsibility.
 
 Pages should:
 
@@ -232,6 +268,11 @@ export function cn(...inputs: ClassValue[]) {
 ```
 
 Do not use `utils/` as a generic destination for code without a clear classification.
+
+Fixed application constants and option collections belong in
+`src/utils/constants.ts`. Export them with `UPPER_SNAKE_CASE` names, such as
+`SOURCE_OPTIONS` and `ASPECT_RATIO_OPTIONS`; pages and components must consume
+these exports instead of declaring duplicate literals.
 
 ### `lib`
 

@@ -29,11 +29,19 @@ package APIs through public entry points.
 
 - Put page composition in `apps/web/src/pages/<page>/index.tsx` or the existing
   page entry convention when a route has a single page entry.
+- Mirror the URL hierarchy: route folders stay nested, every route entry is
+  `index.tsx`, and a segment `layout.tsx` wraps its descendants. The `/app`
+  shell belongs at `apps/web/src/pages/app/layout.tsx`.
 - Put components used only by one page in
   `apps/web/src/pages/<page>/components/`.
-- Put genuinely cross-page components in `apps/web/src/components/`.
-- Keep reusable visual primitives in `apps/web/src/components/ui/`; they must
-  not know page-specific business rules.
+- Put every composed component shared by pages or application areas in
+  `apps/web/src/components/`.
+- Put every reusable UI element/primitive in `apps/web/src/components/ui/`;
+  these must not know page-specific business rules.
+- Never define meaningful child components inside a parent file; extract them
+  and use Compound Components for coordinated component families.
+- Put fixed frontend option collections in `apps/web/src/utils/constants.ts`
+  with `UPPER_SNAKE_CASE` exports.
 - Keep browser-wide configuration and integrations in `src/lib/`.
 - Keep reusable behavior in `src/hooks/` and global state in `src/contexts/`
   only when a concrete cross-page need exists.

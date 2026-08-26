@@ -97,18 +97,30 @@ Read `docs/architecture.md` before creating pages, components, services, or HTTP
 
 ## Components
 
-- `src/components/ui/` contains reusable UI primitives, primarily shadcn/Base UI components.
-- `src/components/` contains components shared across pages, such as `Header`, `Footer`, `Sidebar`, and layouts.
-- `src/pages/<page>/components/` contains components used exclusively by that page.
-- Do not place page-specific components prematurely in `src/components/`.
-- A local component may be promoted to `src/components/` when multiple pages begin using it.
+- `apps/web/src/components/ui/` contains every reusable UI element and primitive
+  used by the application: buttons, progress bars, scroll areas, search fields,
+  selects, skeletons, switches, virtualized grids, and similar controls.
+- `apps/web/src/components/` contains every shared application component used by
+  two or more pages or areas. Examples include `Carousel`, `Catalog`, `Hero`,
+  `FavoriteButton`, player panels and lists, `ProgramGuide`, `Header`, `Icon`,
+  and `SourceSelector`.
+- `apps/web/src/pages/<route>/components/` contains only components that are
+  truly private to that route. If a component is used by more than one page,
+  move it to `src/components/` or `src/components/ui/` according to its role.
+- Never define a meaningful child component inside the file of its parent.
+  Extract it to the appropriate directory and use the Compound Components
+  Pattern when the parent has coordinated subparts.
 - Keep components focused on presentation and interaction.
 - Do not implement HTTP communication rules directly in components.
 
 ### AURA TV UI System
 
 - The Pencil AURA TV component system is implemented under `apps/web/src/components/ui/`.
-- Each reusable primitive has its own kebab-case file: `button.tsx`, `source-selector.tsx`, `live-badge.tsx`, `progress-bar.tsx`, and `search-field.tsx`.
+- Each reusable primitive has its own kebab-case file: `button.tsx`,
+  `live-badge.tsx`, `progress-bar.tsx`, and `search-field.tsx`.
+- `SourceSelector` is a shared application component when it coordinates
+  provider/source behavior; only its generic underlying controls belong in
+  `components/ui/`.
 - Export reusable UI primitives through `apps/web/src/components/ui/index.ts`.
 - Keep button variants in the single `Button` component. Use `tailwind-variants` for the `primary`, `secondary`, `quiet`, and `destructive` variants instead of separate button wrapper files.
 - Compose button classes with the shared `cn` helper so consumer-level classes can override variant classes safely.
@@ -144,7 +156,22 @@ Read `docs/architecture.md` before creating pages, components, services, or HTTP
 - Do not concentrate business rules in route files.
 - Use the router's typed APIs for links, parameters, and search values.
 - Validate search parameters and route inputs.
+- Mirror the route hierarchy in `apps/web/src/pages/`: `pages/index.tsx` is `/`,
+  `pages/app/index.tsx` is `/app`, and nested routes live below their parent,
+  such as `pages/app/onboarding/index.tsx` for `/app/onboarding`.
+- Route groups such as `(favorites|movies|series|channels|player)` are valid
+  organizational folders and must remain under `pages/app/`.
+- Every route page uses `index.tsx`. A route may define `layout.tsx`, whose
+  layout applies to that route and its descendants, like Next.js layouts.
+  `pages/app/app-shell.tsx` is therefore replaced by `pages/app/layout.tsx`.
 - Keep page-specific components inside the corresponding page directory.
+
+## Frontend constants
+
+- Fixed application option sets and values, such as `sourceOptions` and
+  `aspectRatioOptions`, belong in `apps/web/src/utils/constants.ts`.
+- Export them using `UPPER_SNAKE_CASE` names, for example
+  `SOURCE_OPTIONS` and `ASPECT_RATIO_OPTIONS`.
 
 ## Loading States
 
@@ -291,11 +318,11 @@ Adapt the reference architecture to Fastify, Drizzle, and Zod. Do not automatica
 - Update documentation whenever a change modifies the architecture or development workflow.
 - Write all project documentation in English.
 
-## OpenCode Skills
+## Project Skills
 
-Project skills live under `.opencode/skills/`. OpenCode discovers each skill from a directory containing `SKILL.md`.
-
-Do not create skills under `.codex/` or `.claude/`.
+Project skills are mirrored under `.codex/skills/` and `.opencode/skills/` so
+Codex and OpenCode receive the same project-specific guidance. When changing a
+project skill, update both copies in the same change.
 
 Available guidance:
 
@@ -307,5 +334,6 @@ Available guidance:
 - `.opencode/skills/iptv-local-first-playback/SKILL.md`
 - `.opencode/skills/iptv-postgres-drizzle/SKILL.md`
 - `.opencode/skills/iptv-api-security/SKILL.md`
+- `.opencode/skills/iptv-frontend-architecture/SKILL.md`
 
 Skills may describe future subsystems. Do not assume that files referenced by them exist before the corresponding implementation stage.
