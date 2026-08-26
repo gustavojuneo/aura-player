@@ -10,18 +10,18 @@ AURA IPTV application on a physical LG webOS TV for development testing.
 - An LG Developer account.
 - Node.js 20 or newer.
 - pnpm 9.7.1 or newer.
-- LG webOS CLI installed and available on `PATH`.
+- Project dependencies installed with `pnpm install`.
 
-Check that the CLI is available:
+The CLI is installed locally as a development dependency. Run its commands
+through pnpm so the workspace-pinned version is used:
 
 ```bash
-ares-package --version
-ares-install --version
-ares-setup-device --version
+pnpm exec ares-package --version
+pnpm exec ares-install --version
+pnpm exec ares-setup-device --version
 ```
 
-If any command is not found, install the webOS CLI using the official LG
-documentation:
+The official LG CLI documentation is available at:
 
 <https://webostv.developer.lge.com/develop/tools/cli-dev-guide>
 
@@ -79,7 +79,7 @@ com.aura.iptv_1.0.0_all.ipk
 Run the interactive device setup:
 
 ```bash
-ares-setup-device
+pnpm exec ares-setup-device
 ```
 
 Add a device with these values:
@@ -99,7 +99,7 @@ can also be performed through the webOS VS Code extension.
 List configured devices:
 
 ```bash
-ares-setup-device --list
+pnpm exec ares-setup-device --list
 ```
 
 The device should appear with the name `tv` and an SSH connection.
@@ -110,13 +110,13 @@ Replace the package filename below with the actual file in
 `apps/web/release/`:
 
 ```bash
-ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
+pnpm exec ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
 ```
 
 Verify that the application is installed:
 
 ```bash
-ares-install --device tv --list
+pnpm exec ares-install --device tv --list
 ```
 
 The application ID is:
@@ -130,7 +130,7 @@ com.aura.iptv
 Launch from the notebook:
 
 ```bash
-ares-launch --device tv com.aura.iptv
+pnpm exec ares-launch --device tv com.aura.iptv
 ```
 
 The application can also be opened from the TV launcher after installation.
@@ -141,8 +141,8 @@ Build a new package and install it again:
 
 ```bash
 pnpm webos:package
-ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
-ares-launch --device tv com.aura.iptv
+pnpm exec ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
+pnpm exec ares-launch --device tv com.aura.iptv
 ```
 
 For a production release, update the version in
@@ -151,7 +151,7 @@ For a production release, update the version in
 ## Remove the application
 
 ```bash
-ares-install --device tv --remove com.aura.iptv
+pnpm exec ares-install --device tv --remove com.aura.iptv
 ```
 
 ## Troubleshooting

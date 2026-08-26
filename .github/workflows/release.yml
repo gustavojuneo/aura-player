@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate release
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+
+      - name: Set webOS application version
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          node --input-type=module -e '
+            import { readFile, writeFile } from "node:fs/promises";
+            const path = "apps/web/public/appinfo.json";
+            const appInfo = JSON.parse(await readFile(path, "utf8"));
+            appInfo.version = process.env.RELEASE_VERSION.replace(/^v/, "");
+            await writeFile(path, `${JSON.stringify(appInfo, null, 2)}\n`);
+          '
+
+      - name: Build applications
+        run: pnpm build
+
+      - name: Package webOS application
+        run: pnpm webos:package
+
+      - name: Create release archives
+        run: |
+          mkdir -p release-artifacts
+          tar -C apps/api -czf release-artifacts/aura-api-${{ github.ref_name }}.tar.gz dist package.json
+          tar -C apps/web/dist -czf release-artifacts/aura-web-${{ github.ref_name }}.tar.gz .
+          cp apps/web/release/*.ipk release-artifacts/
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" release-artifacts/* --generate-notes --verify-tag

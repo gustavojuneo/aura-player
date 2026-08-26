@@ -107,10 +107,25 @@ Generate the webOS application package with:
 pnpm webos:package
 ```
 
-This command requires the LG webOS CLI (`ares-package`) to be installed and
-available on `PATH`; it writes the package to `apps/web/release`. The webOS
-build uses the published Render API at
+The LG webOS CLI is installed as a workspace development dependency, so no
+global CLI installation is required. The command writes the package to
+`apps/web/release`. The webOS build uses the published Render API at
 `https://aura-api-ia1i.onrender.com`, injected by the package script.
+
+## Continuous integration and releases
+
+GitHub Actions runs lint, type checks, and tests for pull requests and pushes
+to `main`. Creating and pushing a semantic version tag publishes a GitHub
+Release containing the API build, the browser web build, and the LG webOS
+`.ipk` package:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The release workflow derives the webOS application version from the tag. Tags
+must use the `vMAJOR.MINOR.PATCH` format.
 
 The catalog is intentionally held only in the application process memory. It
 is cleared when the app page is terminated and is reloaded from the selected
