@@ -54,6 +54,8 @@ pnpm webos:package
 ```
 
 The command builds the web application and packages it with `ares-package`.
+The webOS build uses the published backend at
+`https://aura-api-ia1i.onrender.com`, injected by the package script.
 The generated package is written to:
 
 ```text
@@ -186,4 +188,3 @@ network, not only from the notebook.
 - The catalog is reloaded from the selected source when the application starts
   again after being terminated.
 - Switching sources releases the previous catalog from memory.
-

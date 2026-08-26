@@ -108,7 +108,9 @@ pnpm webos:package
 ```
 
 This command requires the LG webOS CLI (`ares-package`) to be installed and
-available on `PATH`; it writes the package to `apps/web/release`.
+available on `PATH`; it writes the package to `apps/web/release`. The webOS
+build uses the published Render API at
+`https://aura-api-ia1i.onrender.com`, injected by the package script.
 
 The catalog is intentionally held only in the application process memory. It
 is cleared when the app page is terminated and is reloaded from the selected
