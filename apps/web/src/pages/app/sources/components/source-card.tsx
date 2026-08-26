@@ -67,7 +67,7 @@ export function SourceCard({
             {source.name}
           </h2>
           <span
-            className={`text-[10px] font-extrabold uppercase tracking-[0.08em] sm:hidden ${statusClass[source.status]}`}
+            className={`text-[0.625rem] font-extrabold uppercase tracking-[0.08em] sm:hidden ${statusClass[source.status]}`}
           >
             {source.status === "active"
               ? "ATIVA"
@@ -82,7 +82,7 @@ export function SourceCard({
           {source.type === "xtream" ? "Xtream Codes" : "M3U"}
         </p>
         <p
-          className={`mt-1 mb-0 text-[11px] font-semibold ${statusClass[source.status]}`}
+          className={`mt-1 mb-0 text-[0.6875rem] font-semibold ${statusClass[source.status]}`}
         >
           {statusLabel[source.status]}
         </p>

@@ -1,7 +1,6 @@
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useEffect, useState } from "react";
-import { BrandLogo } from "../../../../components/brand-logo";
 import {
   DetailHero,
   DetailHeroSkeleton,
@@ -102,21 +101,6 @@ export function SeriesDetailsPage() {
 
   return (
     <main className="min-h-screen bg-bg text-text">
-      <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
-        <button
-          aria-label="Voltar para página anterior"
-          className="-ml-2 inline-flex h-10 cursor-pointer items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={() => router.history.back()}
-          type="button"
-        >
-          <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />
-          <span>Voltar</span>
-        </button>
-        <BrandLogo
-          markClassName="size-7"
-          textClassName="text-[17px] font-extrabold"
-        />
-      </header>
       <DetailHero
         badge={`Série · ${series.seasonCount} temporadas`}
         description={
@@ -138,7 +122,7 @@ export function SeriesDetailsPage() {
         extraContent={
           <SelectField
             aria-label="Selecionar temporada"
-            className="relative z-50 hidden h-12 w-[170px] rounded-xl border-line bg-panel-2 px-4 text-[13px] font-bold sm:flex"
+            className="relative z-50 hidden h-12 w-[260px] rounded-xl border-line bg-panel-2 px-4 text-[0.8125rem] font-bold sm:flex"
             onValueChange={(value) => {
               setSelectedSeason(Number(value));
               setCurrentPage(1);
@@ -151,9 +135,9 @@ export function SeriesDetailsPage() {
           />
         }
       />
-      <section className="flex w-full flex-col gap-3.5 px-5 pt-8 pb-12 sm:px-10 sm:pt-10 lg:px-[70px]">
+      <section className="flex w-full flex-col gap-3.5 px-5 pt-8 pb-20 sm:px-10 sm:pt-10 lg:px-[70px]">
         <div className="flex h-8 items-center justify-between">
-          <h2 className="m-0 font-display text-lg font-[750] text-[#f6f2e8] opacity-100 sm:text-[21px]">
+          <h2 className="m-0 font-display text-lg font-[750] text-[#f6f2e8] opacity-100 sm:text-[1.312rem]">
             <span className="sm:hidden">
               Episódios · Temporada {activeSeason}
             </span>
@@ -164,7 +148,7 @@ export function SeriesDetailsPage() {
           </span>
         </div>
         <div
-          className="grid grid-cols-1 gap-3.5 sm:[grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]"
+          className="grid grid-cols-1 gap-3.5 sm:[grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]"
           data-tv-navigation-region="catalog-grid"
         >
           {paginatedEpisodes.map((episode) => (
@@ -175,8 +159,8 @@ export function SeriesDetailsPage() {
               params={{ episodeId: episode.id, seriesId: series.id }}
               to="/app/series/$seriesId/episodes/$episodeId/watch"
             >
-              <article className="relative flex h-[82px] items-center gap-3 overflow-hidden rounded-xl border border-transparent bg-transparent p-2.5 transition-[background-color,border-color,box-shadow] group-hover:border-gold/70 group-hover:bg-panel-2 group-hover:shadow-[0_12px_28px_rgb(0_0_0_/_25%)] sm:h-[360px] sm:flex-col sm:items-stretch sm:justify-start sm:gap-3 sm:rounded-xl sm:p-3">
-                <div className="relative z-10 h-[60px] w-[90px] shrink-0 sm:h-[210px] sm:w-full">
+              <article className="relative flex h-[82px] items-center gap-3 overflow-hidden rounded-xl border border-transparent bg-transparent p-2.5 transition-[background-color,border-color,box-shadow] group-hover:border-gold/70 group-hover:bg-panel-2 group-hover:shadow-[0_12px_28px_rgb(0_0_0_/_25%)] sm:h-[420px] sm:flex-col sm:items-stretch sm:justify-start sm:gap-3 sm:rounded-xl sm:p-3">
+                <div className="relative z-10 h-[60px] w-[90px] shrink-0 sm:h-[240px] sm:w-full">
                   <img
                     alt="Sem imagem disponível"
                     className="size-full rounded-lg object-cover"
@@ -196,7 +180,7 @@ export function SeriesDetailsPage() {
                   <span className="block truncate text-sm font-bold text-text sm:text-lg">
                     {episode.title}
                   </span>
-                  <span className="mt-1 block line-clamp-2 text-[11px] leading-[1.4] text-[#d6d0c5] sm:text-sm sm:leading-[1.45]">
+                  <span className="mt-1 block line-clamp-2 text-[0.6875rem] leading-[1.4] text-[#d6d0c5] sm:text-sm sm:leading-[1.45]">
                     {episode.description ?? "Descrição indisponível"}
                   </span>
                   <div className="mt-1 hidden items-center gap-2 text-sm text-[#d6d0c5] sm:flex">

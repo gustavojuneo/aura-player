@@ -58,6 +58,7 @@ export function DetailHero({
           ? "min-h-0 flex-1 overflow-hidden"
           : "min-h-[430px] sm:min-h-[650px]",
       )}
+      data-tv-detail-hero="true"
     >
       <div
         className={cn(
@@ -86,10 +87,10 @@ export function DetailHero({
             : "-mt-[105px] pb-4 sm:-mt-[336px] sm:pb-0",
         )}
       >
-        <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.08em] text-gold-bright">
+        <p className="m-0 text-[0.625rem] font-extrabold uppercase tracking-[0.08em] text-gold-bright">
           {badge}
         </p>
-        <h1 className="m-0 font-display text-[30px] font-bold leading-tight text-text sm:text-[46px]">
+        <h1 className="m-0 font-display text-[1.875rem] font-bold leading-tight text-text sm:text-[2.875rem]">
           {title}
         </h1>
         <p className="m-0 text-xs font-semibold text-[#d6d0c5] sm:text-sm">
@@ -98,7 +99,7 @@ export function DetailHero({
         <div className="min-h-[76px] w-full max-w-[680px] min-w-0">
           <p
             className={cn(
-              "m-0 overflow-hidden break-words text-sm leading-[1.45] text-[#d6d0c5] sm:text-[15px]",
+              "m-0 overflow-hidden break-words text-sm leading-[1.45] text-[#d6d0c5] sm:text-[0.9375rem]",
               !isDescriptionExpanded &&
                 "[display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
             )}
@@ -117,7 +118,8 @@ export function DetailHero({
         </div>
         <div className="flex flex-col gap-2.5 sm:flex-row">
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gold bg-gold px-5 text-xs font-bold text-ink transition-colors hover:bg-gold-bright focus-visible:outline-2 focus-visible:outline-focus sm:h-12 sm:text-sm"
+            className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-gold bg-gold px-5 text-xs font-bold text-ink transition-colors hover:bg-gold-bright focus-visible:outline-2 focus-visible:outline-focus sm:h-12 sm:w-[260px] sm:text-sm"
+            data-tv-detail-watch="true"
             params={watchParams}
             onClick={markPlaybackNavigation}
             to={watchTo}

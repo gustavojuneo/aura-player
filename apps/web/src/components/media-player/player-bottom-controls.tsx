@@ -12,6 +12,7 @@ import {
   Volume2,
   VolumeOff,
 } from "lucide-react";
+import { env } from "../../env";
 import { formatPlaybackTime } from "../../features/playback/playback";
 import {
   ASPECT_RATIO_OPTIONS,
@@ -96,7 +97,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
           {descriptor.secondaryTitle ? ` · ${descriptor.secondaryTitle}` : ""}
         </p>
         {!descriptor.isLive && duration > 0 && (
-          <span className="hidden text-[11px] text-muted sm:block">
+          <span className="hidden text-[0.6875rem] text-muted sm:block">
             {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
           </span>
         )}
@@ -163,7 +164,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
             </PlayerTooltip>
           </div>
           {!descriptor.isLive && (
-            <span className="hidden text-[11px] text-muted sm:inline">
+            <span className="hidden text-[0.6875rem] text-muted sm:inline">
               {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
             </span>
           )}
@@ -215,7 +216,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 className="absolute right-0 bottom-full z-40 mb-3 w-56 rounded-xl border border-white/15 bg-black/75 p-3 text-text shadow-2xl backdrop-blur-md"
                 role="dialog"
               >
-                <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.12em] text-gold-bright">
+                <p className="m-0 text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-gold-bright">
                   Configurações do player
                 </p>
                 <div className="mt-3 block text-xs font-semibold text-white/75">
@@ -236,7 +237,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                     />
                   </PlayerTooltip>
                 </div>
-                <p className="mt-2 mb-0 text-[10px] leading-4 text-white/50">
+                <p className="mt-2 mb-0 text-[0.625rem] leading-4 text-white/50">
                   Disponível quando a fonte oferece múltiplas qualidades.
                 </p>
               </div>
@@ -260,13 +261,15 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
               }
             />
           </PlayerTooltip>
-          <ControlButton
-            label="Tela cheia"
-            onClick={onToggleFullscreen}
-            shortcut="F"
-          >
-            <Expand className="size-4" />
-          </ControlButton>
+          {env.VITE_DEVICE_TYPE !== "tv" && (
+            <ControlButton
+              label="Tela cheia"
+              onClick={onToggleFullscreen}
+              shortcut="F"
+            >
+              <Expand className="size-4" />
+            </ControlButton>
+          )}
         </div>
       </div>
     </section>

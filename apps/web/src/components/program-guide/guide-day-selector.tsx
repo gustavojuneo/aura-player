@@ -13,6 +13,7 @@ export function GuideDaySelector({
         <button
           aria-pressed={selectedDay === day}
           className={`rounded-lg border px-4 py-2 text-xs font-bold ${selectedDay === day ? "border-gold bg-[#3b2e18] text-gold-bright" : "border-line bg-search text-muted"}`}
+          data-tv-navigation-group="guide-days"
           key={day}
           onClick={() => onSelect(day)}
           type="button"

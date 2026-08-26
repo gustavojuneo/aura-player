@@ -34,7 +34,7 @@ import {
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <h2 className="m-0 font-display text-[18px] font-semibold tracking-[-0.03em] text-text">
+    <h2 className="m-0 font-display text-[1.125rem] font-semibold tracking-[-0.03em] text-text">
       {children}
     </h2>
   );
@@ -75,12 +75,15 @@ function MediaCard({
       <Link
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
+        data-tv-home-card
         params={isMovie ? { movieId: item.id } : { seriesId: item.id }}
         to={isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId"}
       />
       <div className="relative min-w-0">
         <h3 className="truncate text-sm font-bold text-text">{item.title}</h3>
-        <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">{meta}</p>
+        <p className="mt-1 mb-0 truncate text-[0.6875rem] text-[#d0c8bb]">
+          {meta}
+        </p>
       </div>
     </article>
   );
@@ -92,6 +95,7 @@ function ChannelCard({ channel }: { channel: RecentChannel }) {
       <Link
         aria-label={`Assistir ${channel.title}`}
         className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"
+        data-tv-home-card
         params={{ channelId: channel.id }}
         to="/app/tv/$channelId/watch"
       />
@@ -110,7 +114,7 @@ function ChannelCard({ channel }: { channel: RecentChannel }) {
         <strong className="block truncate text-sm font-bold text-text">
           {channel.title}
         </strong>
-        <span className="mt-1 block truncate text-[11px] text-muted">
+        <span className="mt-1 block truncate text-[0.6875rem] text-muted">
           {channel.groupTitle ?? "Ao vivo"}
         </span>
       </span>
@@ -149,38 +153,39 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
         }}
       />
       <div className="absolute inset-x-5 bottom-8 z-20 flex max-w-[720px] flex-col gap-3.5 sm:inset-x-10 sm:bottom-10 lg:inset-x-[70px]">
-        <p className="m-0 text-[11px] font-extrabold tracking-[0.1em] text-gold-bright">
+        <p className="m-0 text-[0.6875rem] font-extrabold tracking-[0.1em] text-gold-bright">
           EM DESTAQUE
         </p>
-        <h1 className="m-0 font-display text-[28px] font-bold leading-tight tracking-[-0.05em] text-text md:text-[35px]">
+        <h1 className="m-0 font-display text-[1.75rem] font-bold leading-tight tracking-[-0.05em] text-text md:text-[2.188rem]">
           {item?.title ?? "Seu catálogo IPTV"}
         </h1>
         <p className="m-0 max-w-[470px] text-sm leading-[1.45] text-[#ddd5c8]">
           {item?.description ??
             "O conteúdo mais recente do seu catálogo, pronto para assistir."}
         </p>
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          <Link
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-gold bg-gold px-5 text-sm font-bold text-ink hover:bg-gold-bright"
-            params={
-              isMovie
-                ? { movieId: item?.id ?? "" }
-                : { seriesId: item?.id ?? "" }
-            }
-            to={
-              isMovie ? "/app/movies/$movieId/watch" : "/app/series/$seriesId"
-            }
+        {item ? (
+          <div
+            className="flex flex-wrap gap-2.5 pt-1"
+            data-tv-home-hero-actions
           >
-            <Icon className="size-4" name="play" /> Assistir
-          </Link>
-          <Link
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-panel-2 px-5 text-sm font-bold text-text hover:border-gold/60 hover:bg-panel-2/80"
-            params={detailsParams}
-            to={detailsTo}
-          >
-            <Info className="size-4" /> Ver detalhes
-          </Link>
-        </div>
+            <Link
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-gold bg-gold px-5 text-sm font-bold text-ink hover:bg-gold-bright"
+              params={isMovie ? { movieId: item.id } : { seriesId: item.id }}
+              to={
+                isMovie ? "/app/movies/$movieId/watch" : "/app/series/$seriesId"
+              }
+            >
+              <Icon className="size-4" name="play" /> Assistir
+            </Link>
+            <Link
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-panel-2 px-5 text-sm font-bold text-text hover:border-gold/60 hover:bg-panel-2/80"
+              params={detailsParams}
+              to={detailsTo}
+            >
+              <Info className="size-4" /> Ver detalhes
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -223,7 +228,8 @@ export function HomePage() {
   const featuredMovies = movieItems.slice(0, 20);
   const featuredSeries = seriesItems.slice(0, 20);
   const featured = movieItems[0] ?? seriesItems[0];
-  const isLoading = liveLoading || movieLoading || seriesLoading;
+  const isLoading =
+    sourcesLoading || liveLoading || movieLoading || seriesLoading;
   const retry = () => {
     retryLive();
     retryMovies();
@@ -276,7 +282,7 @@ export function HomePage() {
 
   return (
     <>
-      <div className="flex min-h-screen w-full flex-col gap-4 px-4 pb-24 sm:px-6 lg:gap-5 lg:px-8 lg:pb-10">
+      <div className="flex min-h-screen w-full flex-col gap-4 px-4 pb-24 sm:px-6 lg:gap-5 lg:px-8 lg:pb-16">
         {isLoading ? (
           <HomePageSkeleton onRetry={retry} />
         ) : (

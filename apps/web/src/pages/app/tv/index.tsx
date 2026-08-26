@@ -29,7 +29,6 @@ import {
   useXtreamEpg,
   useXtreamEpgForChannels,
 } from "../../../hooks/use-catalog-data";
-import { useCatalogState } from "../../../hooks/use-catalog-state";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { useFavorites } from "../../../services/favorites";
@@ -74,16 +73,24 @@ function ChannelRow({
 }) {
   return (
     <article
-      className={`relative flex min-w-0 items-center gap-3 rounded-[11px] border border-line bg-panel p-3 text-left transition-colors hover:border-gold/50 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
+      className={`relative grid min-h-[4.75rem] w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[11px] border border-line bg-panel p-2.5 text-left transition-colors hover:border-gold/50 ${selected ? "!border-gold !bg-[#3b2d18] shadow-[inset_3px_0_0_#e3a83b]" : ""}`}
+      data-tv-channel-row="true"
     >
       <button
         aria-current={selected ? "true" : undefined}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-focus"
+        className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-2.5 text-left"
         data-tv-navigation-zone="catalog-items"
         onClick={onSelect}
+        onKeyDown={(event) => {
+          if (event.key === "Yellow" || event.keyCode === 405) {
+            event.preventDefault();
+            event.stopPropagation();
+            onToggle();
+          }
+        }}
         type="button"
       >
-        <span className="grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
+        <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
           {channel.logoUrl ? (
             <img
               alt=""
@@ -101,10 +108,10 @@ function ChannelRow({
           )}
         </span>
         <span className="min-w-0 flex-1">
-          <strong className="block truncate text-sm font-bold text-text">
+          <strong className="block truncate text-[clamp(0.875rem,1vw,1rem)] font-bold text-text">
             {channel.name}
           </strong>
-          <span className="mt-1 block truncate text-[11px] text-muted">
+          <span className="mt-0.5 block truncate text-[clamp(0.75rem,0.85vw,0.875rem)] text-muted">
             {channel.current}
             {channel.variantCount && channel.variantCount > 1
               ? ` · ${channel.variantCount} versões`
@@ -112,25 +119,21 @@ function ChannelRow({
           </span>
         </span>
       </button>
-      <button
+      <span
         aria-label={
           favorite
-            ? `Remover ${channel.name} dos favoritos`
-            : `Favoritar ${channel.name}`
+            ? `${channel.name} está nos favoritos`
+            : `${channel.name} não está nos favoritos. Use a tecla amarela para favoritar`
         }
-        className="shrink-0 rounded-md p-1 focus-visible:outline-2 focus-visible:outline-focus"
-        onClick={(event) => {
-          event.stopPropagation();
-          onToggle();
-        }}
-        type="button"
+        className="grid size-9 shrink-0 place-items-center rounded-md p-1"
+        role="img"
       >
         <Heart
           aria-hidden="true"
           className={`size-5 shrink-0 ${favorite ? "fill-gold text-gold" : "text-gold-bright"}`}
           strokeWidth={1.8}
         />
-      </button>
+      </span>
     </article>
   );
 }
@@ -148,20 +151,20 @@ function CategoryList({
 }) {
   return (
     <aside
-      className={`sticky top-20 mb-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[23%] ${className ?? ""}`}
+      className={`sticky top-20 mb-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[27%] ${className ?? ""}`}
       data-tv-navigation-region="catalog-categories"
     >
-      <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
+      <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[0.6875rem] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
       </h2>
       <ScrollArea
         className="h-[calc(100%-2.5rem)]"
-        contentClassName="px-3 pt-0 pb-3 pr-6"
+        contentClassName="px-3 pt-2 pb-3 pr-6"
       >
         <div className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {categories.map(([label, count]) => (
             <button
-              className={`flex min-h-10 h-auto shrink-0 items-center justify-between gap-3 rounded-[9px] px-3 py-2 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
+              className={`flex min-h-10 h-auto shrink-0 items-center justify-between gap-3 rounded-[9px] px-3 py-2 text-left text-[0.8125rem] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
               data-tv-navigation-zone="catalog-categories"
               key={label}
               onClick={() => onSelect(label)}
@@ -307,11 +310,12 @@ function ChannelPreview({
         </span>
       )}
       {channel && !playbackSource.isLoading && (
-        <span className="absolute bottom-3 left-3 rounded-full bg-black/65 px-2.5 py-1 text-[9px] font-extrabold tracking-[0.08em] text-text">
+        <span className="absolute bottom-3 left-3 rounded-full bg-black/65 px-2.5 py-1 text-[0.5625rem] font-extrabold tracking-[0.08em] text-text">
           ● AO VIVO
         </span>
       )}
       <button
+        data-tv-preview-player="true"
         aria-label={
           channel ? `Assistir ${channel.name}` : "Nenhum canal selecionado"
         }
@@ -380,7 +384,7 @@ function ProgramPanel({
         <>
           <ChannelPreview channel={channel} onOpen={watchChannel} />
           <div className="shrink-0">
-            <h2 className="m-0 font-display text-[21px] font-bold tracking-[-0.04em] text-text">
+            <h2 className="m-0 font-display text-[1.312rem] font-bold tracking-[-0.04em] text-text">
               {channel.name}
             </h2>
             <div className="mt-1.5 flex min-w-0 items-center justify-between gap-3">
@@ -409,8 +413,7 @@ function ProgramPanel({
 export function TvPage() {
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { isLoading } = useCatalogState();
-  const { items } = useCatalogItems("live");
+  const { items, isLoading } = useCatalogItems("live");
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   useSearchShortcut(searchInputRef);
@@ -509,10 +512,10 @@ export function TvPage() {
 
   return (
     <>
-      <div className="flex h-screen w-full flex-col gap-5 overflow-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
+      <div className="flex h-screen min-w-0 w-full flex-col gap-5 overflow-x-hidden overflow-y-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
         <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
-            <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
+            <h1 className="hidden min-w-0 truncate font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text md:block">
               TV ao vivo
             </h1>
             <SearchField
@@ -526,7 +529,7 @@ export function TvPage() {
           </div>
         </AppHeader>
         <div className="md:hidden">
-          <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text">
+          <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text">
             TV ao vivo
           </h1>
         </div>
@@ -547,7 +550,7 @@ export function TvPage() {
         {isLoading ? (
           <LivePageSkeleton />
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row lg:items-stretch">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:grid lg:grid-cols-[minmax(13rem,27fr)_minmax(0,35fr)_minmax(16rem,38fr)] lg:items-stretch">
             <CategoryList
               categories={categories}
               className="hidden lg:block"
@@ -555,14 +558,17 @@ export function TvPage() {
               selected={category}
             />
             <section
-              className="flex h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-1 flex-col"
+              className="flex h-[calc(100vh-8rem)] min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden"
               data-tv-navigation-region="catalog-grid"
             >
-              <h2 className="m-0 shrink-0 px-1 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
+              <h2 className="m-0 shrink-0 px-1 pb-2 text-[0.6875rem] font-extrabold tracking-[0.08em] text-muted">
                 Canais
               </h2>
-              <ScrollArea className="min-h-0 min-w-0 flex-1">
-                <div className="flex flex-col gap-2">
+              <ScrollArea
+                className="min-h-0 min-w-0 max-w-full flex-1"
+                contentClassName="min-w-0 max-w-full px-1 py-1 pr-5"
+              >
+                <div className="flex min-w-0 max-w-full flex-col gap-2">
                   {visibleChannels.map((channel) => (
                     <ChannelRow
                       channel={channel}

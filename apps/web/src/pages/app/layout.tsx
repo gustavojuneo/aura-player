@@ -1,6 +1,8 @@
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { AppLoadingScreen } from "../../components/app-loading-screen";
 import { useAppLifecycle } from "../../hooks/use-app-lifecycle";
+import { useCatalogRefreshInProgress } from "../../hooks/use-catalog-data";
 import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
 import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
 
@@ -9,6 +11,7 @@ export function AppLayout() {
   useTvDirectionalNavigation();
   const [sessionExpired, setSessionExpired] = useState(false);
   const { pathname } = useLocation();
+  const isCatalogRefreshing = useCatalogRefreshInProgress();
   const isPlayerRoute =
     /^\/app\/(movies\/[^/]+\/watch|series\/[^/]+\/episodes\/[^/]+\/watch|tv\/[^/]+\/watch)(\/|$)/.test(
       pathname,
@@ -33,8 +36,12 @@ export function AppLayout() {
       }
     >
       {!isShelllessRoute && <Sidebar />}
-      <div className="min-w-0 flex-1" data-tv-app-content>
-        <Outlet />
+      <div className="relative min-w-0 flex-1" data-tv-app-content>
+        {isCatalogRefreshing && !pathname.startsWith("/app/sources") ? (
+          <AppLoadingScreen />
+        ) : (
+          <Outlet />
+        )}
       </div>
       {!isShelllessRoute && <MobileNavigation />}
       {sessionExpired && (

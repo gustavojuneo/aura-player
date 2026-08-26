@@ -25,11 +25,11 @@ export function SourceOnboardingDialog({
         <DialogViewport>
           <DialogPopup aria-labelledby="source-onboarding-title">
             <div className="mb-[22px] flex flex-col gap-2">
-              <p className="m-0 text-[11px] font-extrabold tracking-[0.08em] text-gold-bright">
+              <p className="m-0 text-[0.6875rem] font-extrabold tracking-[0.08em] text-gold-bright">
                 PRIMEIRO ACESSO · ETAPA 1 DE 2
               </p>
               <DialogTitle
-                className="m-0 text-[28px] font-[750] leading-tight tracking-[-0.03em] text-text md:text-[32px]"
+                className="m-0 text-[1.75rem] font-[750] leading-tight tracking-[-0.03em] text-text md:text-[2rem]"
                 id="source-onboarding-title"
               >
                 Conecte sua primeira fonte
@@ -62,7 +62,7 @@ export function SourceOnboardingDialog({
                 Não foi possível carregar a playlist: {error}
               </p>
             )}
-            <p className="mt-4 mb-0 text-[11px] leading-4 text-muted">
+            <p className="mt-4 mb-0 text-[0.6875rem] leading-4 text-muted">
               Adicione uma fonte válida para continuar.
             </p>
           </DialogPopup>

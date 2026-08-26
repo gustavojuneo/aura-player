@@ -8,8 +8,12 @@ export function ProgramGuideItem({
   program,
 }: ProgramGuideItemProps) {
   return (
-    <article
-      className={`shrink-0 rounded-lg border px-2.5 py-2 ${isCurrent ? "border-gold bg-[#3b2e18]" : "border-line bg-search"}`}
+    <button
+      aria-label={`${program.title}, ${formatProgramTime(program.start)} — ${formatProgramTime(program.stop)}`}
+      className={`w-full shrink-0 rounded-lg border px-2.5 py-2 text-left ${isCurrent ? "border-gold bg-[#3b2e18]" : "border-line bg-search"}`}
+      data-tv-navigation-zone="catalog-preview"
+      data-tv-epg-item="true"
+      type="button"
     >
       <div className="min-w-0">
         <div className="flex items-start gap-2.5">
@@ -27,7 +31,7 @@ export function ProgramGuideItem({
           </p>
         )}
         {isCurrent && (
-          <span className="shrink-0 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.06em] text-ink">
+          <span className="shrink-0 rounded-full bg-gold px-1.5 py-0.5 text-[0.5625rem] font-extrabold tracking-[0.06em] text-ink">
             AGORA
           </span>
         )}
@@ -40,6 +44,6 @@ export function ProgramGuideItem({
           />
         </div>
       )}
-    </article>
+    </button>
   );
 }

@@ -1,4 +1,5 @@
 import { Play, Radio, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { CatalogItem } from "../../features/catalog/catalog";
 import { ScrollArea, SelectField } from "../ui";
 
@@ -42,7 +43,7 @@ export function PlayerLiveContentList({
         value={selectedCategory}
       />
       {categories.length > 0 && (
-        <span className="mt-3 px-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white/55">
+        <span className="mt-3 px-1 text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-white/55">
           Canais
         </span>
       )}
@@ -61,6 +62,7 @@ export function PlayerLiveContentList({
                   channel.id === currentChannelId ? "true" : undefined
                 }
                 className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${channel.id === currentChannelId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+                data-player-content-item="true"
                 key={channel.id}
                 onClick={() => onSelectChannel(channel.id)}
                 type="button"
@@ -80,7 +82,7 @@ export function PlayerLiveContentList({
                   {channel.title}
                 </span>
                 {channel.id === currentChannelId && (
-                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.08em] text-gold-bright">
+                  <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-gold-bright">
                     Atual
                   </span>
                 )}
@@ -140,6 +142,7 @@ export function PlayerSeriesContentList({
                 episode.id === currentEpisodeId ? "true" : undefined
               }
               className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${episode.id === currentEpisodeId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+              data-player-content-item="true"
               key={episode.id}
               onClick={() => onSelectEpisode(episode)}
               type="button"
@@ -151,12 +154,12 @@ export function PlayerSeriesContentList({
                 <strong className="block truncate text-sm font-semibold text-white">
                   {episode.title}
                 </strong>
-                <span className="mt-0.5 block text-[11px] text-white/55">
+                <span className="mt-0.5 block text-[0.6875rem] text-white/55">
                   Episódio {episode.episodeNumber ?? "—"}
                 </span>
               </span>
               {episode.id === currentEpisodeId && (
-                <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.08em] text-gold-bright">
+                <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-gold-bright">
                   Atual
                 </span>
               )}
@@ -181,10 +184,24 @@ function PlayerContentListShell({
   onClose: () => void;
   title: string;
 }) {
+  const contentListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      contentListRef.current
+        ?.querySelector<HTMLElement>(
+          '[data-player-content-item="true"]:not([disabled])',
+        )
+        ?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   return (
     <div
       aria-label="Lista de conteúdo"
       className={`pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-end overflow-hidden bg-transparent p-4 pt-20 sm:p-8 sm:pt-24 ${avoidLiveGuide ? "bottom-[280px] sm:bottom-[300px]" : "bottom-[88px] sm:bottom-[112px]"}`}
+      ref={contentListRef}
       role="dialog"
     >
       <div
@@ -192,7 +209,7 @@ function PlayerContentListShell({
       >
         <header className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold-bright">
+            <p className="m-0 text-[0.625rem] font-extrabold uppercase tracking-[0.14em] text-gold-bright">
               {eyebrow}
             </p>
             <h2 className="mt-1 mb-0 truncate font-display text-xl font-bold text-white">

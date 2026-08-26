@@ -99,14 +99,14 @@ export function SourcesPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
+    <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-16">
       <AppHeader />
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]">
+          <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text sm:text-[1.875rem]">
             Listas IPTV
           </h1>
-          <p className="mt-1 mb-0 text-[13px] text-muted">
+          <p className="mt-1 mb-0 text-[0.8125rem] text-muted">
             Adicione e gerencie suas listas IPTV neste navegador.
           </p>
         </div>

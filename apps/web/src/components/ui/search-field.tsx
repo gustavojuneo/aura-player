@@ -10,19 +10,20 @@ export const SearchField = forwardRef<
   return (
     <div
       className={cn(
-        "flex h-12 items-center gap-2.5 rounded-xl border border-line bg-search px-3.5",
+        "group flex h-12 items-center gap-2.5 rounded-xl border border-line bg-search px-3.5",
         className,
       )}
+      data-focus-container="true"
     >
       <Search
         aria-hidden="true"
-        className="size-5 shrink-0 text-muted"
+        className="size-5 shrink-0 text-muted transition-colors group-focus-within:text-gold-bright"
         strokeWidth={1.8}
       />
       <input
         {...props}
         aria-keyshortcuts="/"
-        className="min-w-0 flex-1 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
+        className="min-w-0 flex-1 bg-transparent text-[0.8125rem] text-text outline-none placeholder:text-muted"
         id="aura-search"
         inputMode="search"
         enterKeyHint="search"

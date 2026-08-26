@@ -13,10 +13,17 @@ export function ScrollArea({
   contentClassName?: string;
 }) {
   return (
-    <BaseScrollArea.Root className={cn("relative min-h-0", className)}>
-      <BaseScrollArea.Viewport className="size-full overscroll-contain">
+    <BaseScrollArea.Root
+      className={cn("relative min-h-0", className)}
+      data-tv-scroll-area="true"
+    >
+      <BaseScrollArea.Viewport
+        className="size-full overscroll-contain"
+        data-tv-scroll-viewport="true"
+      >
         <BaseScrollArea.Content
           className={cn("min-w-full pr-3", contentClassName)}
+          data-tv-scroll-content="true"
         >
           {children}
         </BaseScrollArea.Content>

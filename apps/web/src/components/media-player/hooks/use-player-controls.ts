@@ -141,13 +141,7 @@ export function usePlayerControls({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey
-      )
-        return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       const key = event.key.toLowerCase();
@@ -164,6 +158,7 @@ export function usePlayerControls({
         event.key === "End" ||
         /^[0-9]$/.test(event.key);
       if (isShortcut) revealControls();
+      if (event.defaultPrevented) return;
       if (
         target.isContentEditable ||
         target.closest("button, input, select, textarea, a, [role=dialog]")

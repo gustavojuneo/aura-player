@@ -44,6 +44,26 @@ import { removeRecentChannelsBySource } from "./recent-channels";
 export const catalogCacheTtlMs = 24 * 60 * 60 * 1000;
 
 const catalogRefreshesInFlight = new Map<string, Promise<CatalogSource>>();
+const catalogRefreshListeners = new Set<() => void>();
+let appStartupLoading = true;
+
+function notifyCatalogRefreshState() {
+  for (const listener of catalogRefreshListeners) listener();
+}
+
+export function isCatalogRefreshInProgress() {
+  return appStartupLoading || catalogRefreshesInFlight.size > 0;
+}
+
+export function setAppStartupLoading(loading: boolean) {
+  appStartupLoading = loading;
+  notifyCatalogRefreshState();
+}
+
+export function subscribeCatalogRefreshState(listener: () => void) {
+  catalogRefreshListeners.add(listener);
+  return () => catalogRefreshListeners.delete(listener);
+}
 
 export async function loadCatalogSources() {
   return getSources();
@@ -146,6 +166,8 @@ export function refreshCatalogSource(source: CatalogSource) {
   const currentRefresh = catalogRefreshesInFlight.get(source.id);
   if (currentRefresh) return currentRefresh;
 
+  window.dispatchEvent(new Event("aura-catalog-loading"));
+
   const refresh =
     source.type === "xtream"
       ? syncXtreamSource(source)
@@ -154,9 +176,11 @@ export function refreshCatalogSource(source: CatalogSource) {
   trackedRefresh = refresh.finally(() => {
     if (catalogRefreshesInFlight.get(source.id) === trackedRefresh) {
       catalogRefreshesInFlight.delete(source.id);
+      notifyCatalogRefreshState();
     }
   });
   catalogRefreshesInFlight.set(source.id, trackedRefresh);
+  notifyCatalogRefreshState();
   return trackedRefresh;
 }
 

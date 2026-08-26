@@ -72,6 +72,7 @@
 }
 
 :root {
+  font-size: clamp(16px, calc(0.5vw + 12px), 22px);
   font-family: ui-sans-serif, system-ui, sans-serif;
   color: #f6f2e8;
   background: #15130f;
@@ -91,14 +92,51 @@ html::-webkit-scrollbar {
   box-sizing: border-box;
 }
 
-:focus {
+body :focus {
   outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+  outline-offset: -3px;
 }
 
-:focus-visible {
+body :focus-visible {
   outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+  /* Keep the focus indicator inside clipped cards, grids, and scroll areas. */
+  outline-offset: -3px;
+}
+
+/* A channel row owns the focus ring for its primary action; the favorite
+   action remains independent and only receives its own button ring. */
+[data-tv-channel-row]:has(> button:first-child:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+[data-tv-channel-row] > button:first-child:focus-visible {
+  outline: none;
+}
+
+[data-tv-navigation-region]:focus,
+[data-tv-navigation-region]:focus-visible {
+  outline: none;
+}
+
+/* Base UI scroll plumbing is not an interactive destination. It must never
+   display the application focus ring; only controls rendered inside it can. */
+[data-tv-scroll-area]:focus,
+[data-tv-scroll-area]:focus-visible,
+[data-tv-scroll-viewport]:focus,
+[data-tv-scroll-viewport]:focus-visible,
+[data-tv-scroll-content]:focus,
+[data-tv-scroll-content]:focus-visible {
+  outline: none;
+}
+
+[data-focus-container]:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+[data-focus-container] input:focus-visible {
+  outline: none;
 }
 
 body {

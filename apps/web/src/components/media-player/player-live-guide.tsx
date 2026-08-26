@@ -64,7 +64,7 @@ export function PlayerLiveGuide({
           {channelName} · programação
         </p>
         {timelinePrograms.length > 0 && (
-          <span className="ml-auto shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-white/55">
+          <span className="ml-auto shrink-0 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-white/55">
             Linha do tempo
           </span>
         )}
@@ -134,22 +134,22 @@ function TimelineProgram({
       <p className="mt-2 mb-0 truncate text-sm font-semibold">
         {program.title}
       </p>
-      <p className="mt-1 mb-0 line-clamp-2 text-[11px] leading-snug text-white/65">
+      <p className="mt-1 mb-0 line-clamp-2 text-[0.6875rem] leading-snug text-white/65">
         {program.description}
       </p>
       {previous && (
-        <span className="mt-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-white/45">
+        <span className="mt-2 block text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-white/45">
           Anterior
         </span>
       )}
       {next && (
-        <span className="mt-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-sky-200">
+        <span className="mt-2 block text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-sky-200">
           Próximo
         </span>
       )}
       {current && (
         <>
-          <span className="mt-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-gold-bright">
+          <span className="mt-2 block text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-gold-bright">
             No ar agora
           </span>
           <span className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10">

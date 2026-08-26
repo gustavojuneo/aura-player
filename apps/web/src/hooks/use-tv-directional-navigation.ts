@@ -15,12 +15,13 @@ import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 const focusableSelector =
-  "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])";
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
 const regionSelector = "[data-tv-navigation-region]";
 const focusKeys = new WeakMap<HTMLElement, string>();
 const elementByFocusKey = new Map<string, HTMLElement>();
 let nextFocusId = 0;
 let initialized = false;
+let suppressNextFocusScroll = false;
 
 type NavigationRegion =
   | "catalog-categories"
@@ -52,10 +53,24 @@ function isTextEntry(element: Element | null) {
 }
 
 function isVisible(element: HTMLElement) {
-  return (
-    element.getClientRects().length > 0 &&
-    element.getAttribute("aria-hidden") !== "true"
-  );
+  if (
+    element.getClientRects().length === 0 ||
+    element.getAttribute("aria-hidden") === "true"
+  )
+    return false;
+  let current: HTMLElement | null = element;
+  while (current) {
+    const styles = window.getComputedStyle(current);
+    if (
+      styles.visibility === "hidden" ||
+      styles.display === "none" ||
+      styles.opacity === "0" ||
+      styles.pointerEvents === "none"
+    )
+      return false;
+    current = current.parentElement;
+  }
+  return true;
 }
 
 function getDirection(event: KeyboardEvent): Direction | undefined {
@@ -240,7 +255,23 @@ function findClosestBelow(current: HTMLElement, candidates: HTMLElement[]) {
 function focusElement(element: HTMLElement | undefined) {
   if (!element) return;
   const focusKey = focusKeys.get(element);
+  // Some controls, such as the live preview, can be enabled by selecting a
+  // channel immediately before the next directional key. Move DOM focus
+  // first, then synchronize Norigin when its key is available.
+  element.focus({ preventScroll: true });
   if (focusKey) void setFocus(focusKey);
+}
+
+function scrollRegionToStart(element: HTMLElement) {
+  let current: HTMLElement | null = element.parentElement;
+  while (current) {
+    if (current.scrollHeight > current.clientHeight) {
+      current.scrollTop = 0;
+      return;
+    }
+    current = current.parentElement;
+  }
+  window.scrollTo({ left: 0, top: 0, behavior: "auto" });
 }
 
 function handleTextInputEnter(element: HTMLInputElement) {
@@ -262,7 +293,10 @@ function handleTextInputEnter(element: HTMLInputElement) {
 
 function getRegionItems(region: NavigationRegion) {
   return Array.from(elementByFocusKey.values()).filter(
-    (element) => getRegion(element) === region && isVisible(element),
+    (element) =>
+      getRegion(element) === region &&
+      !element.matches(regionSelector) &&
+      isVisible(element),
   );
 }
 
@@ -316,6 +350,34 @@ function handleRegionExit(
   region: NavigationRegion,
   direction: Direction,
 ) {
+  if (direction === "up" && element.closest("[data-tv-home-hero-actions]")) {
+    window.scrollTo({ left: 0, top: 0, behavior: "auto" });
+    return false;
+  }
+
+  if (
+    direction === "up" &&
+    element.hasAttribute("data-tv-select-trigger") &&
+    element.getAttribute("aria-expanded") !== "true" &&
+    region !== "sidebar"
+  ) {
+    const detailWatch = document.querySelector<HTMLElement>(
+      '[data-tv-detail-watch="true"]',
+    );
+    if (detailWatch) {
+      focusElement(detailWatch);
+      return false;
+    }
+  }
+
+  if (direction === "up" && element.closest('[data-tv-detail-hero="true"]')) {
+    element
+      .closest<HTMLElement>('[data-tv-detail-hero="true"]')
+      ?.scrollIntoView({ block: "start", inline: "nearest" });
+    window.scrollTo({ left: 0, top: 0, behavior: "auto" });
+    return false;
+  }
+
   if (region === "sidebar") {
     if (direction !== "right") {
       return direction === "up" || direction === "down";
@@ -323,7 +385,9 @@ function handleRegionExit(
     const destination =
       findClosestByRow(element, getRegionItems("catalog-categories")) ??
       findClosestByRow(element, getRegionItems("catalog-grid")) ??
-      findClosestByRow(element, getRegionItems("content"));
+      findClosestByRow(element, getRegionItems("content")) ??
+      getRegionItems("catalog-grid")[0] ??
+      getRegionItems("content")[0];
     focusElement(destination);
     return false;
   }
@@ -340,12 +404,55 @@ function handleRegionExit(
     return true;
   }
 
+  if (region === "player") {
+    if (direction === "left") {
+      const sameRowControl = findAxisAlignedElement(
+        element,
+        "left",
+        getRegionItems("player").filter(
+          (item) => !item.hasAttribute("data-player-back"),
+        ),
+      );
+      if (!sameRowControl) {
+        focusElement(
+          document.querySelector<HTMLElement>("[data-player-back]") ??
+            undefined,
+        );
+        return false;
+      }
+    }
+    if (
+      direction === "down" &&
+      element.closest("[data-player-primary-controls]")
+    ) {
+      const bottomPlay = document.querySelector<HTMLElement>(
+        '[data-player-controls] button[aria-label="Reproduzir"], [data-player-controls] button[aria-label="Pausar"]',
+      );
+      focusElement(bottomPlay ?? undefined);
+      return false;
+    }
+    if (direction === "up" && element.closest("[data-player-controls]")) {
+      const primaryPlay = document.querySelector<HTMLElement>(
+        '[data-player-primary-controls] button[aria-label="Reproduzir"], [data-player-primary-controls] button[aria-label="Pausar"]',
+      );
+      focusElement(primaryPlay ?? undefined);
+      return false;
+    }
+  }
+
   const group = element.dataset.tvNavigationGroup;
   if (group && (direction === "left" || direction === "right")) {
     const groupItems = getRegionItems(region).filter(
       (item) => item.dataset.tvNavigationGroup === group,
     );
-    focusElement(findAxisAlignedElement(element, direction, groupItems));
+    const sibling = findAxisAlignedElement(element, direction, groupItems);
+    if (sibling) {
+      focusElement(sibling);
+      return false;
+    }
+    if (group === "guide-days" && direction === "left") {
+      focusElement(findClosestByRow(element, getRegionItems("catalog-grid")));
+    }
     return false;
   }
 
@@ -369,6 +476,17 @@ function handleRegionExit(
   }
 
   if (isTextEntry(element) && (direction === "left" || direction === "right")) {
+    if (direction === "right") {
+      const nextControl = findAxisAlignedElement(
+        element,
+        "right",
+        getRegionItems(region),
+      );
+      if (nextControl) {
+        focusElement(nextControl);
+        return false;
+      }
+    }
     return false;
   }
 
@@ -388,17 +506,40 @@ function handleRegionExit(
   }
 
   if (region === "catalog-grid" && direction === "right") {
+    const previewPlayer = document.querySelector<HTMLElement>(
+      '[data-tv-preview-player="true"]:not([disabled])',
+    );
+    if (
+      element.closest("[data-tv-channel-row]") &&
+      previewPlayer &&
+      isVisible(previewPlayer)
+    ) {
+      focusElement(previewPlayer);
+      return false;
+    }
     const sameRowItem = findAxisAlignedElement(
       element,
       "right",
       getRegionItems("catalog-grid"),
     );
+    if (sameRowItem) {
+      focusElement(sameRowItem);
+      return false;
+    }
     if (!sameRowItem) {
+      const epgItems = getRegionItems("catalog-preview").filter((item) =>
+        item.hasAttribute("data-tv-epg-item"),
+      );
       const previewItem = findClosestByRow(
         element,
-        getRegionItems("catalog-preview"),
+        epgItems.length > 0 ? epgItems : getRegionItems("catalog-preview"),
       );
-      if (previewItem) focusElement(previewItem);
+      focusElement(
+        previewItem ??
+          (epgItems.length > 0
+            ? epgItems[0]
+            : getRegionItems("catalog-preview")[0]),
+      );
       return false;
     }
   }
@@ -410,6 +551,7 @@ function handleRegionExit(
       getRegionItems("catalog-grid"),
     );
     if (!previousRowItem) {
+      scrollRegionToStart(element);
       focusElement(findClosestAbove(element, getRegionItems("content")));
       return false;
     }
@@ -434,20 +576,30 @@ function handleRegionExit(
   }
 
   if (region === "content" && direction === "down") {
-    const nextContentItem = findAxisAlignedElement(
-      element,
-      "down",
-      getRegionItems("content"),
-    );
-    if (!nextContentItem) {
-      const gridItem = findClosestBelow(
+    if (element.closest('[data-tv-detail-hero="true"]')) {
+      const detailContent = findClosestBelow(
         element,
         getRegionItems("catalog-grid"),
       );
-      if (gridItem) {
-        focusElement(gridItem);
+      if (detailContent) {
+        focusElement(detailContent);
         return false;
       }
+    }
+    const homeCards = element.closest("[data-tv-home-hero-actions]")
+      ? getRegionItems("content").filter((item) =>
+          item.hasAttribute("data-tv-home-card"),
+        )
+      : [];
+    const destination = findClosestBelow(
+      element,
+      homeCards.length > 0
+        ? homeCards
+        : [...getRegionItems("content"), ...getRegionItems("catalog-grid")],
+    );
+    if (destination) {
+      focusElement(destination);
+      return false;
     }
   }
 
@@ -491,8 +643,16 @@ function createFocusableRegistration(
       element.click();
     },
     onEnterRelease: () => undefined,
-    onFocus: () =>
-      element.scrollIntoView({ block: "nearest", inline: "nearest" }),
+    onFocus: () => {
+      if (suppressNextFocusScroll) {
+        suppressNextFocusScroll = false;
+        return;
+      }
+      // Detail selects live in the hero. Focusing them must not reposition
+      // the page; directional navigation already chose the visible control.
+      if (element.hasAttribute("data-tv-select-trigger")) return;
+      element.scrollIntoView({ block: "nearest", inline: "nearest" });
+    },
     onUpdateFocus: () => undefined,
     onUpdateHasFocusedChild: () => undefined,
     parentFocusKey,
@@ -518,7 +678,12 @@ function createRegionRegistration(
     onBlur: () => undefined,
     onEnterPress: () => undefined,
     onEnterRelease: () => undefined,
-    onFocus: () => undefined,
+    onFocus: () => {
+      window.requestAnimationFrame(() => {
+        const firstItem = getRegionItems(region)[0];
+        if (firstItem) focusElement(firstItem);
+      });
+    },
     onUpdateFocus: () => undefined,
     onUpdateHasFocusedChild: () => undefined,
     parentFocusKey: ROOT_FOCUS_KEY,
@@ -583,6 +748,48 @@ async function registerFocusableTree() {
 
 function focusInitialElement() {
   const activeElement = document.activeElement;
+  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+  const player = document.querySelector<HTMLElement>("[data-player-root]");
+  if (player) {
+    const currentFocusElement = elementByFocusKey.get(getCurrentFocusKey());
+    const primaryPlay = Array.from(
+      player.querySelectorAll<HTMLElement>(focusableSelector),
+    ).find(
+      (element) =>
+        isVisible(element) &&
+        !element.hasAttribute("disabled") &&
+        (element.getAttribute("aria-label") === "Reproduzir" ||
+          element.getAttribute("aria-label") === "Pausar") &&
+        element.closest("[data-player-primary-controls]"),
+    );
+    if (
+      primaryPlay &&
+      (!currentFocusElement ||
+        !player.contains(currentFocusElement) ||
+        !currentFocusElement.closest(
+          "[data-player-primary-controls], [data-player-controls]",
+        ))
+    ) {
+      suppressNextFocusScroll = true;
+      focusElement(primaryPlay);
+      return;
+    }
+  }
+  if (
+    activeElement instanceof HTMLElement &&
+    (activeElement.hasAttribute("data-tv-select-trigger") ||
+      activeElement.closest('[role="option"]'))
+  ) {
+    return;
+  }
+  const detailWatch = document.querySelector<HTMLElement>(
+    '[data-tv-detail-watch="true"]',
+  );
+  if (detailWatch && isVisible(detailWatch)) {
+    suppressNextFocusScroll = true;
+    focusElement(detailWatch);
+    return;
+  }
   if (activeElement instanceof HTMLElement && activeElement !== document.body) {
     const activeFocusKey = focusKeys.get(activeElement);
     if (activeFocusKey && activeFocusKey !== getCurrentFocusKey()) {
@@ -590,16 +797,31 @@ function focusInitialElement() {
     }
     return;
   }
-  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
-  const player = document.querySelector<HTMLElement>("[data-player-root]");
   const scope =
     dialog ?? player ?? document.querySelector("[data-tv-app-content]");
+  if (player) {
+    const primaryPlay = Array.from(
+      player.querySelectorAll<HTMLElement>(focusableSelector),
+    ).find(
+      (element) =>
+        isVisible(element) &&
+        (element.getAttribute("aria-label") === "Reproduzir" ||
+          element.getAttribute("aria-label") === "Pausar") &&
+        element.closest("[data-player-primary-controls]"),
+    );
+    if (primaryPlay) {
+      suppressNextFocusScroll = true;
+      focusElement(primaryPlay);
+      return;
+    }
+  }
   const first = Array.from(
     scope?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
   ).find(
     (element) =>
       isVisible(element) && (Boolean(dialog) || !isTextEntry(element)),
   );
+  if (first) suppressNextFocusScroll = true;
   focusElement(first);
 }
 
@@ -611,6 +833,8 @@ export function useTvDirectionalNavigation() {
 
   useEffect(() => {
     if (!pathname) return;
+    if (pathname === "/app" || pathname === "/app/")
+      window.scrollTo({ left: 0, top: 0 });
     resume();
     let frame: number | undefined;
     const scheduleRegistration = () => {
@@ -651,6 +875,21 @@ export function useTvDirectionalNavigation() {
       if (!(activeElement instanceof HTMLElement)) return;
 
       const direction = getDirection(event);
+      if (
+        direction &&
+        isTextEntry(activeElement) &&
+        (direction === "up" || direction === "down")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        const region = getRegion(activeElement);
+        const shouldNavigate = region
+          ? handleRegionExit(activeElement, region, direction)
+          : true;
+        if (shouldNavigate) void navigateByDirection(direction, { event });
+        return;
+      }
+
       if (
         direction &&
         activeElement.hasAttribute("data-tv-select-trigger") &&

@@ -35,7 +35,7 @@ export function CategoryDialog({
           <DialogPopup className="max-w-[360px] p-4 shadow-2xl sm:max-w-[420px]">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold">
+                <p className="m-0 text-[0.625rem] font-extrabold uppercase tracking-[0.14em] text-gold">
                   Catálogo
                 </p>
                 <DialogTitle
@@ -118,15 +118,15 @@ export function CategorySidebar({
 }) {
   return (
     <aside
-      className="sticky top-20 mb-6 hidden h-[calc(100vh-8rem)] w-[250px] shrink-0 flex-col self-start overflow-hidden rounded-xl bg-search lg:flex"
+      className="sticky top-20 mb-6 hidden h-[calc(100vh-8rem)] w-[290px] shrink-0 flex-col self-start overflow-hidden rounded-xl bg-search lg:flex"
       data-tv-navigation-region="catalog-categories"
     >
-      <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
+      <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[0.6875rem] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
       </h2>
       <ScrollArea
         className="min-h-0 flex-1"
-        contentClassName="px-3 pt-0 pb-3 pr-6"
+        contentClassName="px-3 pt-2 pb-3 pr-6"
       >
         <div
           className="flex flex-col gap-1"
@@ -146,7 +146,7 @@ export function CategorySidebar({
                 <button
                   aria-pressed={selected === category}
                   className={cn(
-                    "flex min-h-10 items-center rounded-[9px] px-3 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus",
+                    "flex min-h-10 items-center rounded-[9px] px-3 text-left text-[0.8125rem] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus",
                     selected === category
                       ? "bg-[#3a2b16] font-bold text-text"
                       : "text-muted hover:bg-panel hover:text-text",

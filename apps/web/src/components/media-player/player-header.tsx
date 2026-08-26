@@ -2,19 +2,16 @@ import { ArrowLeft } from "lucide-react";
 import type { PlaybackDescriptor } from "../../features/playback/playback";
 
 export function PlayerHeader({
-  controlsVisible,
   descriptor,
   onBack,
 }: {
-  controlsVisible: boolean;
   descriptor: PlaybackDescriptor;
   onBack: () => void;
 }) {
   return (
-    <header
-      className={`relative z-10 flex items-start justify-between px-5 pt-6 transition-opacity sm:px-9 sm:pt-7 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
-    >
+    <header className="relative z-10 flex items-start justify-between px-5 pt-6 sm:px-9 sm:pt-7">
       <button
+        data-player-back
         className="flex min-w-0 cursor-pointer items-start gap-3 text-left text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
         onClick={onBack}
         type="button"
@@ -25,14 +22,14 @@ export function PlayerHeader({
             {descriptor.title}
           </strong>
           {descriptor.secondaryTitle && (
-            <span className="block max-w-[240px] truncate text-[10px] text-muted">
+            <span className="block max-w-[240px] truncate text-[0.625rem] text-muted">
               {descriptor.secondaryTitle}
             </span>
           )}
         </span>
       </button>
       {descriptor.isLive && (
-        <span className="rounded-full bg-live px-2.5 py-1 text-[9px] font-extrabold tracking-[0.08em] text-text">
+        <span className="rounded-full bg-live px-2.5 py-1 text-[0.5625rem] font-extrabold tracking-[0.08em] text-text">
           ● AO VIVO
         </span>
       )}

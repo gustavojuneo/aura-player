@@ -45,9 +45,12 @@ export function AllChannelsGuide({ guides, isLoading }: AllChannelsGuideProps) {
               )
             : undefined;
           return (
-            <div
-              className="shrink-0 rounded-lg border border-line bg-search px-2.5 py-2.5"
+            <button
+              className="w-full shrink-0 rounded-lg border border-line bg-search px-2.5 py-2.5 text-left"
+              data-tv-epg-item="true"
+              data-tv-navigation-zone="catalog-preview"
               key={channel}
+              type="button"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="block min-w-0 truncate text-sm font-bold text-text">
@@ -71,11 +74,11 @@ export function AllChannelsGuide({ guides, isLoading }: AllChannelsGuideProps) {
                 </span>
               )}
               {next && !isLoading && (
-                <span className="mt-1 block truncate text-[11px] text-muted/75">
+                <span className="mt-1 block truncate text-[0.6875rem] text-muted/75">
                   Próximo: {next.title} · {formatProgramTime(next.start)}
                 </span>
               )}
-            </div>
+            </button>
           );
         })}
       </ScrollArea>

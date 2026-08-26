@@ -142,11 +142,7 @@ export function MediaPlayer({
       {controls.controlsVisible &&
         controls.contentListOpen &&
         renderContentList?.(closeContentList, controls.liveGuideOpen)}
-      <PlayerHeader
-        controlsVisible={controls.controlsVisible}
-        descriptor={descriptor}
-        onBack={onBack}
-      />
+      <PlayerHeader descriptor={descriptor} onBack={onBack} />
       <PlayerPrimaryControls
         controlsVisible={controls.controlsVisible}
         isLive={descriptor.isLive}

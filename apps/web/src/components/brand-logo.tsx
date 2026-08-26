@@ -22,7 +22,8 @@ export function BrandLogo({
       <span
         className={cn(
           "font-display text-xl font-bold tracking-[-0.04em] text-text",
-          collapsed && "hidden group-hover/sidebar:inline",
+          collapsed &&
+            "hidden group-hover/sidebar:inline group-focus-within/sidebar:inline",
           textClassName,
         )}
       >

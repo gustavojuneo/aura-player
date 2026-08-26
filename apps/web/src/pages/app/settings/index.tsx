@@ -90,11 +90,11 @@ export function SettingsPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-5 sm:px-6 lg:gap-5 lg:px-9 lg:pb-10">
+    <main className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-5 sm:px-6 lg:gap-5 lg:px-9 lg:pb-16">
       <header className="flex items-center justify-between">
         <BrandLogo
           markClassName="size-7"
-          textClassName="text-lg font-extrabold lg:text-[19px]"
+          textClassName="text-lg font-extrabold lg:text-[1.188rem]"
         />
         <button
           className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
@@ -105,7 +105,7 @@ export function SettingsPage() {
           <X className="size-5 sm:hidden" />
         </button>
       </header>
-      <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]">
+      <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text sm:text-[1.875rem]">
         Configurações
       </h1>
       {notice && (
@@ -136,7 +136,7 @@ export function SettingsPage() {
                 <Icon
                   className={`size-5 shrink-0 ${section === id ? "text-gold-bright" : "text-muted"}`}
                 />
-                <span className="truncate text-[13px] font-semibold">
+                <span className="truncate text-[0.8125rem] font-semibold">
                   {mobileLabel ?? label}
                 </span>
               </span>
@@ -237,10 +237,10 @@ function PlaybackPanel({
   return (
     <div className="overflow-hidden rounded-[14px] border border-line bg-panel">
       <div className="flex flex-col gap-1.5 p-5 sm:p-[22px]">
-        <h2 className="m-0 font-display text-[21px] font-bold text-text sm:text-[23px]">
+        <h2 className="m-0 font-display text-[1.312rem] font-bold text-text sm:text-[1.438rem]">
           Preferências de reprodução
         </h2>
-        <p className="m-0 text-[13px] text-muted">
+        <p className="m-0 text-[0.8125rem] text-muted">
           Ajuste a experiência ao assistir.
         </p>
       </div>

@@ -20,8 +20,10 @@ function Highlight({
       <span className="text-gold-bright">
         <Icon name={icon} />
       </span>
-      <h3 className="m-0 text-[17px] font-bold text-text">{title}</h3>
-      <p className="m-0 text-[13px] leading-[1.35] text-muted">{children}</p>
+      <h3 className="m-0 text-[1.062rem] font-bold text-text">{title}</h3>
+      <p className="m-0 text-[0.8125rem] leading-[1.35] text-muted">
+        {children}
+      </p>
     </article>
   );
 }

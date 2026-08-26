@@ -1,4 +1,5 @@
 import {
+  createBrowserHistory,
   createHashHistory,
   createRootRoute,
   createRoute,
@@ -6,24 +7,19 @@ import {
   Outlet,
   redirect,
 } from "@tanstack/react-router";
-import { type ComponentType, lazy, Suspense } from "react";
-
+import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
+import { HomePageSkeleton } from "../components/catalog-skeleton";
 import { env } from "../env";
 import { AppLayout } from "../pages/app/layout";
 
-function LoadingRoute() {
-  return (
-    <main className="grid min-h-screen place-items-center bg-bg text-sm text-muted">
-      Carregando…
-    </main>
-  );
-}
-
-function lazyPage(load: () => Promise<{ default: ComponentType }>) {
+function lazyPage(
+  load: () => Promise<{ default: ComponentType }>,
+  fallback: ReactNode = null,
+) {
   const Page = lazy(load);
   return function LazyPage() {
     return (
-      <Suspense fallback={<LoadingRoute />}>
+      <Suspense fallback={fallback}>
         <Page />
       </Suspense>
     );
@@ -33,8 +29,10 @@ function lazyPage(load: () => Promise<{ default: ComponentType }>) {
 const LandingPage = lazyPage(() =>
   import("../pages").then(({ LandingPage: page }) => ({ default: page })),
 );
-const HomePage = lazyPage(() =>
-  import("../pages/app").then(({ HomePage: page }) => ({ default: page })),
+const HomePage = lazyPage(
+  () =>
+    import("../pages/app").then(({ HomePage: page }) => ({ default: page })),
+  <HomePageSkeleton onRetry={() => window.location.reload()} />,
 );
 const FavoritesPage = lazyPage(() =>
   import("../pages/app/favorites").then(({ FavoritesPage: page }) => ({
@@ -222,6 +220,9 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 export const router = createRouter({
-  history: createHashHistory(),
+  history:
+    env.VITE_DEVICE_TYPE === "tv"
+      ? createHashHistory()
+      : createBrowserHistory(),
   routeTree,
 });

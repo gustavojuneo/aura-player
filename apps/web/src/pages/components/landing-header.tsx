@@ -26,19 +26,19 @@ export function LandingHeader() {
         className="hidden items-center gap-7 md:flex"
       >
         <a
-          className="text-[13px] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+          className="text-[0.8125rem] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
           href="#experiencia"
         >
           Experiência
         </a>
         <a
-          className="text-[13px] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+          className="text-[0.8125rem] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
           href="#recursos"
         >
           Recursos
         </a>
         <a
-          className="text-[13px] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+          className="text-[0.8125rem] font-semibold text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
           href="#privacidade"
         >
           Privacidade

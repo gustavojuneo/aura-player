@@ -44,7 +44,7 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
         />
         <div className="flex flex-col gap-2">
           <h2
-            className="m-0 pr-8 text-[26px] font-[750] tracking-[-0.03em] text-text"
+            className="m-0 pr-8 text-[1.625rem] font-[750] tracking-[-0.03em] text-text"
             id="access-title"
           >
             Entre na sua experiência
@@ -109,7 +109,7 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
         >
           Continuar convidado
         </Button>
-        <p className="m-0 text-[11px] leading-4 text-muted">
+        <p className="m-0 text-[0.6875rem] leading-4 text-muted">
           Ao continuar, você concorda com os termos de privacidade da AURA.
         </p>
       </form>

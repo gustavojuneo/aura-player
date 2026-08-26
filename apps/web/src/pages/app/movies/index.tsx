@@ -120,12 +120,12 @@ const _movies: Movie[] = [
 const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
   return (
     <article
-      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus`}
+      className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.1),transparent_25%),linear-gradient(to_top,rgba(0,0,0,0.62),transparent_62%)]" />
       <Link
         aria-label={`Abrir ${movie.title}`}
-        className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
+        className="absolute inset-0 z-10 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
         data-tv-navigation-zone="catalog-items"
         params={{ movieId: movie.id }}
         to="/app/movies/$movieId"
@@ -155,7 +155,7 @@ const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
         ) : (
           <ProductState compact kind="metadata" />
         )}
-        <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
+        <p className="mt-1 mb-0 truncate text-[0.6875rem] text-[#d0c8bb]">
           {movie.metadata}
         </p>
       </div>
@@ -223,10 +223,10 @@ export function MoviesPage() {
 
   return (
     <>
-      <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
+      <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-16">
         <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
-            <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
+            <h1 className="hidden min-w-0 truncate font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text md:block">
               Filmes
             </h1>
             <div className="hidden min-w-0 items-center gap-2 lg:flex">
@@ -253,7 +253,7 @@ export function MoviesPage() {
           </div>
         </AppHeader>
         <div className="md:hidden">
-          <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text">
+          <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text">
             Filmes
           </h1>
         </div>
@@ -267,7 +267,10 @@ export function MoviesPage() {
             onSelect={setGenre}
             selected={genre}
           />
-          <ScrollArea className="h-[calc(100vh-8rem)] min-w-0 flex-1">
+          <ScrollArea
+            className="h-[calc(100vh-8rem)] min-w-0 flex-1"
+            contentClassName="pb-12"
+          >
             {isLoading ? (
               <CatalogGridSkeleton />
             ) : visibleMovies.length > 0 ? (

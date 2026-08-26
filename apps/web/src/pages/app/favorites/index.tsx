@@ -57,7 +57,7 @@ function EmptyFavorites({ onExplore }: { onExplore: () => void }) {
       <h2 className="m-0 font-display text-xl font-bold text-text">
         Você ainda não tem favoritos
       </h2>
-      <p className="m-0 max-w-[440px] text-[13px] font-medium leading-[1.45] text-muted">
+      <p className="m-0 max-w-[440px] text-[0.8125rem] font-medium leading-[1.45] text-muted">
         Salve canais, filmes e séries para encontrar tudo rapidamente aqui.
       </p>
       <Button className="mt-1" onClick={onExplore} variant="secondary">
@@ -251,25 +251,25 @@ function FavoriteChannelCard({
           {channel.title}
         </strong>
         {epg.isLoading ? (
-          <span className="mt-1 block truncate text-[11px] text-muted">
+          <span className="mt-1 block truncate text-[0.6875rem] text-muted">
             Carregando programação...
           </span>
         ) : currentProgram ? (
           <span className="mt-1 block min-w-0">
-            <span className="block truncate text-[11px] text-muted">
+            <span className="block truncate text-[0.6875rem] text-muted">
               <strong className="font-extrabold text-gold-bright">
                 AGORA:
               </strong>{" "}
               {currentProgram.title}
             </span>
-            <span className="mt-1 block text-[10px] text-muted">
+            <span className="mt-1 block text-[0.625rem] text-muted">
               {formatProgramTime(currentProgram.start)} –{" "}
               {formatProgramTime(currentProgram.stop)}
             </span>
             <ProgressBar className="mt-1 h-1" value={programProgress} />
           </span>
         ) : (
-          <span className="mt-1 block truncate text-[11px] text-muted">
+          <span className="mt-1 block truncate text-[0.6875rem] text-muted">
             {channel.groupTitle ?? channel.categories?.[0] ?? "Ao vivo"}
           </span>
         )}
@@ -397,7 +397,7 @@ const MediaCard = memo(function MediaCard({
       />
       <div className="relative min-w-0">
         <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
-        <p className="mt-1 mb-0 truncate text-[11px] text-[#d0c8bb]">
+        <p className="mt-1 mb-0 truncate text-[0.6875rem] text-[#d0c8bb]">
           {item.meta}
         </p>
       </div>
@@ -549,11 +549,11 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
         : favoriteChannels.length;
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-8 lg:pb-10">
+    <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-8 lg:pb-16">
       <div className="flex items-center justify-between gap-4">
         <h1
           aria-busy={Boolean(category && isLoading)}
-          className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]"
+          className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text sm:text-[1.875rem]"
         >
           {category && isLoading ? (
             <Skeleton className="h-8 w-72 sm:h-9" />
@@ -588,7 +588,7 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
           {shouldRender("movie") && favoriteMovies.length > 0 && (
             <section className="flex flex-col gap-3">
               <div className="flex items-baseline justify-between gap-3">
-                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                <h2 className="m-0 font-display text-[1.25rem] font-bold text-text">
                   Filmes{" "}
                   <span className="font-medium text-muted">
                     ({favoriteMovies.length})
@@ -617,7 +617,7 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
           {shouldRender("series") && favoriteSeries.length > 0 && (
             <section className="flex flex-col gap-3">
               <div className="flex items-baseline justify-between gap-3">
-                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                <h2 className="m-0 font-display text-[1.25rem] font-bold text-text">
                   Séries{" "}
                   <span className="font-medium text-muted">
                     ({favoriteSeries.length})
@@ -646,7 +646,7 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
           {shouldRender("channel") && favoriteChannels.length > 0 && (
             <section className="flex flex-col gap-3">
               <div className="flex items-baseline justify-between gap-3">
-                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                <h2 className="m-0 font-display text-[1.25rem] font-bold text-text">
                   Canais{" "}
                   <span className="font-medium text-muted">
                     ({favoriteChannels.length})

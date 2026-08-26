@@ -25,12 +25,12 @@ export function LandingHero({ onAccess }: { onAccess: () => void }) {
           SUAS FONTES. SUA EXPERIÊNCIA.
         </p>
         <h1
-          className="m-0 font-sans text-[38px] font-[750] leading-[1.08] tracking-[-0.04em] text-text md:text-[clamp(2.75rem,4.2vw,3.25rem)] md:tracking-[-0.045em]"
+          className="m-0 font-sans text-[2.375rem] font-[750] leading-[1.08] tracking-[-0.04em] text-text md:text-[clamp(2.75rem,4.2vw,3.25rem)] md:tracking-[-0.045em]"
           id="hero-title"
         >
           Todo o seu universo IPTV, como a elegância que ele merece.
         </h1>
-        <p className="m-0 max-w-[570px] text-[15px] leading-[1.45] text-[#d6d0c5] md:text-[17px]">
+        <p className="m-0 max-w-[570px] text-[0.9375rem] leading-[1.45] text-[#d6d0c5] md:text-[1.062rem]">
           Conecte suas fontes, organize seu conteúdo e assista do seu jeito, em
           uma experiência feita para continuar.
         </p>

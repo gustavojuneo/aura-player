@@ -23,7 +23,7 @@ export function LandingPage() {
       <LandingHero onAccess={handleAccess} />
       <PlatformHighlights />
       <footer
-        className="flex flex-col gap-1.5 border-t border-line px-5 pb-7 pt-0 text-[11px] text-muted md:flex-row md:justify-between md:gap-[18px] md:px-[70px] md:pb-7 md:pt-[18px]"
+        className="flex flex-col gap-1.5 border-t border-line px-5 pb-7 pt-0 text-[0.6875rem] text-muted md:flex-row md:justify-between md:gap-[18px] md:px-[70px] md:pb-7 md:pt-[18px]"
         id="privacidade"
       >
         <p className="m-0">A AURA não fornece conteúdo ou listas IPTV.</p>

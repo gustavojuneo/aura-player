@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type {
   CatalogItem,
   CatalogSeries,
@@ -14,6 +14,7 @@ import {
 } from "../http/xtream/catalog";
 import { getActiveSourceId, getSource } from "../services/catalog-db";
 import {
+  isCatalogRefreshInProgress,
   loadActiveCatalog,
   loadActiveSeries,
   loadCatalogItem,
@@ -21,6 +22,7 @@ import {
   loadSeries,
   loadSeriesEpisodes,
   refreshExpiredCatalogSources,
+  subscribeCatalogRefreshState,
 } from "../services/catalog-service";
 import { useCatalogStore } from "../stores/catalog-store";
 
@@ -34,6 +36,14 @@ function validAssetUrl(value: unknown) {
 }
 
 const xtreamEpgCache = new Map<string, EpgProgram[]>();
+
+export function useCatalogRefreshInProgress() {
+  return useSyncExternalStore(
+    subscribeCatalogRefreshState,
+    isCatalogRefreshInProgress,
+    () => false,
+  );
+}
 
 export function clearCatalogDataCaches() {
   xtreamEpgCache.clear();
@@ -137,6 +147,7 @@ export function useXtreamEpgForChannels(
 }
 
 export function useCatalogItems(kind: CatalogItem["kind"]) {
+  const isRefreshing = useCatalogRefreshInProgress();
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -150,12 +161,17 @@ export function useCatalogItems(kind: CatalogItem["kind"]) {
   }, [kind]);
   useEffect(() => {
     load();
+    const handleLoading = () => setLoading(true);
+    window.addEventListener("aura-catalog-loading", handleLoading);
     window.addEventListener("aura-catalog-change", load);
-    return () => window.removeEventListener("aura-catalog-change", load);
+    return () => {
+      window.removeEventListener("aura-catalog-loading", handleLoading);
+      window.removeEventListener("aura-catalog-change", load);
+    };
   }, [load]);
   return {
     items,
-    isLoading,
+    isLoading: isLoading || isRefreshing,
     error,
     retry: load,
     hasSource: Boolean(getActiveSourceId()),
@@ -163,6 +179,7 @@ export function useCatalogItems(kind: CatalogItem["kind"]) {
 }
 
 export function useCatalogSeries() {
+  const isRefreshing = useCatalogRefreshInProgress();
   const [items, setItems] = useState<CatalogSeries[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -176,12 +193,17 @@ export function useCatalogSeries() {
   }, []);
   useEffect(() => {
     load();
+    const handleLoading = () => setLoading(true);
+    window.addEventListener("aura-catalog-loading", handleLoading);
     window.addEventListener("aura-catalog-change", load);
-    return () => window.removeEventListener("aura-catalog-change", load);
+    return () => {
+      window.removeEventListener("aura-catalog-loading", handleLoading);
+      window.removeEventListener("aura-catalog-change", load);
+    };
   }, [load]);
   return {
     items,
-    isLoading,
+    isLoading: isLoading || isRefreshing,
     error,
     retry: load,
     hasSource: Boolean(getActiveSourceId()),
@@ -413,6 +435,7 @@ export function useCatalogSeriesDetails(id: string | undefined) {
 }
 
 export function useCatalogSources() {
+  const isRefreshing = useCatalogRefreshInProgress();
   const [sources, setSources] = useState<CatalogSource[]>([]);
   const [isLoading, setLoading] = useState(true);
   const load = useCallback(
@@ -428,11 +451,9 @@ export function useCatalogSources() {
   useEffect(() => {
     load();
     window.addEventListener("aura-catalog-change", load);
-    window.addEventListener("focus", load);
     return () => {
       window.removeEventListener("aura-catalog-change", load);
-      window.removeEventListener("focus", load);
     };
   }, [load]);
-  return { sources, isLoading, retry: load };
+  return { sources, isLoading: isLoading || isRefreshing, retry: load };
 }

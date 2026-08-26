@@ -1,4 +1,5 @@
 import { LoaderCircle, Pause, Play, RotateCcw, RotateCw } from "lucide-react";
+import { env } from "../../env";
 
 type PlayerPrimaryControlsProps = {
   controlsVisible: boolean;
@@ -21,8 +22,9 @@ export function PlayerPrimaryControls({
   return (
     <div
       className={`absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-3 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      data-player-primary-controls
     >
-      {!isLive && (
+      {env.VITE_DEVICE_TYPE !== "tv" && !isLive && (
         <button
           aria-label="Retroceder 10 segundos"
           className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
@@ -50,7 +52,7 @@ export function PlayerPrimaryControls({
           <Play className="ml-1 size-8 fill-current" />
         )}
       </button>
-      {!isLive && (
+      {env.VITE_DEVICE_TYPE !== "tv" && !isLive && (
         <button
           aria-label="Avançar 10 segundos"
           className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"

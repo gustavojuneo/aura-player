@@ -21,7 +21,7 @@ export function FieldLabel({
 }: ComponentProps<typeof FieldPrimitive.Label>) {
   return (
     <FieldPrimitive.Label
-      className={cn("text-[11px] font-semibold text-muted", className)}
+      className={cn("text-[0.6875rem] font-semibold text-muted", className)}
       {...props}
     />
   );

@@ -122,7 +122,7 @@ export function SourceForm({
     <form className="flex flex-col gap-3" onSubmit={submitForm}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="m-0 font-display text-[21px] font-bold text-text">
+          <h2 className="m-0 font-display text-[1.312rem] font-bold text-text">
             {title ?? (initialSource ? "Editar fonte" : "Adicionar Lista")}
           </h2>
           <p className="mt-1 mb-0 text-xs text-muted">{description}</p>
@@ -138,7 +138,7 @@ export function SourceForm({
           </button>
         )}
       </div>
-      <div className="flex flex-col gap-2 text-[11px] font-semibold text-muted">
+      <div className="flex flex-col gap-2 text-[0.6875rem] font-semibold text-muted">
         Tipo da fonte
         <div className="grid grid-cols-2 gap-2">
           {SOURCE_OPTIONS.map((option) => (
