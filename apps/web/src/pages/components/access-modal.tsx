@@ -9,7 +9,7 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     firstFieldRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" || event.keyCode === 461) onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -58,6 +58,9 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
             <input
               ref={firstFieldRef}
               className="min-w-0 flex-1 bg-transparent text-sm font-medium text-text outline-none placeholder:text-muted"
+              autoCapitalize="none"
+              autoCorrect="off"
+              inputMode="email"
               placeholder="voce@exemplo.com"
               type="email"
             />
@@ -71,6 +74,8 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
             </span>
             <input
               className="min-w-0 flex-1 bg-transparent text-sm font-medium text-text outline-none placeholder:text-muted"
+              autoCapitalize="none"
+              autoCorrect="off"
               placeholder="••••••••"
               type="password"
             />

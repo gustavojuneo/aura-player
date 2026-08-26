@@ -154,7 +154,10 @@ export function SourceForm({
         <Input
           {...form.register("name")}
           aria-invalid={Boolean(form.formState.errors.name)}
+          autoCapitalize="words"
+          autoCorrect="off"
           placeholder="Casa principal"
+          type="text"
         />
         {form.formState.errors.name?.message && (
           <FieldError match>{form.formState.errors.name.message}</FieldError>
@@ -166,6 +169,9 @@ export function SourceForm({
           <Input
             {...form.register("url")}
             aria-invalid={Boolean(form.formState.errors.url)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            inputMode="url"
             placeholder="https://servidor.exemplo/lista.m3u"
             type="url"
           />
@@ -183,7 +189,11 @@ export function SourceForm({
             <Input
               {...form.register("server")}
               aria-invalid={Boolean(form.formState.errors.server)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              inputMode="url"
               placeholder="https://servidor.exemplo"
+              type="url"
             />
             {form.formState.errors.server?.message && (
               <FieldError match>
@@ -196,7 +206,10 @@ export function SourceForm({
             <Input
               {...form.register("username")}
               aria-invalid={Boolean(form.formState.errors.username)}
+              autoCapitalize="none"
+              autoCorrect="off"
               placeholder="Seu usuário"
+              type="text"
             />
             {form.formState.errors.username?.message && (
               <FieldError match>
@@ -209,6 +222,8 @@ export function SourceForm({
             <Input
               {...form.register("password")}
               aria-invalid={Boolean(form.formState.errors.password)}
+              autoCapitalize="none"
+              autoCorrect="off"
               placeholder="Sua senha"
               type="password"
             />

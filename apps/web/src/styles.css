@@ -98,6 +98,11 @@ html::-webkit-scrollbar {
   box-sizing: border-box;
 }
 
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
