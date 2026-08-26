@@ -100,10 +100,10 @@ export function SeriesDetailsPage() {
 
   return (
     <main className="min-h-screen bg-bg text-text">
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
+      <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
         <button
           aria-label="Voltar para página anterior"
-          className="-ml-2 inline-flex h-10 items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
+          className="-ml-2 inline-flex h-10 cursor-pointer items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
           onClick={() => window.history.back()}
           type="button"
         >
