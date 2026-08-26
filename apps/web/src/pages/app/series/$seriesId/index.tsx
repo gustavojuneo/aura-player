@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -45,6 +45,7 @@ function getPaginationPages(
 }
 
 export function SeriesDetailsPage() {
+  const router = useRouter();
   const { seriesId } = useParams({ from: "/app/series/$seriesId" });
   const { series, episodes, isLoading, isMetadataLoading } =
     useCatalogSeriesDetails(seriesId);
@@ -89,7 +90,7 @@ export function SeriesDetailsPage() {
       <ProductState
         action={{
           label: "Voltar às séries",
-          onClick: () => window.history.back(),
+          onClick: () => router.history.back(),
         }}
         className="min-h-screen justify-center"
         kind="catalog-empty"
@@ -104,7 +105,7 @@ export function SeriesDetailsPage() {
         <button
           aria-label="Voltar para página anterior"
           className="-ml-2 inline-flex h-10 cursor-pointer items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={() => window.history.back()}
+          onClick={() => router.history.back()}
           type="button"
         >
           <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />

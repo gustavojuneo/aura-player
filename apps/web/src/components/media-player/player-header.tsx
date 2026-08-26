@@ -15,7 +15,7 @@ export function PlayerHeader({
       className={`relative z-10 flex items-start justify-between px-5 pt-6 transition-opacity sm:px-9 sm:pt-7 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
     >
       <button
-        className="flex min-w-0 items-start gap-3 text-left focus-visible:outline-2 focus-visible:outline-focus"
+        className="flex min-w-0 cursor-pointer items-start gap-3 text-left text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
         onClick={onBack}
         type="button"
       >

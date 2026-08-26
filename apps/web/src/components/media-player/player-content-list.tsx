@@ -60,7 +60,7 @@ export function PlayerLiveContentList({
                 aria-current={
                   channel.id === currentChannelId ? "true" : undefined
                 }
-                className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${channel.id === currentChannelId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+                className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${channel.id === currentChannelId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
                 key={channel.id}
                 onClick={() => onSelectChannel(channel.id)}
                 type="button"
@@ -139,7 +139,7 @@ export function PlayerSeriesContentList({
               aria-current={
                 episode.id === currentEpisodeId ? "true" : undefined
               }
-              className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${episode.id === currentEpisodeId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
+              className={`flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus ${episode.id === currentEpisodeId ? "border-gold bg-gold/15" : "border-transparent bg-black/15 hover:border-white/15 hover:bg-white/10"}`}
               key={episode.id}
               onClick={() => onSelectEpisode(episode)}
               type="button"
@@ -201,7 +201,7 @@ function PlayerContentListShell({
           </div>
           <button
             aria-label="Fechar lista de conteúdo"
-            className="grid size-8 shrink-0 place-items-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-focus"
+            className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-focus"
             onClick={onClose}
             type="button"
           >

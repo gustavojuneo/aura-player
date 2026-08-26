@@ -27,7 +27,7 @@ export function PlayerPrimaryControls({
       {!isLive && (
         <button
           aria-label={`Retroceder ${Math.abs(pendingSeek < 0 ? pendingSeek : 10)} segundos`}
-          className="flex h-16 min-w-20 items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
+          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
           disabled={isLoading}
           onClick={() => onSeek(-10)}
           type="button"
@@ -38,7 +38,7 @@ export function PlayerPrimaryControls({
       )}
       <button
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
-        className={`grid size-[88px] place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text opacity-60 focus-visible:outline-2 focus-visible:outline-focus hover:opacity-100 ${isLoading ? "cursor-wait" : ""} ${reduceMotion ? "transition-none" : "transition-[opacity,transform] hover:scale-105"}`}
+        className={`grid size-[88px] cursor-pointer place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text opacity-60 focus-visible:outline-2 focus-visible:outline-focus hover:opacity-100 ${isLoading ? "cursor-wait" : ""} ${reduceMotion ? "transition-none" : "transition-[opacity,transform] hover:scale-105"}`}
         disabled={isLoading}
         onClick={onTogglePlay}
         type="button"
@@ -54,7 +54,7 @@ export function PlayerPrimaryControls({
       {!isLive && (
         <button
           aria-label={`Avançar ${pendingSeek > 0 ? pendingSeek : 10} segundos`}
-          className="flex h-16 min-w-20 items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
+          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
           disabled={isLoading}
           onClick={() => onSeek(10)}
           type="button"

@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HeartOff, Menu, Radio } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import { AppLayout } from "../../../components/app-layout";
 import { Carousel } from "../../../components/carousel";
 import { FavoriteButton } from "../../../components/favorite-button";
 import {
@@ -25,10 +24,7 @@ import {
   type FavoriteKind,
   useFavorites,
 } from "../../../services/favorites";
-import {
-  markFavoritesOrigin,
-  markPlaybackNavigation,
-} from "../../../services/playback-autoplay";
+import { markPlaybackNavigation } from "../../../services/playback-autoplay";
 
 const favoriteRoutes = {
   channel: "/app/favorites/channels",
@@ -233,7 +229,6 @@ function FavoriteChannelCard({
         aria-label={`Assistir ${channel.title}`}
         className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"
         onClick={() => {
-          markFavoritesOrigin();
           markPlaybackNavigation();
         }}
         params={{ channelId: channel.id }}
@@ -394,7 +389,6 @@ const MediaCard = memo(function MediaCard({
       <Link
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-focus"
-        onClick={markFavoritesOrigin}
         params={kind === "movie" ? { movieId: item.id } : { seriesId: item.id }}
         to={kind === "movie" ? "/app/movies/$movieId" : "/app/series/$seriesId"}
       />
@@ -552,131 +546,129 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
         : favoriteChannels.length;
 
   return (
-    <AppLayout>
-      <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-8 lg:pb-10">
-        <div className="flex items-center justify-between gap-4">
-          <h1
-            aria-busy={Boolean(category && isLoading)}
-            className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]"
-          >
-            {category && isLoading ? (
-              <Skeleton className="h-8 w-72 sm:h-9" />
-            ) : category ? (
-              `Favoritos - ${categoryLabel} (${categoryCount})`
-            ) : (
-              "Favoritos"
-            )}
-          </h1>
-          <button
-            aria-label="Abrir menu"
-            className="text-text lg:hidden"
-            type="button"
-          >
-            <Menu className="size-5" />
-          </button>
-        </div>
-        {isLoading ? (
-          <FavoritesSkeleton category={category} />
-        ) : !hasVisibleFavorites ? (
-          <EmptyFavorites onExplore={() => void navigate({ to: "/app" })} />
-        ) : category ? (
-          <CategoryFavoritesContent
-            category={category}
-            channels={favoriteChannels}
-            movies={favoriteMovies}
-            onToggle={toggleFavorite}
-            series={favoriteSeries}
-          />
-        ) : (
-          <div className="flex flex-col gap-7">
-            {shouldRender("movie") && favoriteMovies.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="m-0 font-display text-[20px] font-bold text-text">
-                    Filmes{" "}
-                    <span className="font-medium text-muted">
-                      ({favoriteMovies.length})
-                    </span>
-                  </h2>
-                  <SectionControls
-                    expanded={expandedKinds.has("movie")}
-                    onViewAll={
-                      category
-                        ? undefined
-                        : () => void navigate({ to: favoriteRoutes.movie })
-                    }
-                    onToggleExpanded={() => toggleExpanded("movie")}
-                    showMore={!category}
-                  />
-                </div>
-                <Carousel>
-                  <MediaGrid
-                    items={previewMovies}
-                    kind="movie"
-                    onToggle={toggleFavorite}
-                  />
-                </Carousel>
-              </section>
-            )}
-            {shouldRender("series") && favoriteSeries.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="m-0 font-display text-[20px] font-bold text-text">
-                    Séries{" "}
-                    <span className="font-medium text-muted">
-                      ({favoriteSeries.length})
-                    </span>
-                  </h2>
-                  <SectionControls
-                    expanded={expandedKinds.has("series")}
-                    onViewAll={
-                      category
-                        ? undefined
-                        : () => void navigate({ to: favoriteRoutes.series })
-                    }
-                    onToggleExpanded={() => toggleExpanded("series")}
-                    showMore={!category}
-                  />
-                </div>
-                <Carousel>
-                  <MediaGrid
-                    items={previewSeries}
-                    kind="series"
-                    onToggle={toggleFavorite}
-                  />
-                </Carousel>
-              </section>
-            )}
-            {shouldRender("channel") && favoriteChannels.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="m-0 font-display text-[20px] font-bold text-text">
-                    Canais{" "}
-                    <span className="font-medium text-muted">
-                      ({favoriteChannels.length})
-                    </span>
-                  </h2>
-                  <SectionControls
-                    expanded={expandedKinds.has("channel")}
-                    onToggleExpanded={() => toggleExpanded("channel")}
-                    onViewAll={
-                      category
-                        ? undefined
-                        : () => void navigate({ to: favoriteRoutes.channel })
-                    }
-                    showMore={!category}
-                  />
-                </div>
-                <ChannelList
-                  channels={previewChannels}
-                  grid
+    <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-8 lg:pb-10">
+      <div className="flex items-center justify-between gap-4">
+        <h1
+          aria-busy={Boolean(category && isLoading)}
+          className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]"
+        >
+          {category && isLoading ? (
+            <Skeleton className="h-8 w-72 sm:h-9" />
+          ) : category ? (
+            `Favoritos - ${categoryLabel} (${categoryCount})`
+          ) : (
+            "Favoritos"
+          )}
+        </h1>
+        <button
+          aria-label="Abrir menu"
+          className="text-text lg:hidden"
+          type="button"
+        >
+          <Menu className="size-5" />
+        </button>
+      </div>
+      {isLoading ? (
+        <FavoritesSkeleton category={category} />
+      ) : !hasVisibleFavorites ? (
+        <EmptyFavorites onExplore={() => void navigate({ to: "/app" })} />
+      ) : category ? (
+        <CategoryFavoritesContent
+          category={category}
+          channels={favoriteChannels}
+          movies={favoriteMovies}
+          onToggle={toggleFavorite}
+          series={favoriteSeries}
+        />
+      ) : (
+        <div className="flex flex-col gap-7">
+          {shouldRender("movie") && favoriteMovies.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                  Filmes{" "}
+                  <span className="font-medium text-muted">
+                    ({favoriteMovies.length})
+                  </span>
+                </h2>
+                <SectionControls
+                  expanded={expandedKinds.has("movie")}
+                  onViewAll={
+                    category
+                      ? undefined
+                      : () => void navigate({ to: favoriteRoutes.movie })
+                  }
+                  onToggleExpanded={() => toggleExpanded("movie")}
+                  showMore={!category}
+                />
+              </div>
+              <Carousel>
+                <MediaGrid
+                  items={previewMovies}
+                  kind="movie"
                   onToggle={toggleFavorite}
                 />
-              </section>
-            )}
-          </div>
-        )}
-      </div>
-    </AppLayout>
+              </Carousel>
+            </section>
+          )}
+          {shouldRender("series") && favoriteSeries.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                  Séries{" "}
+                  <span className="font-medium text-muted">
+                    ({favoriteSeries.length})
+                  </span>
+                </h2>
+                <SectionControls
+                  expanded={expandedKinds.has("series")}
+                  onViewAll={
+                    category
+                      ? undefined
+                      : () => void navigate({ to: favoriteRoutes.series })
+                  }
+                  onToggleExpanded={() => toggleExpanded("series")}
+                  showMore={!category}
+                />
+              </div>
+              <Carousel>
+                <MediaGrid
+                  items={previewSeries}
+                  kind="series"
+                  onToggle={toggleFavorite}
+                />
+              </Carousel>
+            </section>
+          )}
+          {shouldRender("channel") && favoriteChannels.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="m-0 font-display text-[20px] font-bold text-text">
+                  Canais{" "}
+                  <span className="font-medium text-muted">
+                    ({favoriteChannels.length})
+                  </span>
+                </h2>
+                <SectionControls
+                  expanded={expandedKinds.has("channel")}
+                  onToggleExpanded={() => toggleExpanded("channel")}
+                  onViewAll={
+                    category
+                      ? undefined
+                      : () => void navigate({ to: favoriteRoutes.channel })
+                  }
+                  showMore={!category}
+                />
+              </div>
+              <ChannelList
+                channels={previewChannels}
+                grid
+                onToggle={toggleFavorite}
+              />
+            </section>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

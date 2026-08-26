@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import mpegts from "mpegts.js";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AppHeader, AppLayout } from "../../../components/app-layout";
 import { LivePageSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -33,6 +32,7 @@ import {
 import { useCatalogState } from "../../../hooks/use-catalog-state";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useFavorites } from "../../../services/favorites";
+import { AppHeader } from "../components";
 
 type Channel = {
   current: string;
@@ -476,7 +476,7 @@ export function TvPage() {
   }, [category, guides]);
 
   return (
-    <AppLayout fixedViewport>
+    <>
       <div className="flex h-dvh w-full flex-col gap-5 overflow-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
         <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
@@ -556,6 +556,6 @@ export function TvPage() {
           selected={category}
         />
       )}
-    </AppLayout>
+    </>
   );
 }

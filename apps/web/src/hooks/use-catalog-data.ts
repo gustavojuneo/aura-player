@@ -22,6 +22,7 @@ import {
   loadSeriesEpisodes,
   refreshExpiredCatalogSources,
 } from "../services/catalog-service";
+import { useCatalogStore } from "../stores/catalog-store";
 
 function secureAssetUrl(value: unknown) {
   if (typeof value !== "string") return undefined;
@@ -186,8 +187,12 @@ export function useCatalogSeries() {
 }
 
 export function useCatalogItem(id: string | undefined) {
-  const [item, setItem] = useState<CatalogItem | undefined>();
-  const [isLoading, setLoading] = useState(Boolean(id));
+  const cachedItem = useCatalogStore((state) =>
+    id ? state.itemById[id] : undefined,
+  );
+  const setCatalogItem = useCatalogStore((state) => state.setItem);
+  const [item, setItem] = useState<CatalogItem | undefined>(cachedItem);
+  const [isLoading, setLoading] = useState(Boolean(id && !cachedItem));
   const [isMetadataLoading, setMetadataLoading] = useState(false);
   useEffect(() => {
     let cancelled = false;
@@ -197,11 +202,19 @@ export function useCatalogItem(id: string | undefined) {
       setMetadataLoading(false);
       return;
     }
+    const cached = useCatalogStore.getState().itemById[id];
+    if (cached) {
+      setItem(cached);
+      setLoading(false);
+      setMetadataLoading(false);
+      return;
+    }
     setLoading(true);
     void loadCatalogItem(id).then((loaded) => {
       if (cancelled) return;
       setItem(loaded);
       setLoading(false);
+      if (loaded) setCatalogItem(loaded);
       if (!loaded?.providerId || loaded.kind !== "movie") {
         setMetadataLoading(false);
         return;
@@ -219,7 +232,7 @@ export function useCatalogItem(id: string | undefined) {
           const firstBackdrop = Array.isArray(info.backdrop_path)
             ? info.backdrop_path[0]
             : info.backdrop_path;
-          setItem({
+          const enrichedItem = {
             ...loaded,
             description:
               (typeof info.plot === "string" && info.plot) ||
@@ -230,7 +243,9 @@ export function useCatalogItem(id: string | undefined) {
               secureAssetUrl(info.movie_image) ||
               loaded.logoUrl,
             backdropUrl: secureAssetUrl(firstBackdrop) ?? loaded.backdropUrl,
-          });
+          };
+          setCatalogItem(enrichedItem);
+          setItem(enrichedItem);
         })
         .catch(() => undefined)
         .finally(() => setMetadataLoading(false));
@@ -238,7 +253,7 @@ export function useCatalogItem(id: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, setCatalogItem]);
   return { item, isLoading, isMetadataLoading };
 }
 
@@ -288,9 +303,19 @@ export function useCatalogEpisode(
 }
 
 export function useCatalogSeriesDetails(id: string | undefined) {
-  const [series, setSeries] = useState<CatalogSeries | undefined>();
-  const [episodes, setEpisodes] = useState<CatalogItem[]>([]);
-  const [isLoading, setLoading] = useState(Boolean(id));
+  const cachedDetails = useCatalogStore((state) =>
+    id ? state.seriesDetailsById[id] : undefined,
+  );
+  const setCatalogSeriesDetails = useCatalogStore(
+    (state) => state.setSeriesDetails,
+  );
+  const [series, setSeries] = useState<CatalogSeries | undefined>(
+    cachedDetails?.series,
+  );
+  const [episodes, setEpisodes] = useState<CatalogItem[]>(
+    cachedDetails?.episodes ?? [],
+  );
+  const [isLoading, setLoading] = useState(Boolean(id && !cachedDetails));
   const [isMetadataLoading, setMetadataLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   useEffect(() => {
@@ -298,6 +323,14 @@ export function useCatalogSeriesDetails(id: string | undefined) {
     if (!id || !sourceId) {
       setSeries(undefined);
       setEpisodes([]);
+      setLoading(false);
+      setMetadataLoading(false);
+      return;
+    }
+    const cached = useCatalogStore.getState().seriesDetailsById[id];
+    if (cached) {
+      setSeries(cached.series);
+      setEpisodes(cached.episodes);
       setLoading(false);
       setMetadataLoading(false);
       return;
@@ -315,6 +348,10 @@ export function useCatalogSeriesDetails(id: string | undefined) {
         setSeries(loadedSeries);
         setEpisodes(localEpisodes);
         setLoading(false);
+        setCatalogSeriesDetails(id, {
+          episodes: localEpisodes,
+          series: loadedSeries,
+        });
         const providerId =
           loadedSeries?.providerId ?? id.split(":").at(-1) ?? undefined;
         if (!loadedSeries || !providerId || !source) {
@@ -326,7 +363,7 @@ export function useCatalogSeriesDetails(id: string | undefined) {
           .then((remote) => {
             if (cancelled) return;
             const info = remote.info ?? {};
-            setSeries({
+            const enrichedSeries = {
               ...loadedSeries,
               description:
                 (typeof info.plot === "string" && info.plot) ||
@@ -342,14 +379,18 @@ export function useCatalogSeriesDetails(id: string | undefined) {
                 new Set(remote.episodes.map((episode) => episode.seasonNumber))
                   .size || loadedSeries.seasonCount,
               episodeCount: remote.episodes.length || loadedSeries.episodeCount,
-            });
-            setEpisodes(
-              [...remote.episodes].sort(
-                (first, second) =>
-                  (first.seasonNumber ?? 0) - (second.seasonNumber ?? 0) ||
-                  (first.episodeNumber ?? 0) - (second.episodeNumber ?? 0),
-              ),
+            };
+            const enrichedEpisodes = [...remote.episodes].sort(
+              (first, second) =>
+                (first.seasonNumber ?? 0) - (second.seasonNumber ?? 0) ||
+                (first.episodeNumber ?? 0) - (second.episodeNumber ?? 0),
             );
+            setCatalogSeriesDetails(id, {
+              episodes: enrichedEpisodes,
+              series: enrichedSeries,
+            });
+            setSeries(enrichedSeries);
+            setEpisodes(enrichedEpisodes);
           })
           .catch(() => undefined)
           .finally(() => setMetadataLoading(false));
@@ -363,7 +404,7 @@ export function useCatalogSeriesDetails(id: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, setCatalogSeriesDetails]);
   return { series, episodes, isLoading, isMetadataLoading, error };
 }
 

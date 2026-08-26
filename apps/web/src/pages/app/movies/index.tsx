@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { memo, useMemo, useState } from "react";
-import { AppHeader, AppLayout } from "../../../components/app-layout";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -16,6 +15,7 @@ import {
 } from "../../../components/ui";
 import { useCatalogItems } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
+import { AppHeader } from "../components";
 
 type Movie = {
   accent: string;
@@ -218,7 +218,7 @@ export function MoviesPage() {
   );
 
   return (
-    <AppLayout>
+    <>
       <div className="flex min-h-screen w-full flex-col gap-5 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
         <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
@@ -312,6 +312,6 @@ export function MoviesPage() {
           selected={genre}
         />
       )}
-    </AppLayout>
+    </>
   );
 }

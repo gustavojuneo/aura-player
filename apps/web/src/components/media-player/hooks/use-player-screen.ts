@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 import type { CatalogItem } from "../../../features/catalog/catalog";
@@ -16,7 +16,6 @@ import {
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useNextEpisodePreference } from "../../../services/next-episode-preferences";
 import {
-  consumeFavoritesOrigin,
   consumePlaybackNavigation,
   markPlaybackNavigation,
 } from "../../../services/playback-autoplay";
@@ -44,11 +43,11 @@ export type PlayerScreenKind = "live" | "movie" | "episode";
 
 export function usePlayerScreen(kind: PlayerScreenKind) {
   const navigate = useNavigate();
+  const router = useRouter();
   const params = useParams({ strict: false });
   const [allowAutoplay, setAllowAutoplay] = useState(() =>
     consumePlaybackNavigation(),
   );
-  const [favoritesOrigin] = useState(() => consumeFavoritesOrigin());
   const contentId =
     kind === "live"
       ? (params.channelId ?? "arena-sports")
@@ -157,21 +156,7 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
     ],
   );
   const goBack = () => {
-    if (favoritesOrigin)
-      return void navigate({ replace: true, to: favoritesOrigin });
-    if (kind === "live") return void navigate({ replace: true, to: "/app/tv" });
-    if (kind === "movie") {
-      return void navigate({
-        to: "/app/movies/$movieId",
-        params: { movieId: contentId },
-        replace: true,
-      });
-    }
-    return void navigate({
-      to: "/app/series/$seriesId",
-      params: { seriesId: item?.seriesId ?? "" },
-      replace: true,
-    });
+    router.history.back();
   };
   const goToEpisode = (next: CatalogItem) => {
     markPlaybackNavigation();

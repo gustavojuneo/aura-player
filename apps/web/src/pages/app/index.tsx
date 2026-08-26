@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Info, Radio } from "lucide-react";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
-import { AppLayout } from "../../components/app-layout";
 import { Carousel } from "../../components/carousel";
 import { HomePageSkeleton } from "../../components/catalog-skeleton";
 import { Icon } from "../../components/icon";
@@ -276,7 +275,7 @@ export function HomePage() {
   }
 
   return (
-    <AppLayout>
+    <>
       <div className="flex min-h-screen w-full flex-col gap-4 px-4 pb-24 sm:px-6 lg:gap-5 lg:px-8 lg:pb-10">
         {isLoading ? (
           <HomePageSkeleton onRetry={retry} />
@@ -351,6 +350,6 @@ export function HomePage() {
           progress={progress}
         />
       )}
-    </AppLayout>
+    </>
   );
 }

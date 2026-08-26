@@ -8,6 +8,7 @@ import {
 import { LandingPage } from "../pages";
 import { HomePage } from "../pages/app";
 import { FavoritesPage } from "../pages/app/favorites";
+import { AppLayout } from "../pages/app/layout";
 import { MoviesPage } from "../pages/app/movies";
 import { MovieDetailsPage } from "../pages/app/movies/$movieId";
 import { MoviePlayerPage } from "../pages/app/movies/$movieId/watch";
@@ -26,7 +27,7 @@ const landingRoute = createRoute({
   path: "/",
 });
 const appRoute = createRoute({
-  component: Outlet,
+  component: AppLayout,
   getParentRoute: () => rootRoute,
   path: "app",
 });

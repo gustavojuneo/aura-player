@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useMemo } from "react";
 import { Carousel } from "../../../../components/carousel";
@@ -15,6 +15,7 @@ import {
 import { useFavorites } from "../../../../services/favorites";
 
 export function MovieDetailsPage() {
+  const router = useRouter();
   const { movieId } = useParams({ from: "/app/movies/$movieId" });
   const { item, isLoading, isMetadataLoading } = useCatalogItem(movieId);
   const { items: movies } = useCatalogItems("movie");
@@ -54,7 +55,7 @@ export function MovieDetailsPage() {
       <ProductState
         action={{
           label: "Voltar aos filmes",
-          onClick: () => window.history.back(),
+          onClick: () => router.history.back(),
         }}
         className="min-h-screen justify-center"
         kind="catalog-empty"
@@ -69,7 +70,7 @@ export function MovieDetailsPage() {
         <button
           aria-label="Voltar para página anterior"
           className="-ml-2 inline-flex h-10 cursor-pointer items-center gap-1 rounded-lg bg-transparent px-2 text-sm font-bold text-text transition-colors hover:bg-transparent hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
-          onClick={() => window.history.back()}
+          onClick={() => router.history.back()}
           type="button"
         >
           <ChevronLeft aria-hidden="true" className="size-5 shrink-0" />

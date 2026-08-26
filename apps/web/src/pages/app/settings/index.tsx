@@ -1,3 +1,4 @@
+import { useRouter } from "@tanstack/react-router";
 import {
   ChevronRight,
   HardDrive,
@@ -9,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { AppLayout } from "../../../components/app-layout";
 import { Button, Switch } from "../../../components/ui";
 import { clearFavorites } from "../../../services/favorites";
 import {
@@ -66,6 +66,7 @@ const sections: Array<{
 ];
 
 export function SettingsPage() {
+  const router = useRouter();
   const [section, setSection] = useState<Section>("playback");
   const [clearDialog, setClearDialog] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -88,112 +89,110 @@ export function SettingsPage() {
   };
 
   return (
-    <AppLayout>
-      <main className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-5 sm:px-6 lg:gap-5 lg:px-9 lg:pb-10">
-        <header className="flex items-center justify-between">
-          <span className="font-display text-lg font-extrabold text-text lg:text-[19px]">
-            ◉ AURA
-          </span>
-          <button
-            className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
-            onClick={() => window.history.back()}
-            type="button"
-          >
-            <span className="hidden sm:inline">← Início</span>
-            <X className="size-5 sm:hidden" />
-          </button>
-        </header>
-        <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]">
-          Configurações
-        </h1>
-        {notice && (
-          <p
-            aria-live="polite"
-            className="m-0 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-xs font-semibold text-success"
-          >
-            {notice}
-          </p>
-        )}
-        <div className="grid min-h-0 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <nav
-            aria-label="Seções de configurações"
-            className="flex flex-col gap-2 lg:rounded-xl lg:border lg:border-line lg:bg-panel lg:p-3"
-          >
-            {sections.map(({ icon: Icon, id, label, mobileLabel }) => (
-              <button
-                aria-current={section === id ? "page" : undefined}
-                className={`flex h-[68px] w-full items-center justify-between gap-3 rounded-[11px] border px-3.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus lg:h-[46px] lg:justify-start lg:rounded-[9px] lg:border-transparent lg:px-3 ${section === id ? "border-gold bg-[#302719] text-text lg:border-transparent" : "border-line bg-panel text-text hover:border-gold/60 lg:bg-transparent"}`}
-                key={id}
-                onClick={() => {
-                  setSection(id);
-                  setNotice(null);
-                }}
-                type="button"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <Icon
-                    className={`size-5 shrink-0 ${section === id ? "text-gold-bright" : "text-muted"}`}
-                  />
-                  <span className="truncate text-[13px] font-semibold">
-                    {mobileLabel ?? label}
-                  </span>
+    <main className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 pb-24 pt-5 sm:px-6 lg:gap-5 lg:px-9 lg:pb-10">
+      <header className="flex items-center justify-between">
+        <span className="font-display text-lg font-extrabold text-text lg:text-[19px]">
+          ◉ AURA
+        </span>
+        <button
+          className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
+          onClick={() => router.history.back()}
+          type="button"
+        >
+          <span className="hidden sm:inline">← Início</span>
+          <X className="size-5 sm:hidden" />
+        </button>
+      </header>
+      <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.05em] text-text sm:text-[30px]">
+        Configurações
+      </h1>
+      {notice && (
+        <p
+          aria-live="polite"
+          className="m-0 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-xs font-semibold text-success"
+        >
+          {notice}
+        </p>
+      )}
+      <div className="grid min-h-0 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <nav
+          aria-label="Seções de configurações"
+          className="flex flex-col gap-2 lg:rounded-xl lg:border lg:border-line lg:bg-panel lg:p-3"
+        >
+          {sections.map(({ icon: Icon, id, label, mobileLabel }) => (
+            <button
+              aria-current={section === id ? "page" : undefined}
+              className={`flex h-[68px] w-full items-center justify-between gap-3 rounded-[11px] border px-3.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-focus lg:h-[46px] lg:justify-start lg:rounded-[9px] lg:border-transparent lg:px-3 ${section === id ? "border-gold bg-[#302719] text-text lg:border-transparent" : "border-line bg-panel text-text hover:border-gold/60 lg:bg-transparent"}`}
+              key={id}
+              onClick={() => {
+                setSection(id);
+                setNotice(null);
+              }}
+              type="button"
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <Icon
+                  className={`size-5 shrink-0 ${section === id ? "text-gold-bright" : "text-muted"}`}
+                />
+                <span className="truncate text-[13px] font-semibold">
+                  {mobileLabel ?? label}
                 </span>
-                <ChevronRight className="size-4 shrink-0 text-muted lg:hidden" />
-              </button>
-            ))}
-          </nav>
-          <section className="min-w-0">
-            {section === "playback" && (
-              <PlaybackPanel
-                preferences={preferences}
-                updatePreference={updatePreference}
-              />
-            )}
-            {section === "data" && (
-              <DataPanel onClear={() => setClearDialog(true)} />
-            )}
-            {section === "account" && (
-              <InfoPanel
-                icon={User}
-                title="Conta"
-                description="Sua conta local"
-                body="Marina · Casa ativa"
-              />
-            )}
-            {section === "language" && (
-              <InfoPanel
-                icon={Languages}
-                title="Idioma"
-                description="Idioma da interface"
-                body="Português (Brasil)"
-              />
-            )}
-            {section === "appearance" && (
-              <InfoPanel
-                icon={Palette}
-                title="Aparência"
-                description="Tema atual da AURA"
-                body="Escuro"
-              />
-            )}
-            {section === "privacy" && (
-              <InfoPanel
-                icon={Shield}
-                title="Informações e privacidade"
-                description="Seus dados ficam sob seu controle."
-                body="As fontes e preferências desta demonstração são mantidas localmente neste navegador."
-              />
-            )}
-          </section>
-        </div>
-        {clearDialog && (
-          <ClearDialog
-            onCancel={() => setClearDialog(false)}
-            onConfirm={clearData}
-          />
-        )}
-      </main>
-    </AppLayout>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted lg:hidden" />
+            </button>
+          ))}
+        </nav>
+        <section className="min-w-0">
+          {section === "playback" && (
+            <PlaybackPanel
+              preferences={preferences}
+              updatePreference={updatePreference}
+            />
+          )}
+          {section === "data" && (
+            <DataPanel onClear={() => setClearDialog(true)} />
+          )}
+          {section === "account" && (
+            <InfoPanel
+              icon={User}
+              title="Conta"
+              description="Sua conta local"
+              body="Marina · Casa ativa"
+            />
+          )}
+          {section === "language" && (
+            <InfoPanel
+              icon={Languages}
+              title="Idioma"
+              description="Idioma da interface"
+              body="Português (Brasil)"
+            />
+          )}
+          {section === "appearance" && (
+            <InfoPanel
+              icon={Palette}
+              title="Aparência"
+              description="Tema atual da AURA"
+              body="Escuro"
+            />
+          )}
+          {section === "privacy" && (
+            <InfoPanel
+              icon={Shield}
+              title="Informações e privacidade"
+              description="Seus dados ficam sob seu controle."
+              body="As fontes e preferências desta demonstração são mantidas localmente neste navegador."
+            />
+          )}
+        </section>
+      </div>
+      {clearDialog && (
+        <ClearDialog
+          onCancel={() => setClearDialog(false)}
+          onConfirm={clearData}
+        />
+      )}
+    </main>
   );
 }
 

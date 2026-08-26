@@ -1,7 +1,43 @@
-export {
-  AppHeader,
-  AppLayout,
-  Brand,
-  MobileNavigation,
-  Sidebar,
-} from "../../components/app-layout";
+import { Outlet, useLocation } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
+
+export function AppLayout() {
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const { pathname } = useLocation();
+  const isPlayerRoute =
+    /^\/app\/(movies\/[^/]+\/watch|series\/[^/]+\/episodes\/[^/]+\/watch|tv\/[^/]+\/watch)(\/|$)/.test(
+      pathname,
+    );
+  const isShelllessRoute = isPlayerRoute;
+
+  useEffect(() => {
+    const handleExpired = () => setSessionExpired(true);
+    window.addEventListener("iptv:session-expired", handleExpired);
+    return () =>
+      window.removeEventListener("iptv:session-expired", handleExpired);
+  }, []);
+
+  return (
+    <main
+      className={
+        isPlayerRoute
+          ? "h-dvh overflow-hidden bg-bg text-text"
+          : isShelllessRoute
+            ? "min-h-screen bg-bg text-text"
+            : "flex min-h-screen bg-bg text-text"
+      }
+    >
+      {!isShelllessRoute && <Sidebar />}
+      <div className="min-w-0 flex-1">
+        <Outlet />
+      </div>
+      {!isShelllessRoute && <MobileNavigation />}
+      {sessionExpired && (
+        <div className="fixed inset-0 z-40 grid place-items-center bg-bg/90 p-5 backdrop-blur-sm">
+          <SessionExpiredState />
+        </div>
+      )}
+    </main>
+  );
+}
