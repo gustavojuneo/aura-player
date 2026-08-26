@@ -13,7 +13,13 @@ function isTextEntry(element: Element | null) {
 }
 
 function getDirection(event: KeyboardEvent) {
-  const key = event.key.toLowerCase();
+  const legacyKey = (
+    event as KeyboardEvent & { keyIdentifier?: string }
+  ).keyIdentifier;
+  const key =
+    typeof event.key === "string" && event.key
+      ? event.key.toLowerCase()
+      : legacyKey?.toLowerCase();
   if (key === "arrowup" || key === "up") return "up";
   if (key === "arrowdown" || key === "down") return "down";
   if (key === "arrowleft" || key === "left") return "left";
@@ -158,7 +164,7 @@ export function useTvDirectionalNavigation() {
       next.scrollIntoView({ block: "nearest", inline: "nearest" });
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [pathname, router]);
 }
