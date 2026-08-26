@@ -97,6 +97,16 @@ export function clearCatalogMemory() {
   catalogSeries.clear();
 }
 
+export function hasCatalogSourceData(sourceId: string) {
+  for (const item of catalogItems.values()) {
+    if (item.sourceId === sourceId) return true;
+  }
+  for (const item of catalogSeries.values()) {
+    if (item.sourceId === sourceId) return true;
+  }
+  return false;
+}
+
 export async function getCatalogItems(
   sourceId: string,
   kind: CatalogItem["kind"],

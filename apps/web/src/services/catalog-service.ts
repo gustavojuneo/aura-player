@@ -33,6 +33,7 @@ import {
   getCatalogSeries,
   getSeries,
   getSources,
+  hasCatalogSourceData,
   putCatalogBatch,
   putSource,
   setActiveSourceId,
@@ -160,9 +161,14 @@ export function refreshCatalogSource(source: CatalogSource) {
 }
 
 export function refreshExpiredCatalogSources(sources: CatalogSource[]) {
+  const activeSourceId = getActiveSourceId();
   return Promise.allSettled(
     sources
-      .filter(isCatalogExpired)
+      .filter(
+        (source) =>
+          source.id === activeSourceId &&
+          (!hasCatalogSourceData(source.id) || isCatalogExpired(source)),
+      )
       .map((source) => refreshCatalogSource(source)),
   );
 }
