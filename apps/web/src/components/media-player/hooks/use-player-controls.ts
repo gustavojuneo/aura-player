@@ -8,6 +8,10 @@ type UsePlayerControlsParams = {
   isLive: boolean;
   isPlaying: boolean;
   isReady: boolean;
+  onChangeVolume: (value: number) => void;
+  onSeek: (value: number) => void;
+  onToggleMute: () => void;
+  onTogglePlay: () => void;
   videoRef: React.RefObject<HTMLVideoElement | null>;
 };
 
@@ -18,22 +22,32 @@ export function usePlayerControls({
   isLive,
   isPlaying,
   isReady,
+  onChangeVolume,
+  onSeek,
+  onToggleMute,
+  onTogglePlay,
   videoRef,
 }: UsePlayerControlsParams) {
   const [aspectRatio, setAspectRatio] = useState<PlayerAspectRatio>("original");
   const [contentListOpen, setContentListOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [liveGuideOpen, setLiveGuideOpen] = useState(false);
-  const [pendingSeek, setPendingSeek] = useState(0);
+  const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [volumeShortcutValue, setVolumeShortcutValue] = useState<number | null>(
+    null,
+  );
   const hideTimerRef = useRef<number | null>(null);
   const seekTimerRef = useRef<number | null>(null);
   const pendingSeekRef = useRef(0);
+  const seekPreviewRef = useRef<number | null>(null);
+  const volumeShortcutTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     void contentId;
     pendingSeekRef.current = 0;
-    setPendingSeek(0);
+    seekPreviewRef.current = null;
+    setSeekPreview(null);
     return () => {
       if (seekTimerRef.current !== null)
         window.clearTimeout(seekTimerRef.current);
@@ -66,28 +80,44 @@ export function usePlayerControls({
   }, [hideControls, isPlaying, revealControls]);
 
   const queueSeek = useCallback(
-    (delta: number) => {
+    (delta: number, source: "button" | "keyboard" = "button") => {
       if (isLive || !isReady) return;
+      const video = videoRef.current;
+      if (!video) return;
       pendingSeekRef.current += delta;
-      setPendingSeek(pendingSeekRef.current);
-      if (seekTimerRef.current !== null)
-        window.clearTimeout(seekTimerRef.current);
-      seekTimerRef.current = window.setTimeout(() => {
-        const video = videoRef.current;
-        if (!video) return;
+      if (source === "keyboard") {
         const max =
           duration > 0
             ? duration
             : Number.isFinite(video.duration)
               ? video.duration
               : Number.POSITIVE_INFINITY;
-        const time = Math.min(
+        const preview = Math.min(
           max,
           Math.max(0, video.currentTime + pendingSeekRef.current),
         );
-        video.currentTime = time;
+        seekPreviewRef.current = preview;
+        setSeekPreview(preview);
+      }
+      if (seekTimerRef.current !== null)
+        window.clearTimeout(seekTimerRef.current);
+      seekTimerRef.current = window.setTimeout(() => {
+        const currentVideo = videoRef.current;
+        if (!currentVideo) return;
+        const max =
+          duration > 0
+            ? duration
+            : Number.isFinite(currentVideo.duration)
+              ? currentVideo.duration
+              : Number.POSITIVE_INFINITY;
+        const time = Math.min(
+          max,
+          Math.max(0, currentVideo.currentTime + pendingSeekRef.current),
+        );
+        currentVideo.currentTime = time;
         pendingSeekRef.current = 0;
-        setPendingSeek(0);
+        seekPreviewRef.current = null;
+        setSeekPreview(null);
         seekTimerRef.current = null;
       }, 400);
     },
@@ -101,12 +131,105 @@ export function usePlayerControls({
     else if (document.fullscreenElement) void document.exitFullscreen();
   }, [videoRef]);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      )
+        return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (
+        target.isContentEditable ||
+        target.closest("button, input, select, textarea, a, [role=dialog]")
+      )
+        return;
+
+      const key = event.key.toLowerCase();
+      const isShortcut =
+        event.key === " " ||
+        key === "k" ||
+        event.key === "m" ||
+        event.key === "f" ||
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight" ||
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        event.key === "Home" ||
+        event.key === "End" ||
+        /^[0-9]$/.test(event.key);
+      if (isShortcut) revealControls();
+      if (event.key === " " || key === "k") {
+        event.preventDefault();
+        onTogglePlay();
+      } else if (event.key === "m") {
+        event.preventDefault();
+        onToggleMute();
+      } else if (event.key === "f") {
+        event.preventDefault();
+        toggleFullscreen();
+      } else if (!isLive && event.key === "ArrowLeft") {
+        event.preventDefault();
+        queueSeek(-5, "keyboard");
+      } else if (!isLive && event.key === "ArrowRight") {
+        event.preventDefault();
+        queueSeek(5, "keyboard");
+      } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        const video = videoRef.current;
+        if (!video) return;
+        event.preventDefault();
+        const nextVolume = Math.min(
+          1,
+          Math.max(0, video.volume + (event.key === "ArrowUp" ? 0.05 : -0.05)),
+        );
+        onChangeVolume(nextVolume);
+        setVolumeShortcutValue(Math.round(nextVolume * 100));
+        if (volumeShortcutTimerRef.current !== null)
+          window.clearTimeout(volumeShortcutTimerRef.current);
+        volumeShortcutTimerRef.current = window.setTimeout(
+          () => setVolumeShortcutValue(null),
+          900,
+        );
+      } else if (!isLive && event.key === "Home") {
+        event.preventDefault();
+        onSeek(0);
+      } else if (!isLive && event.key === "End" && duration > 0) {
+        event.preventDefault();
+        onSeek(duration);
+      } else if (!isLive && /^[0-9]$/.test(event.key) && duration > 0) {
+        event.preventDefault();
+        onSeek((Number(event.key) / 10) * duration);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (volumeShortcutTimerRef.current !== null)
+        window.clearTimeout(volumeShortcutTimerRef.current);
+    };
+  }, [
+    duration,
+    isLive,
+    onChangeVolume,
+    onSeek,
+    onToggleMute,
+    onTogglePlay,
+    queueSeek,
+    revealControls,
+    toggleFullscreen,
+    videoRef,
+  ]);
+
   return {
     aspectRatio,
     contentListOpen,
     controlsVisible,
     liveGuideOpen,
-    pendingSeek,
+    seekPreview,
     queueSeek,
     revealControls,
     setAspectRatio,
@@ -115,5 +238,6 @@ export function usePlayerControls({
     setSettingsOpen,
     settingsOpen,
     toggleFullscreen,
+    volumeShortcutValue,
   };
 }

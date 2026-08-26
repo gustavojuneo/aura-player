@@ -31,6 +31,7 @@ import {
 } from "../../../hooks/use-catalog-data";
 import { useCatalogState } from "../../../hooks/use-catalog-state";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
+import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { useFavorites } from "../../../services/favorites";
 import { AppHeader } from "../components";
 
@@ -382,6 +383,8 @@ export function TvPage() {
   const { isLoading } = useCatalogState();
   const { items } = useCatalogItems("live");
   const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useSearchShortcut(searchInputRef);
   const [category, setCategory] = useState("Todos");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string>();
@@ -488,6 +491,7 @@ export function TvPage() {
               className="hidden h-11 w-[320px] lg:flex"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar canais, programas..."
+              ref={searchInputRef}
               value={query}
             />
           </div>

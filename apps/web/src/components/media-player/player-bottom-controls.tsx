@@ -8,8 +8,9 @@ import {
   Play,
   Ratio,
   Settings,
+  Volume1,
   Volume2,
-  VolumeX,
+  VolumeOff,
 } from "lucide-react";
 import { formatPlaybackTime } from "../../features/playback/playback";
 import {
@@ -18,6 +19,7 @@ import {
 } from "../../utils/constants";
 import { SelectField } from "../ui";
 import { ControlButton } from "./control-button";
+import { PlayerTooltip } from "./player-tooltip";
 import type { PlayerQuality, PlayerQualityOption } from "./types";
 
 type PlayerBottomControlsProps = {
@@ -100,21 +102,28 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
         )}
       </div>
       {!descriptor.isLive && (
-        <input
-          aria-label="Posição da reprodução"
-          className="h-1 w-full cursor-pointer accent-gold"
-          max={duration || 1}
-          min={0}
-          onChange={(event) => onSeek(Number(event.target.value))}
-          type="range"
-          value={Math.min(currentTime, duration || 1)}
-        />
+        <PlayerTooltip
+          label="Posição da reprodução"
+          shortcut="←/→ · Home/End · 0–9"
+        >
+          <input
+            aria-keyshortcuts="ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
+            aria-label="Posição da reprodução"
+            className="h-1 w-full cursor-pointer accent-gold"
+            max={duration || 1}
+            min={0}
+            onChange={(event) => onSeek(Number(event.target.value))}
+            type="range"
+            value={Math.min(currentTime, duration || 1)}
+          />
+        </PlayerTooltip>
       )}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
           <ControlButton
             label={isPlaying ? "Pausar" : "Reproduzir"}
             onClick={onTogglePlay}
+            shortcut="Space/K"
           >
             {isPlaying ? (
               <Pause className="size-4" />
@@ -126,26 +135,32 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
             <ControlButton
               label={isMuted ? "Ativar som" : "Silenciar"}
               onClick={onToggleMute}
+              shortcut="M"
             >
-              {isMuted ? (
-                <VolumeX className="size-4" />
+              {isMuted || volume === 0 ? (
+                <VolumeOff className="size-4" />
+              ) : volume <= 0.5 ? (
+                <Volume1 className="size-4" />
               ) : (
                 <Volume2 className="size-4" />
               )}
             </ControlButton>
-            <div className="pointer-events-none absolute bottom-full left-1/2 flex h-28 w-8 -translate-x-1/2 items-center justify-center rounded-lg bg-black/35 opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100">
-              <input
-                aria-label="Volume do player"
-                className="h-24 w-1 cursor-pointer accent-gold [direction:rtl] [writing-mode:vertical-lr]"
-                max={100}
-                min={0}
-                onChange={(event) =>
-                  onVolumeChange(Number(event.target.value) / 100)
-                }
-                type="range"
-                value={Math.round(volume * 100)}
-              />
-            </div>
+            <PlayerTooltip label="Volume" shortcut="↑/↓">
+              <div className="pointer-events-none absolute bottom-full left-1/2 flex h-8 w-28 -translate-x-1/2 items-center justify-center rounded-lg bg-black/35 opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100">
+                <input
+                  aria-keyshortcuts="ArrowUp ArrowDown"
+                  aria-label="Volume do player"
+                  className="pointer-events-auto h-1 w-24 cursor-pointer accent-gold"
+                  max={100}
+                  min={0}
+                  onChange={(event) =>
+                    onVolumeChange(Number(event.target.value) / 100)
+                  }
+                  type="range"
+                  value={Math.round(volume * 100)}
+                />
+              </div>
+            </PlayerTooltip>
           </div>
           {!descriptor.isLive && (
             <span className="hidden text-[11px] text-muted sm:inline">
@@ -205,18 +220,21 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 </p>
                 <div className="mt-3 block text-xs font-semibold text-white/75">
                   Qualidade da imagem
-                  <SelectField
-                    aria-label="Qualidade da imagem"
-                    className="mt-1.5 w-full"
-                    onValueChange={onQualityChange}
-                    options={qualityOptions}
-                    triggerClassName="w-full border-white/15 bg-transparent"
-                    value={quality}
-                    valueLabel={
-                      qualityOptions.find((option) => option.value === quality)
-                        ?.label
-                    }
-                  />
+                  <PlayerTooltip label="Qualidade da imagem">
+                    <SelectField
+                      aria-label="Qualidade da imagem"
+                      className="mt-1.5 w-full"
+                      onValueChange={onQualityChange}
+                      options={qualityOptions}
+                      triggerClassName="w-full border-white/15 bg-transparent"
+                      value={quality}
+                      valueLabel={
+                        qualityOptions.find(
+                          (option) => option.value === quality,
+                        )?.label
+                      }
+                    />
+                  </PlayerTooltip>
                 </div>
                 <p className="mt-2 mb-0 text-[10px] leading-4 text-white/50">
                   Disponível quando a fonte oferece múltiplas qualidades.
@@ -224,23 +242,29 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
               </div>
             )}
           </div>
-          <SelectField
-            aria-label="Proporção do player"
-            leading={<Ratio aria-hidden="true" className="size-4 shrink-0" />}
-            onValueChange={(value) => {
-              if (["original", "16:9", "4:3", "fill", "crop"].includes(value))
-                onAspectRatioChange(value as PlayerAspectRatio);
-            }}
-            options={ASPECT_RATIO_OPTIONS}
-            triggerClassName="h-8 min-w-[92px] border-transparent bg-transparent px-2 hover:border-white/10 hover:bg-white/10"
-            value={aspectRatio}
-            valueLabel={
-              ASPECT_RATIO_OPTIONS.find(
-                (option) => option.value === aspectRatio,
-              )?.label
-            }
-          />
-          <ControlButton label="Tela cheia" onClick={onToggleFullscreen}>
+          <PlayerTooltip label="Proporção do player">
+            <SelectField
+              aria-label="Proporção do player"
+              leading={<Ratio aria-hidden="true" className="size-4 shrink-0" />}
+              onValueChange={(value) => {
+                if (["original", "16:9", "4:3", "fill", "crop"].includes(value))
+                  onAspectRatioChange(value as PlayerAspectRatio);
+              }}
+              options={ASPECT_RATIO_OPTIONS}
+              triggerClassName="h-8 min-w-[92px] border-transparent bg-transparent px-2 hover:border-white/10 hover:bg-white/10"
+              value={aspectRatio}
+              valueLabel={
+                ASPECT_RATIO_OPTIONS.find(
+                  (option) => option.value === aspectRatio,
+                )?.label
+              }
+            />
+          </PlayerTooltip>
+          <ControlButton
+            label="Tela cheia"
+            onClick={onToggleFullscreen}
+            shortcut="F"
+          >
             <Expand className="size-4" />
           </ControlButton>
         </div>

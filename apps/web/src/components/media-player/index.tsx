@@ -13,6 +13,7 @@ export { PlayerLiveGuide } from "./player-live-guide";
 export { PlayerNextEpisode } from "./player-next-episode";
 export { PlayerPrimaryControls } from "./player-primary-controls";
 export { PlayerFallback, PlayerScreen } from "./player-screen";
+export { PlayerTooltip } from "./player-tooltip";
 export { PlayerVideo } from "./player-video";
 export type { PlayerQuality, PlayerQualityOption } from "./types";
 export {

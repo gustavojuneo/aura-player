@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -15,6 +15,7 @@ import {
 } from "../../../components/ui";
 import { useCatalogSeries } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
+import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { AppHeader } from "../components";
 
 type Series = {
@@ -164,6 +165,8 @@ export function SeriesPage() {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useSearchShortcut(searchInputRef);
   const { items: importedSeries, isLoading } = useCatalogSeries();
   const seriesCatalog = useMemo<Series[]>(
     () =>
@@ -229,6 +232,7 @@ export function SeriesPage() {
                 className="h-10 w-[330px]"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar séries, temporadas..."
+                ref={searchInputRef}
                 value={query}
               />
               <SelectField

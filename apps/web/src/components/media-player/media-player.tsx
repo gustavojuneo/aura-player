@@ -53,6 +53,10 @@ export function MediaPlayer({
     isLive: descriptor.isLive,
     isPlaying: playback.isPlaying,
     isReady: playback.isReady,
+    onChangeVolume: playback.changeVolume,
+    onSeek: playback.seek,
+    onToggleMute: playback.toggleMute,
+    onTogglePlay: playback.togglePlay,
     videoRef: playback.videoRef,
   });
   const nextEpisode = useNextEpisodeCountdown({
@@ -99,6 +103,16 @@ export function MediaPlayer({
         descriptor={descriptor}
         videoRef={playback.videoRef}
       />
+      {controls.volumeShortcutValue !== null && (
+        <div
+          aria-label={`Volume ${controls.volumeShortcutValue}%`}
+          aria-live="polite"
+          className="pointer-events-none absolute top-20 left-1/2 z-20 -translate-x-1/2 rounded-lg bg-black/75 px-5 py-2.5 text-xl font-bold text-text shadow-lg"
+          role="status"
+        >
+          {controls.volumeShortcutValue}%
+        </div>
+      )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/90" />
       {descriptor.isLive &&
         controls.controlsVisible &&
@@ -134,14 +148,13 @@ export function MediaPlayer({
         isPlaying={playback.isPlaying}
         onSeek={controls.queueSeek}
         onTogglePlay={playback.togglePlay}
-        pendingSeek={controls.pendingSeek}
         reduceMotion={preferences.reduceMotion}
       />
       <PlayerBottomControls
         aspectRatio={controls.aspectRatio}
         contentListOpen={Boolean(renderContentList && controls.contentListOpen)}
         controlsVisible={controls.controlsVisible}
-        currentTime={playback.currentTime}
+        currentTime={controls.seekPreview ?? playback.currentTime}
         descriptor={descriptor}
         duration={playback.duration}
         isMuted={playback.isMuted}

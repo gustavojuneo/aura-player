@@ -1,12 +1,12 @@
 import { Search } from "lucide-react";
-import type { InputHTMLAttributes } from "react";
+import { forwardRef, type InputHTMLAttributes } from "react";
 
 import { cn } from "../../utils/cn";
 
-export function SearchField({
-  className,
-  ...props
-}: InputHTMLAttributes<HTMLInputElement>) {
+export const SearchField = forwardRef<
+  HTMLInputElement,
+  InputHTMLAttributes<HTMLInputElement>
+>(function SearchField({ className, ...props }, ref) {
   return (
     <div
       className={cn(
@@ -21,10 +21,12 @@ export function SearchField({
       />
       <input
         {...props}
+        aria-keyshortcuts="/"
         className="min-w-0 flex-1 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
         id="aura-search"
+        ref={ref}
         type="search"
       />
     </div>
   );
-}
+});
