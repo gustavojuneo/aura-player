@@ -21,8 +21,8 @@ export function PlayerVideo({
         aspectRatio: aspectRatio === "16:9" ? "16 / 9" : "4 / 3",
         width:
           aspectRatio === "16:9"
-            ? "min(100%, 177.78dvh)"
-            : "min(100%, 133.33dvh)",
+            ? "min(100%, 177.78vh)"
+            : "min(100%, 133.33vh)",
       }
     : undefined;
   const className =

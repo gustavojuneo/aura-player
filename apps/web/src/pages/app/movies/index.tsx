@@ -266,7 +266,7 @@ export function MoviesPage() {
             onSelect={setGenre}
             selected={genre}
           />
-          <ScrollArea className="h-[calc(100dvh-8rem)] min-w-0 flex-1">
+          <ScrollArea className="h-[calc(100vh-8rem)] min-w-0 flex-1">
             {isLoading ? (
               <CatalogGridSkeleton />
             ) : visibleMovies.length > 0 ? (

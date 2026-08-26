@@ -65,7 +65,7 @@ export function MovieDetailsPage() {
   const category = item.categories?.[0] ?? item.groupTitle ?? "Filme";
 
   return (
-    <main className="flex h-dvh flex-col overflow-hidden bg-bg text-text">
+    <main className="flex h-screen flex-col overflow-hidden bg-bg text-text">
       <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-5 sm:px-10 lg:px-[38px] lg:py-7">
         <button
           aria-label="Voltar para página anterior"
@@ -97,7 +97,7 @@ export function MovieDetailsPage() {
         watchParams={{ movieId: item.id }}
         watchTo="/app/movies/$movieId/watch"
       />
-      <section className="relative z-30 flex h-[clamp(360px,45dvh,480px)] w-full shrink-0 flex-col gap-3.5 overflow-hidden bg-bg px-5 pt-6 pb-10 sm:px-10 sm:pt-6 lg:px-[70px]">
+      <section className="relative z-30 flex h-[clamp(360px,45vh,480px)] w-full shrink-0 flex-col gap-3.5 overflow-hidden bg-bg px-5 pt-6 pb-10 sm:px-10 sm:pt-6 lg:px-[70px]">
         <h2 className="m-0 font-display text-lg font-bold text-text sm:text-[21px]">
           Você também pode gostar
         </h2>
@@ -105,7 +105,7 @@ export function MovieDetailsPage() {
           <div className="flex min-w-max flex-nowrap gap-3">
             {relatedMovies.map((movie, index) => (
               <Link
-                className="w-[clamp(153px,calc((45dvh_-_100px)*2/3),240px)] min-w-[clamp(153px,calc((45dvh_-_100px)*2/3),240px)] shrink-0"
+                className="w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] min-w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] shrink-0"
                 key={movie.id}
                 params={{ movieId: movie.id }}
                 to="/app/movies/$movieId"

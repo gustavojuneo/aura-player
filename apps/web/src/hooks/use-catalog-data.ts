@@ -281,7 +281,8 @@ export function useCatalogEpisode(
       .then(async (localItem) => {
         if (localItem?.streamUrl) return localItem;
         const sourceId = episodeId.split(":episode:")[0];
-        const providerId = seriesId.split(":series:").at(-1);
+        const providerParts = seriesId.split(":series:");
+        const providerId = providerParts[providerParts.length - 1];
         if (!sourceId || !providerId) return localItem;
         const source = await getSource(sourceId);
         if (!source) return localItem;
@@ -356,8 +357,9 @@ export function useCatalogSeriesDetails(id: string | undefined) {
           episodes: localEpisodes,
           series: loadedSeries,
         });
+        const idParts = id.split(":");
         const providerId =
-          loadedSeries?.providerId ?? id.split(":").at(-1) ?? undefined;
+          loadedSeries?.providerId ?? idParts[idParts.length - 1] ?? undefined;
         if (!loadedSeries || !providerId || !source) {
           setMetadataLoading(false);
           return;

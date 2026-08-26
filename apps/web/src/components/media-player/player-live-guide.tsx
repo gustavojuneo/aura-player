@@ -41,9 +41,10 @@ export function PlayerLiveGuide({
     return () => window.clearTimeout(timer);
   }, [now, programs]);
 
-  const previousProgram = programs
-    .filter((program) => Date.parse(program.stop) <= now)
-    .at(-1);
+  const pastPrograms = programs.filter(
+    (program) => Date.parse(program.stop) <= now,
+  );
+  const previousProgram = pastPrograms[pastPrograms.length - 1];
   const timelinePrograms = [
     ...(previousProgram ? [previousProgram] : []),
     ...programs.filter((program) => Date.parse(program.stop) > now).slice(0, 6),

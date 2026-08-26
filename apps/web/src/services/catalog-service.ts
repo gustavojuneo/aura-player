@@ -182,7 +182,6 @@ export function importM3uSource(
     let writeChain = Promise.resolve();
     const worker = new Worker(
       new URL("../workers/m3u-import.worker.ts", import.meta.url),
-      { type: "module" },
     );
     worker.onmessage = (
       event: MessageEvent<{

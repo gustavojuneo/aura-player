@@ -147,7 +147,7 @@ function CategoryList({
 }) {
   return (
     <aside
-      className={`sticky top-20 mb-6 h-[calc(100dvh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[23%] ${className ?? ""}`}
+      className={`sticky top-20 mb-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[23%] ${className ?? ""}`}
     >
       <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
@@ -350,7 +350,7 @@ function ProgramPanel({
   );
 
   return (
-    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 overflow-hidden rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-[calc(100dvh-8rem)] lg:w-auto lg:flex-none lg:basis-[38%]">
+    <section className="sticky top-20 hidden min-h-0 min-w-0 self-start flex-col gap-3 overflow-hidden rounded-xl bg-panel p-4 sm:p-[18px] lg:flex lg:h-[calc(100vh-8rem)] lg:w-auto lg:flex-none lg:basis-[38%]">
       {channel ? (
         <>
           <ChannelPreview channel={channel} onOpen={watchChannel} />
@@ -484,7 +484,7 @@ export function TvPage() {
 
   return (
     <>
-      <div className="flex h-dvh w-full flex-col gap-5 overflow-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
+      <div className="flex h-screen w-full flex-col gap-5 overflow-hidden px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:gap-6 lg:px-[30px] lg:pb-10">
         <AppHeader className="sticky top-0 z-30 bg-bg/95 py-2 backdrop-blur-sm">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <h1 className="hidden min-w-0 truncate font-display text-[28px] font-bold tracking-[-0.05em] text-text md:block">
@@ -529,7 +529,7 @@ export function TvPage() {
               onSelect={setCategory}
               selected={category}
             />
-            <section className="flex h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 flex-col">
+            <section className="flex h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-1 flex-col">
               <h2 className="m-0 shrink-0 px-1 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
                 Canais
               </h2>

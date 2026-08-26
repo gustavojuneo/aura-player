@@ -74,7 +74,7 @@ export function HomePageSkeleton({ onRetry }: { onRetry: () => void }) {
 export function LivePageSkeleton() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row lg:items-stretch">
-      <aside className="hidden h-[calc(100dvh-8rem)] w-[250px] shrink-0 rounded-xl bg-search p-3 lg:block">
+      <aside className="hidden h-[calc(100vh-8rem)] w-[250px] shrink-0 rounded-xl bg-search p-3 lg:block">
         <Skeleton className="h-4 w-28" />
         <div className="mt-4 space-y-2">
           {Array.from(
@@ -86,7 +86,7 @@ export function LivePageSkeleton() {
         </div>
       </aside>
       <ScrollArea
-        className="h-[calc(100dvh-8rem)] min-h-0 min-w-0 flex-1 lg:w-[500px] lg:flex-none"
+        className="h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-1 lg:w-[500px] lg:flex-none"
         contentClassName="space-y-2"
       >
         {Array.from(
