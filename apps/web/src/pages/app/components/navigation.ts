@@ -19,5 +19,5 @@ export const APP_NAVIGATION: NavigationItem[] = [
   { icon: "clapperboard", label: "Filmes", to: "/app/movies" },
   { icon: "tv", label: "Séries", to: "/app/series" },
   { icon: "heart", label: "Favoritos", to: "/app/favorites" },
-  { icon: "database", label: "Listas IPTV", to: "/app/sources" },
+  { icon: "list", label: "Listas IPTV", to: "/app/sources" },
 ];

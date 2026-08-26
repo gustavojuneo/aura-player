@@ -1,8 +1,8 @@
 import {
   Clapperboard,
-  Database,
   Heart,
   House,
+  List,
   type LucideIcon,
   Play,
   Radio,
@@ -13,9 +13,9 @@ import {
 
 export type IconName =
   | "clapperboard"
-  | "database"
   | "heart"
   | "home"
+  | "list"
   | "play"
   | "radio"
   | "search"
@@ -24,9 +24,9 @@ export type IconName =
 
 const icons: Record<IconName, LucideIcon> = {
   clapperboard: Clapperboard,
-  database: Database,
   heart: Heart,
   home: House,
+  list: List,
   play: Play,
   radio: Radio,
   search: Search,
