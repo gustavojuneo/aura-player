@@ -3,6 +3,7 @@ import {
   type FocusableComponent,
   getCurrentFocusKey,
   init,
+  navigateByDirection,
   pause,
   ROOT_FOCUS_KEY,
   resume,
@@ -14,7 +15,7 @@ import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 const focusableSelector =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])";
 const regionSelector = "[data-tv-navigation-region]";
 const focusKeys = new WeakMap<HTMLElement, string>();
 const elementByFocusKey = new Map<string, HTMLElement>();
@@ -54,6 +55,14 @@ function isVisible(element: HTMLElement) {
     element.getClientRects().length > 0 &&
     element.getAttribute("aria-hidden") !== "true"
   );
+}
+
+function getDirection(event: KeyboardEvent): Direction | undefined {
+  if (event.key === "ArrowUp") return "up";
+  if (event.key === "ArrowDown") return "down";
+  if (event.key === "ArrowLeft") return "left";
+  if (event.key === "ArrowRight") return "right";
+  return undefined;
 }
 
 function getFocusKey(element: HTMLElement, prefix = "item") {
@@ -182,6 +191,23 @@ function focusElement(element: HTMLElement | undefined) {
   if (focusKey) void setFocus(focusKey);
 }
 
+function handleTextInputEnter(element: HTMLInputElement) {
+  const form = element.closest("form");
+  if (!form) return;
+  const inputs = Array.from(
+    form.querySelectorAll<HTMLInputElement>(
+      'input:not([disabled]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])',
+    ),
+  ).filter(isVisible);
+  const currentIndex = inputs.indexOf(element);
+  const nextInput = inputs[currentIndex + 1];
+  if (nextInput) {
+    focusElement(nextInput);
+    return;
+  }
+  form.requestSubmit();
+}
+
 function getRegionItems(region: NavigationRegion) {
   return Array.from(elementByFocusKey.values()).filter(
     (element) => getRegion(element) === region && isVisible(element),
@@ -288,17 +314,25 @@ function handleRegionExit(
       getRegionItems("catalog-grid"),
     );
     if (!sameRowItem) {
-      focusElement(
-        findClosestByRow(element, getRegionItems("catalog-categories")),
-      );
+      const destination =
+        findClosestByRow(element, getRegionItems("catalog-categories")) ??
+        findClosestByRow(element, getRegionItems("sidebar"));
+      focusElement(destination);
       return false;
     }
   }
 
   if (direction === "left" || direction === "right") {
-    return Boolean(
-      findAxisAlignedElement(element, direction, getRegionItems(region)),
+    const sameRowItem = findAxisAlignedElement(
+      element,
+      direction,
+      getRegionItems(region),
     );
+    if (!sameRowItem && direction === "left" && region === "content") {
+      focusElement(findClosestByRow(element, getRegionItems("sidebar")));
+      return false;
+    }
+    return Boolean(sameRowItem);
   }
   return true;
 }
@@ -321,7 +355,11 @@ function createFocusableRegistration(
     onArrowRelease: () => undefined,
     onBlur: () => undefined,
     onEnterPress: () => {
-      if (!isTextEntry(element)) element.click();
+      if (element instanceof HTMLInputElement && isTextEntry(element)) {
+        handleTextInputEnter(element);
+        return;
+      }
+      element.click();
     },
     onEnterRelease: () => undefined,
     onFocus: () =>
@@ -414,8 +452,14 @@ async function registerFocusableTree() {
 }
 
 function focusInitialElement() {
-  if (document.activeElement && document.activeElement !== document.body)
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement && activeElement !== document.body) {
+    const activeFocusKey = focusKeys.get(activeElement);
+    if (activeFocusKey && activeFocusKey !== getCurrentFocusKey()) {
+      void setFocus(activeFocusKey);
+    }
     return;
+  }
   const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
   const player = document.querySelector<HTMLElement>("[data-player-root]");
   const scope =
@@ -470,6 +514,49 @@ export function useTvDirectionalNavigation() {
       if (frame !== undefined) window.cancelAnimationFrame(frame);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    const handleDialogNavigation = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      if (!(activeElement instanceof HTMLElement)) return;
+
+      const direction = getDirection(event);
+      if (
+        direction &&
+        activeElement.hasAttribute("data-tv-select-trigger") &&
+        activeElement.getAttribute("aria-expanded") !== "true"
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        void navigateByDirection(direction, { event });
+        return;
+      }
+
+      if (!activeElement.closest('[role="dialog"]')) return;
+      if (activeElement.closest('[role="option"]')) return;
+
+      if (direction) {
+        if (
+          isTextEntry(activeElement) &&
+          (direction === "left" || direction === "right")
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        void navigateByDirection(direction, { event });
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        SpatialNavigation.onEnterPress({ pressedKeys: {} });
+      }
+    };
+    document.addEventListener("keydown", handleDialogNavigation, true);
+    return () =>
+      document.removeEventListener("keydown", handleDialogNavigation, true);
+  }, []);
 
   useEffect(() => {
     const handleBack = (event: KeyboardEvent) => {
