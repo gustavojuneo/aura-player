@@ -2,6 +2,16 @@
 @import "tailwindcss";
 
 @layer utilities {
+  .h-dvh {
+    height: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    .h-dvh {
+      height: 100dvh;
+    }
+  }
+
   .line-clamp-2 {
     display: -webkit-box;
     overflow: hidden;

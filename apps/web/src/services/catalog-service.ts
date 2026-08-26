@@ -21,6 +21,7 @@ export function getXtreamCredentialsFromM3uUrl(value: string) {
   }
 }
 
+import { createStableId } from "../utils/create-stable-id";
 import {
   clearActiveSourceId,
   clearCatalogSource,
@@ -49,7 +50,7 @@ export async function loadCatalogSources() {
 
 export async function saveM3uSource(input: { name: string; url: string }) {
   const source = sourceSchema.parse({
-    id: `m3u-${crypto.randomUUID()}`,
+    id: `m3u-${createStableId()}`,
     name: input.name.trim(),
     type: "m3u",
     url: input.url.trim(),
@@ -171,6 +172,8 @@ export function importM3uSource(
   handlers?: { onProgress?: (phase: string) => void },
 ) {
   return new Promise<CatalogSource>((resolve, reject) => {
+    let catalogCleared = false;
+    let writeChain = Promise.resolve();
     const worker = new Worker(
       new URL("../workers/m3u-import.worker.ts", import.meta.url),
       { type: "module" },
@@ -187,10 +190,20 @@ export function importM3uSource(
     ) => {
       if (event.data.type === "progress" && event.data.phase)
         handlers?.onProgress?.(event.data.phase);
+      if (event.data.type === "batch") {
+        if (!catalogCleared) {
+          clearCatalogSource(source.id);
+          catalogCleared = true;
+        }
+        writeChain = writeChain.then(() =>
+          putCatalogBatch(event.data.items ?? [], event.data.series ?? []),
+        );
+        return;
+      }
       if (event.data.type === "complete" && event.data.source) {
         worker.terminate();
-        clearCatalogSource(source.id);
-        void putCatalogBatch(event.data.items ?? [], event.data.series ?? [])
+        if (!catalogCleared) clearCatalogSource(source.id);
+        void writeChain
           .then(() => putSource(event.data.source as CatalogSource))
           .then(() => {
             window.dispatchEvent(new Event("aura-catalog-change"));

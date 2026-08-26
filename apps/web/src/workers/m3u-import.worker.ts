@@ -34,12 +34,17 @@ self.onmessage = async (event: MessageEvent<ImportMessage>) => {
       refreshedAt: new Date().toISOString(),
       errorMessage: undefined,
     };
-    self.postMessage({
-      type: "complete",
-      items: parsed.items,
-      series: parsed.series,
-      source: nextSource,
-    });
+    const batchSize = 250;
+    for (let index = 0; index < parsed.items.length; index += batchSize) {
+      self.postMessage({
+        type: "batch",
+        items: parsed.items.slice(index, index + batchSize),
+        series: index === 0 ? parsed.series : [],
+      });
+    }
+    parsed.items.length = 0;
+    parsed.series.length = 0;
+    self.postMessage({ type: "complete", source: nextSource });
   } catch (error) {
     const message = error instanceof Error ? error.message : "IMPORT_FAILED";
     self.postMessage({ type: "error", message });
