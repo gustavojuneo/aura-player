@@ -10,7 +10,7 @@
     "lint:fix": "biome check --write .",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "webos:package": "VITE_API_URL=https://aura-api-ia1i.onrender.com pnpm --filter @iptv/web build --mode webos && ares-package apps/web/dist -o apps/web/release"
+    "webos:package": "pnpm --filter @iptv/web build --mode webos && ares-package apps/web/dist -o apps/web/release"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",

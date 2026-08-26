@@ -4,9 +4,11 @@ import {
   createRoute,
   createRouter,
   Outlet,
+  redirect,
 } from "@tanstack/react-router";
 import { type ComponentType, lazy, Suspense } from "react";
 
+import { env } from "../env";
 import { AppLayout } from "../pages/app/layout";
 
 function LoadingRoute() {
@@ -108,6 +110,11 @@ const LivePlayerPage = lazyPage(() =>
 
 const rootRoute = createRootRoute({ component: Outlet });
 const landingRoute = createRoute({
+  beforeLoad: () => {
+    if (env.VITE_DEVICE_TYPE === "tv") {
+      throw redirect({ to: "/app" });
+    }
+  },
   component: LandingPage,
   getParentRoute: () => rootRoute,
   path: "/",
