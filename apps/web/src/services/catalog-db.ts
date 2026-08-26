@@ -148,6 +148,10 @@ export function getActiveSourceId() {
 }
 
 export function setActiveSourceId(sourceId: string) {
+  const previousSourceId = getActiveSourceId();
+  if (previousSourceId && previousSourceId !== sourceId) {
+    clearCatalogSource(previousSourceId);
+  }
   try {
     window.localStorage.setItem(activeSourceKey, sourceId);
   } catch {

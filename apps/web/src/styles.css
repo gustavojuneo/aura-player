@@ -67,12 +67,12 @@
   --color-danger-strong: #ffb2a7;
   --color-danger-surface: #3a211d;
   --color-ink: #211707;
-  --font-sans: Manrope, ui-sans-serif, system-ui, sans-serif;
-  --font-display: Sora, Manrope, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-display: ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif;
   color: #f6f2e8;
   background: #15130f;
   font-synthesis: none;

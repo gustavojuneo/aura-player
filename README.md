@@ -97,6 +97,31 @@ Configure local environment variables using the examples in
 `apps/web/.env.example` and `apps/api/.env.example`. Never commit real source
 credentials or `.env` files.
 
+## LG webOS package
+
+The TV build targets Chromium 68, the web engine used by webOS 5, and uses a
+relative asset base plus hash routing so it can run from a packaged `.ipk`.
+Generate the webOS application package with:
+
+```bash
+pnpm webos:package
+```
+
+This command requires the LG webOS CLI (`ares-package`) to be installed and
+available on `PATH`; it writes the package to `apps/web/release`.
+
+The catalog is intentionally held only in the application process memory. It
+is cleared when the app page is terminated and is reloaded from the selected
+source on the next launch. Source definitions, credentials, and the selected
+source identifier remain in persistent browser storage so the user does not
+need to configure the source again. Switching sources releases the previous
+catalog from memory.
+
+For production certification, test on the oldest supported TV model. webOS 5
+is the compatibility baseline; older webOS releases use older Chromium engines
+and may require a separate certification pass. Provider URLs must be reachable
+by the TV and playback/CDN responses must permit the app's network requests.
+
 ## Responsible use
 
 Only connect sources that you own or are authorized to use. Never commit real
