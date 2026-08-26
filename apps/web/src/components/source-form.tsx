@@ -105,9 +105,21 @@ export function SourceForm({
     resolver: zodResolver(formSchema),
   });
   const type = form.watch("type");
+  const submitForm = form.handleSubmit(async (values, event) => {
+    const submitButton =
+      event?.currentTarget instanceof HTMLFormElement
+        ? event.currentTarget.querySelector<HTMLButtonElement>(
+            'button[type="submit"]',
+          )
+        : null;
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) activeElement.blur();
+    submitButton?.focus();
+    await onSave(values);
+  });
 
   return (
-    <form className="flex flex-col gap-3" onSubmit={form.handleSubmit(onSave)}>
+    <form className="flex flex-col gap-3" onSubmit={submitForm}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="m-0 font-display text-[21px] font-bold text-text">
