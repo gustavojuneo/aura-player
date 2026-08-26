@@ -16,7 +16,7 @@ export function BrandLogo({
       <img
         alt=""
         aria-hidden="true"
-        className={cn("size-9 shrink-0", markClassName)}
+        className={cn("size-9 shrink-0 rounded-[22%]", markClassName)}
         src="/logo.svg"
       />
       <span
