@@ -149,6 +149,7 @@ function CategoryList({
   return (
     <aside
       className={`sticky top-20 mb-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl bg-search lg:w-auto lg:shrink-0 lg:basis-[23%] ${className ?? ""}`}
+      data-tv-navigation-region="catalog-categories"
     >
       <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
@@ -550,7 +551,10 @@ export function TvPage() {
               onSelect={setCategory}
               selected={category}
             />
-            <section className="flex h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-1 flex-col">
+            <section
+              className="flex h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-1 flex-col"
+              data-tv-navigation-region="catalog-grid"
+            >
               <h2 className="m-0 shrink-0 px-1 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
                 Canais
               </h2>

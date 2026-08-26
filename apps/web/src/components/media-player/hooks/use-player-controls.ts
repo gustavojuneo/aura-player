@@ -150,12 +150,6 @@ export function usePlayerControls({
         return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
-      if (
-        target.isContentEditable ||
-        target.closest("button, input, select, textarea, a, [role=dialog]")
-      )
-        return;
-
       const key = event.key.toLowerCase();
       const isShortcut =
         event.key === " " ||
@@ -170,6 +164,12 @@ export function usePlayerControls({
         event.key === "End" ||
         /^[0-9]$/.test(event.key);
       if (isShortcut) revealControls();
+      if (
+        target.isContentEditable ||
+        target.closest("button, input, select, textarea, a, [role=dialog]")
+      )
+        return;
+
       if (event.key === " " || key === "k") {
         event.preventDefault();
         onTogglePlay();

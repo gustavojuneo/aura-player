@@ -117,7 +117,10 @@ export function CategorySidebar({
   selected: string;
 }) {
   return (
-    <aside className="sticky top-20 mb-6 hidden h-[calc(100vh-8rem)] w-[250px] shrink-0 flex-col self-start overflow-hidden rounded-xl bg-search lg:flex">
+    <aside
+      className="sticky top-20 mb-6 hidden h-[calc(100vh-8rem)] w-[250px] shrink-0 flex-col self-start overflow-hidden rounded-xl bg-search lg:flex"
+      data-tv-navigation-region="catalog-categories"
+    >
       <h2 className="m-0 shrink-0 px-6 pt-3 pb-2 text-[11px] font-extrabold tracking-[0.08em] text-muted">
         CATEGORIAS
       </h2>

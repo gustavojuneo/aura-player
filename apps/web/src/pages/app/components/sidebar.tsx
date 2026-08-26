@@ -18,6 +18,7 @@ export function Sidebar() {
   return (
     <aside
       className={`relative z-[100] sticky top-0 hidden h-dvh shrink-0 lg:flex ${sidebarCollapsed ? "w-[72px]" : "w-56"}`}
+      data-tv-navigation-region="sidebar"
     >
       <div
         className={`group/sidebar absolute inset-y-0 left-0 z-[60] flex flex-col gap-2 overflow-hidden border-r border-line p-[20px_16px] transition-[width,background-color,backdrop-filter] duration-200 ${sidebarCollapsed ? "w-[72px] bg-[#11100dcc] backdrop-blur-md hover:w-56" : "w-56 bg-[#11100d]"}`}

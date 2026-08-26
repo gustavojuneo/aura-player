@@ -269,7 +269,10 @@ export function SeriesPage() {
             {isLoading ? (
               <CatalogGridSkeleton />
             ) : visibleSeries.length > 0 ? (
-              <div className="relative">
+              <div
+                className="relative"
+                data-tv-navigation-region="catalog-grid"
+              >
                 <VirtualizedGrid
                   columnCount={(width) =>
                     width < 640 ? 2 : width < 1024 ? 4 : width < 1280 ? 5 : 6

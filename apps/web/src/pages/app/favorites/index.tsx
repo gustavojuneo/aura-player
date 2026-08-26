@@ -161,6 +161,7 @@ function ChannelList({
             ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
             : "flex flex-col gap-2"
       }
+      data-tv-navigation-region={grid && !carousel ? "catalog-grid" : undefined}
     >
       {channels.map((channel) => (
         <FavoriteChannelCard
@@ -329,14 +330,16 @@ function MediaGrid({
 
   if (!carousel) {
     return (
-      <VirtualizedGrid
-        columnCount={(width) =>
-          width < 640 ? 2 : width < 1024 ? 4 : width < 1280 ? 5 : 6
-        }
-        getItemKey={(item) => item.id}
-        items={media}
-        renderItem={renderCard}
-      />
+      <div data-tv-navigation-region="catalog-grid">
+        <VirtualizedGrid
+          columnCount={(width) =>
+            width < 640 ? 2 : width < 1024 ? 4 : width < 1280 ? 5 : 6
+          }
+          getItemKey={(item) => item.id}
+          items={media}
+          renderItem={renderCard}
+        />
+      </div>
     );
   }
 
