@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import Hls from "hls.js";
+import type Hls from "hls.js";
 import {
   Heart,
   LoaderCircle,
@@ -8,7 +8,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import mpegts from "mpegts.js";
+import type mpegts from "mpegts.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LivePageSkeleton } from "../../../components/catalog-skeleton";
 import {
@@ -200,7 +200,6 @@ function ChannelPreview({
     const url = playbackSource.source;
     const cleanEngine = () => {
       const engine = engineRef.current;
-      if (engine instanceof Hls) engine.destroy();
       if (engine && "detachMediaElement" in engine) {
         engine.pause();
         engine.unload();
@@ -225,22 +224,42 @@ function ChannelPreview({
     };
     const fail = () => setHasError(true);
 
-    if (channel.delivery === "hls" && Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-      engineRef.current = hls;
-      hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) fail();
-      });
-      hls.on(Hls.Events.MANIFEST_PARSED, play);
-      hls.attachMedia(video);
-      hls.loadSource(url);
-    } else if (channel.delivery === "mpeg-ts" && mpegts.isSupported()) {
-      const player = mpegts.createPlayer({ type: "mpegts", isLive: true, url });
-      engineRef.current = player;
-      player.on(mpegts.Events.ERROR, fail);
-      player.attachMediaElement(video);
-      player.load();
-      void Promise.resolve(player.play()).catch(() => undefined);
+    if (channel.delivery === "hls") {
+      void import("hls.js")
+        .then(({ default: Hls }) => {
+          if (!Hls.isSupported()) {
+            fail();
+            return;
+          }
+          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+          engineRef.current = hls;
+          hls.on(Hls.Events.ERROR, (_event, data) => {
+            if (data.fatal) fail();
+          });
+          hls.on(Hls.Events.MANIFEST_PARSED, play);
+          hls.attachMedia(video);
+          hls.loadSource(url);
+        })
+        .catch(fail);
+    } else if (channel.delivery === "mpeg-ts") {
+      void import("mpegts.js")
+        .then(({ default: mpegts }) => {
+          if (!mpegts.isSupported()) {
+            fail();
+            return;
+          }
+          const player = mpegts.createPlayer({
+            type: "mpegts",
+            isLive: true,
+            url,
+          });
+          engineRef.current = player;
+          player.on(mpegts.Events.ERROR, fail);
+          player.attachMediaElement(video);
+          player.load();
+          void Promise.resolve(player.play()).catch(() => undefined);
+        })
+        .catch(fail);
     } else {
       video.src = url;
       video.addEventListener("loadedmetadata", play, { once: true });

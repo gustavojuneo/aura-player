@@ -1,5 +1,4 @@
-import Hls from "hls.js";
-import mpegts from "mpegts.js";
+import type Hls from "hls.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../../../features/playback/playback";
 import type { PlaybackPreferences } from "../../../services/playback-preferences";
@@ -22,8 +21,7 @@ type UsePlaybackEngineParams = {
 };
 
 function destroyEngine(engine: PlaybackEngine, video: HTMLVideoElement) {
-  if (engine instanceof Hls) engine.destroy();
-  else if (engine && "detachMediaElement" in engine) {
+  if (engine && "detachMediaElement" in engine) {
     engine.pause();
     engine.unload();
     engine.detachMediaElement();
@@ -42,6 +40,7 @@ export function usePlaybackEngine({
 }: UsePlaybackEngineParams) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const engineRef = useRef<PlaybackEngine>(null);
+  const hlsEngineRef = useRef<Hls | null>(null);
   const qualityEngineRef = useRef<QualityEngine | null>(null);
   const sessionRef = useRef(0);
   const [currentTime, setCurrentTime] = useState(descriptor.position ?? 0);
@@ -98,6 +97,7 @@ export function usePlaybackEngine({
     };
     destroyEngine(engineRef.current, video);
     engineRef.current = null;
+    hlsEngineRef.current = null;
     qualityEngineRef.current = null;
     setIsReady(false);
     setError(null);
@@ -117,40 +117,61 @@ export function usePlaybackEngine({
       video.src = streamUrl;
       video.load();
       play(() => video.play());
-    } else if (descriptor.delivery === "hls" && Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: descriptor.isLive,
-      });
-      engineRef.current = hls;
-      hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) fail();
-      });
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setQualityOptions(
-          qualityOptionsForHeights(
-            hls.levels
-              .map((level) => level.height)
-              .filter((height) => Number.isFinite(height) && height > 0),
-          ),
-        );
-        if (preferences.autoResume && descriptor.position && !descriptor.isLive)
-          video.currentTime = descriptor.position;
-        play(() => video.play());
-      });
-      hls.attachMedia(video);
-      hls.loadSource(streamUrl);
-    } else if (descriptor.delivery === "mpeg-ts" && mpegts.isSupported()) {
-      const player = mpegts.createPlayer({
-        type: "mpegts",
-        isLive: descriptor.isLive,
-        url: streamUrl,
-      });
-      engineRef.current = player;
-      player.on(mpegts.Events.ERROR, fail);
-      player.attachMediaElement(video);
-      player.load();
-      play(() => Promise.resolve(player.play()));
+    } else if (descriptor.delivery === "hls") {
+      void import("hls.js")
+        .then(({ default: Hls }) => {
+          if (session !== sessionRef.current || !Hls.isSupported()) {
+            if (!Hls.isSupported()) fail();
+            return;
+          }
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: descriptor.isLive,
+          });
+          engineRef.current = hls;
+          hlsEngineRef.current = hls;
+          hls.on(Hls.Events.ERROR, (_event, data) => {
+            if (data.fatal) fail();
+          });
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setQualityOptions(
+              qualityOptionsForHeights(
+                hls.levels
+                  .map((level) => level.height)
+                  .filter((height) => Number.isFinite(height) && height > 0),
+              ),
+            );
+            if (
+              preferences.autoResume &&
+              descriptor.position &&
+              !descriptor.isLive
+            )
+              video.currentTime = descriptor.position;
+            play(() => video.play());
+          });
+          hls.attachMedia(video);
+          hls.loadSource(streamUrl);
+        })
+        .catch(fail);
+    } else if (descriptor.delivery === "mpeg-ts") {
+      void import("mpegts.js")
+        .then(({ default: mpegts }) => {
+          if (session !== sessionRef.current || !mpegts.isSupported()) {
+            if (!mpegts.isSupported()) fail();
+            return;
+          }
+          const player = mpegts.createPlayer({
+            type: "mpegts",
+            isLive: descriptor.isLive,
+            url: streamUrl,
+          });
+          engineRef.current = player;
+          player.on(mpegts.Events.ERROR, fail);
+          player.attachMediaElement(video);
+          player.load();
+          play(() => Promise.resolve(player.play()));
+        })
+        .catch(fail);
     } else if (descriptor.delivery === "dash") {
       void import("shaka-player")
         .then(({ default: shaka }) => {
@@ -228,6 +249,7 @@ export function usePlaybackEngine({
       sessionRef.current += 1;
       destroyEngine(engineRef.current, video);
       engineRef.current = null;
+      hlsEngineRef.current = null;
       qualityEngineRef.current = null;
     };
   }, [autoPlay, descriptor, isLoading, preferences.autoResume, retryKey]);
@@ -282,8 +304,8 @@ export function usePlaybackEngine({
 
   useEffect(() => {
     if (isReady) qualityEngineRef.current?.setQuality(quality);
-    const engine = engineRef.current;
-    if (!(engine instanceof Hls) || !isReady || !engine.levels.length) return;
+    const engine = hlsEngineRef.current;
+    if (!engine || !isReady || !engine.levels.length) return;
     engine.currentLevel =
       quality === "auto"
         ? -1
