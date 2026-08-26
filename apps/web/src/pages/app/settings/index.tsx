@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-
+import { AppLayout } from "../../../components/app-layout";
 import { Button, Switch } from "../../../components/ui";
 import { clearFavorites } from "../../../services/favorites";
 import {
@@ -18,7 +18,6 @@ import {
   type PlaybackPreferences,
   usePlaybackPreferences,
 } from "../../../services/playback-preferences";
-import { AppLayout } from "../app-shell";
 
 type Section =
   | "account"

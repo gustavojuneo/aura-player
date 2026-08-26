@@ -5,7 +5,7 @@ description: Use when changing Xtream catalog routes, provider normalization, se
 
 # Xtream Catalog And Playback
 
-Read `docs/architecture.md` and `AGENT.md` before Xtream changes. Provider
+Read `docs/architecture.md` and `AGENTS.md` before Xtream changes. Provider
 communication and credentials remain in the API; pages render results through
 web services and page-local components.
 

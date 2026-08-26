@@ -28,7 +28,7 @@ Planned top-level structure:
 |-- docs/
 |   |-- architecture.md
 |   `-- adr/
-|-- AGENT.md
+|-- AGENTS.md
 |-- README.md
 |-- biome.json
 |-- package.json
@@ -49,7 +49,7 @@ README.md
 Introduces the project to people: purpose, technologies, requirements, installation, and commands.
 
 ```text
-AGENT.md
+AGENTS.md
 ```
 
 Contains normative rules that agents and contributors must follow during implementation.
@@ -67,6 +67,12 @@ docs/adr/
 May store Architecture Decision Records when an important decision needs to capture context, alternatives, and consequences.
 
 All project documentation must be written in English.
+
+Commit messages follow the Conventional Commits specification. Every commit
+must include a type and a meaningful description of the alterations. Include a
+body separated by a blank line describing the changes, except for small,
+self-explanatory changes. See `docs/commit-convention.md` for the complete
+rules and examples.
 
 ## Naming Conventions
 
@@ -106,6 +112,12 @@ src/
 |   |-- carousel.tsx
 |   |-- catalog.tsx
 |   |-- header.tsx
+|   |-- media-player/
+|   |   |-- index.tsx
+|   |   |-- media-player.tsx
+|   |   |-- player-content-list.tsx
+|   |   |-- player-live-guide.tsx
+|   |   `-- player-next-episode.tsx
 |   `-- ...shared-components.tsx
 |-- pages/
 |   |-- components/                 landing-page-only components
@@ -194,6 +206,10 @@ components/player-next-episode.tsx
 components/program-guide.tsx
 components/icon.tsx
 components/source-selector.tsx
+components/media-player/index.tsx
+components/media-player/player-content-list.tsx
+components/media-player/player-live-guide.tsx
+components/media-player/player-next-episode.tsx
 ```
 
 A component belongs here when:
@@ -210,6 +226,17 @@ refactor. Do not define meaningful child components inside a parent component's
 file; extract them into named modules. Use the Compound Components Pattern for
 coordinated subparts such as `Catalog.Root`, `Catalog.Header`, and
 `Catalog.Grid`.
+
+Playback UI is a shared component family, not a page. Keep its public entry
+point and coordinated subcomponents under `components/media-player/`. Watch
+routes under `pages/app/*/watch/` should remain thin route entries that compose
+the shared player with the appropriate content type.
+
+Each Compound Component family must expose its complete public API from its
+`index.tsx` entry point. The barrel may delegate implementation to internal
+files, but consumers import every root component and composed part from the
+entry point; imports from internal implementation files are not allowed.
+Internal files may be reorganized without changing consumer imports.
 
 ### `pages`
 
@@ -231,6 +258,47 @@ pages/
 `pages/app/index.tsx` composes the page. `pages/app/components/` is reserved
 for components used only by that route; shared application components belong in
 `src/components/`.
+
+### React composition patterns
+
+The frontend adopts three React patterns from the
+[Patterns.dev React patterns](https://www.patterns.dev/react/) documentation.
+They are complementary and must be selected according to the responsibility of
+the code.
+
+#### Hooks Pattern
+
+Use custom hooks to extract reusable stateful behavior, subscriptions, browser
+APIs, side effects, and remote-state coordination from components. Hooks must
+be named with the `use` prefix, called only at the top level of React functions,
+and must not be called from ordinary utility functions. Prefer hooks for pure
+logic/data sharing; avoid effects for derived values or event handling when a
+calculation or event handler is sufficient. Keep hooks in `src/hooks/`, or in a
+component family's `hooks/` directory only when the behavior is private to that
+family. Keep that family's pure helpers in its `utils/` directory; visual
+components stay at the family root.
+
+#### Compound Pattern
+
+Use compound components for a coordinated family of parts that shares state or
+behavior. The root owns the shared state/context and exposes named subparts,
+for example `MediaPlayer.Root`, `MediaPlayer.LiveGuide`, and
+`MediaPlayer.NextEpisode`. Subparts must remain composable and should not embed
+page-specific business rules. Use React context when subparts need access to
+root state without prop drilling.
+
+#### Render Props Pattern
+
+Use render props (including the children-as-a-function form) when a component
+must own a subtree, context, ref, portal, accessibility boundary, drag/drop
+boundary, or animation boundary while allowing the consumer to define the
+rendered markup. Type render functions explicitly and keep the data passed to
+them minimal. Do not use render props merely to share data; use a custom hook
+instead. Prefer one consistent render-prop style per component family.
+
+These patterns must not be applied mechanically: hooks are the default for
+shared behavior, compound components are for coordinated component families,
+and render props are for behavior that must wrap consumer-owned JSX.
 
 When multiple pages use a local component, it must be promoted to
 `src/components/` or `src/components/ui/` according to its responsibility.

@@ -5,7 +5,7 @@ description: Use when changing playback progress, IndexedDB persistence, sync qu
 
 # IPTV Local-First Playback
 
-Read `docs/architecture.md` and `AGENT.md` before playback changes. Follow the
+Read `docs/architecture.md` and `AGENTS.md` before playback changes. Follow the
 layer boundaries: pure playback rules in `packages/domain`, shared contracts in
 `packages/contracts`, browser persistence and synchronization orchestration in
 the owning app, and rendering in page/component layers.

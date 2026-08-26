@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import { AppHeader, AppLayout } from "../../../components/app-layout";
 import { Button, ProductState } from "../../../components/ui";
 import { useCatalogSources } from "../../../hooks/use-catalog-data";
 import {
@@ -15,7 +15,6 @@ import {
   saveM3uSource,
   saveXtreamSource,
 } from "../../../services/catalog-service";
-import { AppHeader, AppLayout } from "../app-shell";
 import { SourceCard } from "./components/source-card";
 import { SourceForm } from "./components/source-form";
 import type { Source, SourceFormValues } from "./types";

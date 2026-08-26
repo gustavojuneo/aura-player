@@ -5,7 +5,7 @@ description: Use when changing visible React UI in catalog, live, details, sourc
 
 # IPTV React UI Design
 
-Read `docs/architecture.md` and `AGENT.md` before changing UI. Follow the
+Read `docs/architecture.md` and `AGENTS.md` before changing UI. Follow the
 repository's page/component boundaries instead of putting a complete screen in
 one file.
 
@@ -19,6 +19,8 @@ loading and mutations in services/hooks, not presentational components.
   reusable UI element in `apps/web/src/components/ui/`.
 - Never define meaningful child components inside a parent file. Extract them
   and use Compound Components for coordinated subparts.
+- Use custom hooks for reusable stateful behavior. Use Render Props only when a
+  component owns a boundary/subtree and consumers control the JSX.
 - Keep primitives exported through their barrel and independent from
   page-specific behavior.
 - Keep fixed options in `apps/web/src/utils/constants.ts` as

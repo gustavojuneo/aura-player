@@ -1,14 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Info, Radio } from "lucide-react";
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
+import { Info, Radio } from "lucide-react";
+import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { AppLayout } from "../../components/app-layout";
+import { Carousel } from "../../components/carousel";
+import { Icon } from "../../components/icon";
 import { ProductState } from "../../components/ui";
 import type {
   CatalogItem,
@@ -27,95 +22,12 @@ import {
   type RecentChannel,
   recentChannelsEvent,
 } from "../../services/recent-channels";
-import { AppLayout, Icon } from "./app-shell";
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
     <h2 className="m-0 font-display text-[18px] font-semibold tracking-[-0.03em] text-text">
       {children}
     </h2>
-  );
-}
-
-function CarouselViewport({
-  children,
-  label,
-}: {
-  children: ReactNode;
-  label: string;
-}) {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const [canPrevious, setCanPrevious] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-  const updateScrollState = useCallback(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    setCanPrevious(viewport.scrollLeft > 1);
-    setCanNext(
-      viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1,
-    );
-  }, []);
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    updateScrollState();
-    viewport.addEventListener("scroll", updateScrollState, { passive: true });
-    const observer = new ResizeObserver(updateScrollState);
-    observer.observe(viewport);
-    return () => {
-      viewport.removeEventListener("scroll", updateScrollState);
-      observer.disconnect();
-    };
-  }, [updateScrollState]);
-  const move = (direction: number) =>
-    viewportRef.current?.scrollBy({
-      behavior: "smooth",
-      left:
-        direction *
-        Math.max((viewportRef.current?.clientWidth ?? 0) * 0.82, 240),
-    });
-  return (
-    <section
-      aria-label={label}
-      className="relative -mx-4 min-w-0 sm:-mx-6 lg:-mx-8"
-    >
-      <div
-        className="overflow-x-auto overflow-y-visible scroll-smooth px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6 lg:px-8"
-        ref={viewportRef}
-      >
-        <div className="flex min-w-max flex-nowrap gap-3">{children}</div>
-      </div>
-      {canPrevious && (
-        <CarouselButton direction="previous" onClick={() => move(-1)} />
-      )}
-      {canNext && <CarouselButton direction="next" onClick={() => move(1)} />}
-    </section>
-  );
-}
-
-function CarouselButton({
-  direction,
-  onClick,
-}: {
-  direction: "next" | "previous";
-  onClick: () => void;
-}) {
-  const next = direction === "next";
-  return (
-    <button
-      aria-label={next ? "Próximos itens" : "Itens anteriores"}
-      className={`absolute inset-y-0 z-20 flex w-14 items-center justify-center bg-gradient-to-${next ? "l" : "r"} from-bg via-bg/75 to-transparent text-text opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus ${next ? "right-0" : "left-0"}`}
-      onClick={onClick}
-      type="button"
-    >
-      <span className="grid size-9 place-items-center rounded-full border border-line bg-panel/95 shadow-lg">
-        {next ? (
-          <ChevronRight aria-hidden="true" className="size-5" />
-        ) : (
-          <ChevronLeft aria-hidden="true" className="size-5" />
-        )}
-      </span>
-    </button>
   );
 }
 
@@ -328,11 +240,11 @@ export function HomePage() {
             <section className="flex flex-col gap-3">
               <SectionHeader>Canais recentes</SectionHeader>
               {recentChannelCards.length ? (
-                <CarouselViewport label="Canais recentes">
+                <Carousel ariaLabel="Canais recentes">
                   {recentChannelCards.map((channel) => (
                     <ChannelCard channel={channel} key={channel.id} />
                   ))}
-                </CarouselViewport>
+                </Carousel>
               ) : (
                 <ProductState
                   className="min-h-[110px]"
@@ -344,7 +256,7 @@ export function HomePage() {
             <section className="flex flex-col gap-3">
               <SectionHeader>Filmes em destaque</SectionHeader>
               {featuredMovies.length ? (
-                <CarouselViewport label="Filmes em destaque">
+                <Carousel ariaLabel="Filmes em destaque">
                   {featuredMovies.map((item, index) => (
                     <MediaCard
                       index={index}
@@ -353,7 +265,7 @@ export function HomePage() {
                       kind="movie"
                     />
                   ))}
-                </CarouselViewport>
+                </Carousel>
               ) : (
                 <ProductState className="min-h-[210px]" kind="catalog-empty" />
               )}
@@ -361,7 +273,7 @@ export function HomePage() {
             <section className="flex flex-col gap-3">
               <SectionHeader>Séries em destaque</SectionHeader>
               {featuredSeries.length ? (
-                <CarouselViewport label="Séries em destaque">
+                <Carousel ariaLabel="Séries em destaque">
                   {featuredSeries.map((item, index) => (
                     <MediaCard
                       index={index}
@@ -370,7 +282,7 @@ export function HomePage() {
                       kind="series"
                     />
                   ))}
-                </CarouselViewport>
+                </Carousel>
               ) : (
                 <ProductState className="min-h-[210px]" kind="catalog-empty" />
               )}

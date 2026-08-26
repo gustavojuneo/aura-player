@@ -6,6 +6,5 @@ export { ScrollArea } from "./scroll-area";
 export { SearchField } from "./search-field";
 export { SelectField } from "./select";
 export { Skeleton } from "./skeleton";
-export { SourceSelector } from "./source-selector";
 export { Switch } from "./switch";
 export { VirtualizedGrid } from "./virtualized-grid";

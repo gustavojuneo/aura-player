@@ -5,7 +5,7 @@ description: Use when changing M3U parsing, metadata normalization, source class
 
 # M3U Catalog And Playback
 
-Read `docs/architecture.md` and `AGENT.md` before catalog changes. Keep M3U
+Read `docs/architecture.md` and `AGENTS.md` before catalog changes. Keep M3U
 parsing and provider integration in the API/provider boundary, pure
 normalization rules in the domain package when shared, and UI rendering inside
 the web page/component boundaries.

@@ -5,7 +5,7 @@ description: Use when changing Tailwind styling, CSS variables, shared visual to
 
 # IPTV Theme System
 
-Read `docs/architecture.md` and `AGENT.md` before styling changes. The
+Read `docs/architecture.md` and `AGENTS.md` before styling changes. The
 architecture requires Tailwind utilities in page/component markup and reserves
 the global stylesheet for tokens and truly global rules.
 

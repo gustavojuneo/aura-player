@@ -1,0 +1,250 @@
+import {
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  Expand,
+  ListVideo,
+  Pause,
+  Play,
+  Ratio,
+  Settings,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { formatPlaybackTime } from "../../features/playback/playback";
+import {
+  ASPECT_RATIO_OPTIONS,
+  type PlayerAspectRatio,
+} from "../../utils/constants";
+import { SelectField } from "../ui";
+import { ControlButton } from "./control-button";
+import type { PlayerQuality, PlayerQualityOption } from "./types";
+
+type PlayerBottomControlsProps = {
+  aspectRatio: PlayerAspectRatio;
+  contentListOpen: boolean;
+  controlsVisible: boolean;
+  currentTime: number;
+  descriptor: { isLive: boolean; secondaryTitle?: string; title: string };
+  duration: number;
+  isMuted: boolean;
+  isPlaying: boolean;
+  liveGuideOpen: boolean;
+  onAspectRatioChange: (value: PlayerAspectRatio) => void;
+  onContentList: () => void;
+  onLiveGuideToggle: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  onQualityChange: (value: PlayerQuality) => void;
+  onSeek: (value: number) => void;
+  onSettingsToggle: () => void;
+  onToggleFullscreen: () => void;
+  onToggleMute: () => void;
+  onTogglePlay: () => void;
+  onVolumeChange: (value: number) => void;
+  quality: PlayerQuality;
+  qualityOptions: PlayerQualityOption[];
+  reduceMotion: boolean;
+  settingsOpen: boolean;
+  showContentList: boolean;
+  showEpisodeNavigation: boolean;
+  volume: number;
+};
+
+export function PlayerBottomControls(props: PlayerBottomControlsProps) {
+  const {
+    aspectRatio,
+    contentListOpen,
+    controlsVisible,
+    currentTime,
+    descriptor,
+    duration,
+    isMuted,
+    isPlaying,
+    liveGuideOpen,
+    onAspectRatioChange,
+    onContentList,
+    onLiveGuideToggle,
+    onNext,
+    onPrevious,
+    onQualityChange,
+    onSeek,
+    onSettingsToggle,
+    onToggleFullscreen,
+    onToggleMute,
+    onTogglePlay,
+    onVolumeChange,
+    quality,
+    qualityOptions,
+    reduceMotion,
+    settingsOpen,
+    showContentList,
+    showEpisodeNavigation,
+    volume,
+  } = props;
+  return (
+    <section
+      aria-label="Controles de reprodução"
+      className={`relative z-10 mt-auto flex flex-col gap-3 px-5 pb-7 sm:gap-[18px] sm:px-[42px] sm:pb-[38px] ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"} ${reduceMotion ? "transition-none" : "transition-opacity"}`}
+      data-player-controls
+    >
+      <div className="flex items-end justify-between gap-4">
+        <p className="m-0 truncate text-xs font-bold sm:hidden">
+          {descriptor.title}
+          {descriptor.secondaryTitle ? ` · ${descriptor.secondaryTitle}` : ""}
+        </p>
+        {!descriptor.isLive && duration > 0 && (
+          <span className="hidden text-[11px] text-muted sm:block">
+            {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
+          </span>
+        )}
+      </div>
+      {!descriptor.isLive && (
+        <input
+          aria-label="Posição da reprodução"
+          className="h-1 w-full cursor-pointer accent-gold"
+          max={duration || 1}
+          min={0}
+          onChange={(event) => onSeek(Number(event.target.value))}
+          type="range"
+          value={Math.min(currentTime, duration || 1)}
+        />
+      )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1">
+          <ControlButton
+            label={isPlaying ? "Pausar" : "Reproduzir"}
+            onClick={onTogglePlay}
+          >
+            {isPlaying ? (
+              <Pause className="size-4" />
+            ) : (
+              <Play className="size-4 fill-current" />
+            )}
+          </ControlButton>
+          <div className="group/volume relative">
+            <ControlButton
+              label={isMuted ? "Ativar som" : "Silenciar"}
+              onClick={onToggleMute}
+            >
+              {isMuted ? (
+                <VolumeX className="size-4" />
+              ) : (
+                <Volume2 className="size-4" />
+              )}
+            </ControlButton>
+            <div className="pointer-events-none absolute bottom-full left-1/2 flex h-28 w-8 -translate-x-1/2 items-center justify-center rounded-lg bg-black/35 opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100">
+              <input
+                aria-label="Volume do player"
+                className="h-24 w-1 cursor-pointer accent-gold [direction:rtl] [writing-mode:vertical-lr]"
+                max={100}
+                min={0}
+                onChange={(event) =>
+                  onVolumeChange(Number(event.target.value) / 100)
+                }
+                type="range"
+                value={Math.round(volume * 100)}
+              />
+            </div>
+          </div>
+          {!descriptor.isLive && (
+            <span className="hidden text-[11px] text-muted sm:inline">
+              {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {showEpisodeNavigation && (
+            <>
+              <ControlButton
+                disabled={!onPrevious}
+                label="Episódio anterior"
+                onClick={onPrevious ?? (() => undefined)}
+              >
+                <ChevronLeft className="size-4" />
+              </ControlButton>
+              <ControlButton
+                disabled={!onNext}
+                label="Próximo episódio"
+                onClick={onNext ?? (() => undefined)}
+              >
+                <ChevronRight className="size-4" />
+              </ControlButton>
+            </>
+          )}
+          {showContentList && (
+            <ControlButton
+              active={contentListOpen}
+              label="Lista de conteúdo"
+              onClick={onContentList}
+            >
+              <ListVideo className="size-4" />
+            </ControlButton>
+          )}
+          {descriptor.isLive && (
+            <ControlButton
+              active={liveGuideOpen}
+              label={liveGuideOpen ? "Fechar programação" : "Abrir programação"}
+              onClick={onLiveGuideToggle}
+            >
+              <CalendarClock className="size-4" />
+            </ControlButton>
+          )}
+          <div className="relative">
+            <ControlButton label="Configurações" onClick={onSettingsToggle}>
+              <Settings className="size-4" />
+            </ControlButton>
+            {settingsOpen && (
+              <div
+                aria-label="Configurações do player"
+                className="absolute right-0 bottom-full z-40 mb-3 w-56 rounded-xl border border-white/15 bg-black/75 p-3 text-text shadow-2xl backdrop-blur-md"
+                role="dialog"
+              >
+                <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.12em] text-gold-bright">
+                  Configurações do player
+                </p>
+                <div className="mt-3 block text-xs font-semibold text-white/75">
+                  Qualidade da imagem
+                  <SelectField
+                    aria-label="Qualidade da imagem"
+                    className="mt-1.5 w-full"
+                    onValueChange={onQualityChange}
+                    options={qualityOptions}
+                    triggerClassName="w-full border-white/15 bg-transparent"
+                    value={quality}
+                    valueLabel={
+                      qualityOptions.find((option) => option.value === quality)
+                        ?.label
+                    }
+                  />
+                </div>
+                <p className="mt-2 mb-0 text-[10px] leading-4 text-white/50">
+                  Disponível quando a fonte oferece múltiplas qualidades.
+                </p>
+              </div>
+            )}
+          </div>
+          <SelectField
+            aria-label="Proporção do player"
+            leading={<Ratio aria-hidden="true" className="size-4 shrink-0" />}
+            onValueChange={(value) => {
+              if (["original", "16:9", "4:3", "fill", "crop"].includes(value))
+                onAspectRatioChange(value as PlayerAspectRatio);
+            }}
+            options={ASPECT_RATIO_OPTIONS}
+            triggerClassName="h-8 min-w-[92px] border-transparent bg-transparent px-2 hover:border-white/10 hover:bg-white/10"
+            value={aspectRatio}
+            valueLabel={
+              ASPECT_RATIO_OPTIONS.find(
+                (option) => option.value === aspectRatio,
+              )?.label
+            }
+          />
+          <ControlButton label="Tela cheia" onClick={onToggleFullscreen}>
+            <Expand className="size-4" />
+          </ControlButton>
+        </div>
+      </div>
+    </section>
+  );
+}

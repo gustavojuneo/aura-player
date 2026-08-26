@@ -5,7 +5,7 @@ description: Use when changing PostgreSQL schema, Drizzle queries, migrations, p
 
 # IPTV PostgreSQL And Drizzle
 
-Read `docs/architecture.md` and `AGENT.md` before persistence changes. Database
+Read `docs/architecture.md` and `AGENTS.md` before persistence changes. Database
 code belongs to the API infrastructure boundary; it must not leak into
 `apps/web`, `packages/domain`, or frontend components.
 

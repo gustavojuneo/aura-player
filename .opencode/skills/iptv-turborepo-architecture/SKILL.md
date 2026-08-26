@@ -5,7 +5,7 @@ description: Use when deciding where IPTV code belongs, changing workspace packa
 
 # IPTV Turborepo Architecture
 
-`docs/architecture.md` and `AGENT.md` are the normative sources for repository
+`docs/architecture.md` and `AGENTS.md` are the normative sources for repository
 structure. Read them before creating or moving code; this skill summarizes them
 but does not replace them.
 

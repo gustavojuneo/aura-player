@@ -5,7 +5,7 @@ description: Use when changing Fastify routes, authentication, provider requests
 
 # IPTV API Security
 
-Read `docs/architecture.md` and `AGENT.md` before changing API code. Respect the
+Read `docs/architecture.md` and `AGENTS.md` before changing API code. Respect the
 application boundaries: API rules stay in `apps/api`, shared transport schemas
 belong in `packages/contracts`, pure rules belong in `packages/domain`, and the
 web app must not receive provider credentials or database access.

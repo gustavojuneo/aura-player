@@ -8,15 +8,17 @@ import {
 import { LandingPage } from "../pages";
 import { HomePage } from "../pages/app";
 import { FavoritesPage } from "../pages/app/favorites";
-import { MovieDetailsPage } from "../pages/app/movie-details";
 import { MoviesPage } from "../pages/app/movies";
-import { PlayerPage } from "../pages/app/player";
+import { MovieDetailsPage } from "../pages/app/movies/$movieId";
+import { MoviePlayerPage } from "../pages/app/movies/$movieId/watch";
+import { OnboardingPage } from "../pages/app/onboarding";
 import { SeriesPage } from "../pages/app/series";
-import { SeriesDetailsPage } from "../pages/app/series-details";
+import { SeriesDetailsPage } from "../pages/app/series/$seriesId";
+import { EpisodePlayerPage } from "../pages/app/series/$seriesId/episodes/$episodeId/watch";
 import { SettingsPage } from "../pages/app/settings";
 import { SourcesPage } from "../pages/app/sources";
 import { TvPage } from "../pages/app/tv";
-import { OnboardingPage } from "../pages/onboarding";
+import { LivePlayerPage } from "../pages/app/tv/$channelId/watch";
 
 const rootRoute = createRootRoute({ component: Outlet });
 const landingRoute = createRoute({
@@ -45,7 +47,7 @@ const tvRoute = createRoute({
   path: "tv",
 });
 const livePlayerRoute = createRoute({
-  component: () => <PlayerPage kind="live" />,
+  component: LivePlayerPage,
   getParentRoute: () => appRoute,
   path: "tv/$channelId/watch",
 });
@@ -90,7 +92,7 @@ const movieDetailsRoute = createRoute({
   path: "movies/$movieId",
 });
 const moviePlayerRoute = createRoute({
-  component: () => <PlayerPage kind="movie" />,
+  component: MoviePlayerPage,
   getParentRoute: () => appRoute,
   path: "movies/$movieId/watch",
 });
@@ -105,7 +107,7 @@ const seriesDetailsRoute = createRoute({
   path: "series/$seriesId",
 });
 const episodePlayerRoute = createRoute({
-  component: () => <PlayerPage kind="episode" />,
+  component: EpisodePlayerPage,
   getParentRoute: () => appRoute,
   path: "series/$seriesId/episodes/$episodeId/watch",
 });
