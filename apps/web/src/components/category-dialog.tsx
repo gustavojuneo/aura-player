@@ -148,6 +148,7 @@ export function CategorySidebar({
                       ? "bg-[#3a2b16] font-bold text-text"
                       : "text-muted hover:bg-panel hover:text-text",
                   )}
+                  data-tv-navigation-zone="catalog-categories"
                   key={category}
                   onClick={() => onSelect(category)}
                   type="button"

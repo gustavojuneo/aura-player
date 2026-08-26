@@ -83,6 +83,54 @@ function findNextFocusable(current: HTMLElement, direction: string) {
   })[0];
 }
 
+function findNextInNavigationGroup(
+  current: HTMLElement,
+  direction: string,
+) {
+  if (direction !== "left" && direction !== "right") return undefined;
+  const group = current.dataset.tvNavigationGroup;
+  if (!group) return undefined;
+  const scope = current.closest('[role="dialog"], form') ?? document;
+  const items = Array.from(
+    scope.querySelectorAll<HTMLElement>(
+      `[data-tv-navigation-group="${group}"]`,
+    ),
+  ).filter(isVisible);
+  const currentIndex = items.indexOf(current);
+  if (currentIndex < 0) return undefined;
+  return items[currentIndex + (direction === "right" ? 1 : -1)];
+}
+
+function findNextInNavigationZone(
+  current: HTMLElement,
+  direction: string,
+) {
+  const currentZone = current.dataset.tvNavigationZone;
+  const targetZone =
+    direction === "right" && currentZone === "catalog-categories"
+      ? "catalog-items"
+      : direction === "left" && currentZone === "catalog-items"
+        ? "catalog-categories"
+        : undefined;
+  if (!targetZone) return undefined;
+  const scope = document.querySelector("[data-tv-app-content]") ?? document;
+  const currentRect = current.getBoundingClientRect();
+  const currentY = currentRect.top + currentRect.height / 2;
+  return Array.from(
+    scope.querySelectorAll<HTMLElement>(
+      `[data-tv-navigation-zone="${targetZone}"]`,
+    ),
+  )
+    .filter(isVisible)
+    .sort((first, second) => {
+      const firstRect = first.getBoundingClientRect();
+      const secondRect = second.getBoundingClientRect();
+      const firstY = firstRect.top + firstRect.height / 2;
+      const secondY = secondRect.top + secondRect.height / 2;
+      return Math.abs(firstY - currentY) - Math.abs(secondY - currentY);
+    })[0];
+}
+
 export function useTvDirectionalNavigation() {
   const { pathname } = useLocation();
   const router = useRouter();
@@ -91,10 +139,15 @@ export function useTvDirectionalNavigation() {
     if (!pathname) return;
     const frame = window.requestAnimationFrame(() => {
       if (document.querySelector("[data-player-root]")) return;
-      const root = document.querySelector("[data-tv-app-content]");
+      const dialog = document.querySelector('[role="dialog"]');
+      const root =
+        dialog ?? document.querySelector("[data-tv-app-content]");
       const first = Array.from(
         root?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
-      ).find((element) => isVisible(element) && !isTextEntry(element));
+      ).find(
+        (element) =>
+          isVisible(element) && (Boolean(dialog) || !isTextEntry(element)),
+      );
       first?.focus();
     });
     return () => window.cancelAnimationFrame(frame);
@@ -149,12 +202,20 @@ export function useTvDirectionalNavigation() {
       if (current.closest("[data-player-root]")) return;
       if (current.closest('[role="option"]')) return;
 
+      if (current.hasAttribute("data-tv-select-trigger")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
       if (
         (isTextEntry(current) && (direction === "left" || direction === "right"))
       )
         return;
 
-      const next = findNextFocusable(current, direction);
+      const next =
+        findNextInNavigationGroup(current, direction) ??
+        findNextInNavigationZone(current, direction) ??
+        findNextFocusable(current, direction);
       if (!next) {
         if (current.matches('[role="combobox"]')) event.preventDefault();
         return;

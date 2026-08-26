@@ -133,6 +133,7 @@ export function SourceForm({
             <button
               aria-pressed={type === option.type}
               className={`flex h-10 items-center justify-center gap-2 rounded-lg border text-xs font-bold ${type === option.type ? "border-gold bg-[#3a2b16] text-text" : "border-line bg-search text-muted"}`}
+              data-tv-navigation-group="source-type"
               key={option.type}
               onClick={() => {
                 form.setValue("type", option.type);

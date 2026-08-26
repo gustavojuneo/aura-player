@@ -126,6 +126,7 @@ const SeriesCard = memo(function SeriesCard({ item }: { item: Series }) {
       <Link
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
+        data-tv-navigation-zone="catalog-items"
         params={{ seriesId: item.id }}
         to="/app/series/$seriesId"
       />

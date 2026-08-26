@@ -79,6 +79,7 @@ function ChannelRow({
       <button
         aria-current={selected ? "true" : undefined}
         className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-focus"
+        data-tv-navigation-zone="catalog-items"
         onClick={onSelect}
         type="button"
       >
@@ -160,6 +161,7 @@ function CategoryList({
           {categories.map(([label, count]) => (
             <button
               className={`flex min-h-10 h-auto shrink-0 items-center justify-between gap-3 rounded-[9px] px-3 py-2 text-left text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus ${label === selected ? "bg-[#3a2b16] font-bold text-text" : "text-muted hover:bg-panel hover:text-text"}`}
+              data-tv-navigation-zone="catalog-categories"
               key={label}
               onClick={() => onSelect(label)}
               type="button"

@@ -126,6 +126,7 @@ const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
       <Link
         aria-label={`Abrir ${movie.title}`}
         className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
+        data-tv-navigation-zone="catalog-items"
         params={{ movieId: movie.id }}
         to="/app/movies/$movieId"
       />
