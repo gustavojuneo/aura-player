@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const envSchema = z.object({
+  BASE_URL: z.string().default("/"),
   VITE_API_URL: z.url().default("http://localhost:3333"),
   VITE_DEVICE_TYPE: z.enum(["web", "tv"]).default("web"),
   VITE_ENABLE_TV_NAVIGATION: z

@@ -1,3 +1,4 @@
+import { env } from "../env";
 import { cn } from "../utils/cn";
 
 export function BrandLogo({
@@ -17,7 +18,7 @@ export function BrandLogo({
         alt=""
         aria-hidden="true"
         className={cn("size-9 shrink-0 rounded-[22%]", markClassName)}
-        src="/logo.svg"
+        src={`${env.BASE_URL}logo.svg`}
       />
       <span
         className={cn(
