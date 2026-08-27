@@ -62,6 +62,15 @@ export function TvMediaPlayer({
     isReady: playback.isReady,
     onNext,
   });
+  useEffect(() => {
+    if (nextEpisode.nextEpisodeCountdown === null) return;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>("[data-player-next-episode]")
+        ?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [nextEpisode.nextEpisodeCountdown]);
   const playerLoading = isLoading || !playback.isReady;
   const closeContentList = () => {
     setContentListOpen(false);

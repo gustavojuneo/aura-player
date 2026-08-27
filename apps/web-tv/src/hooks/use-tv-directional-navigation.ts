@@ -455,6 +455,46 @@ function handleRegionExit(
   }
 
   if (region === "player") {
+    const nextEpisode = document.querySelector<HTMLElement>(
+      "[data-player-next-episode]",
+    );
+    if (nextEpisode && isVisible(nextEpisode)) {
+      if (element.hasAttribute("data-player-next-episode")) {
+        if (direction === "right") {
+          focusElement(
+            nextEpisode.querySelector<HTMLElement>(
+              "[data-player-next-episode-hide]",
+            ) ?? undefined,
+          );
+          return false;
+        }
+        if (direction === "left") {
+          focusElement(
+            document.querySelector<HTMLElement>(
+              "[data-player-primary-play]",
+            ) ?? undefined,
+          );
+          return false;
+        }
+      }
+      if (element.hasAttribute("data-player-next-episode-hide")) {
+        if (direction === "left") {
+          focusElement(nextEpisode);
+          return false;
+        }
+      }
+      if (direction === "right") {
+        const bottomControls = getPlayerBottomControls();
+        const isLastBottomControl =
+          bottomControls[bottomControls.length - 1] === element;
+        const isPrimaryPlay = element.matches("[data-player-primary-play]");
+        const isBack = element.matches("[data-player-back]");
+        if (isPrimaryPlay || isBack || isLastBottomControl) {
+          focusElement(nextEpisode);
+          return false;
+        }
+      }
+    }
     if (direction === "down" && element.matches("[data-player-back]")) {
       const primaryPlay = document.querySelector<HTMLElement>(
         "[data-player-primary-play]",
