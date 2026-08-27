@@ -84,13 +84,6 @@ function ChannelRow({
         className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-2.5 text-left"
         data-tv-navigation-zone="catalog-items"
         onClick={onSelect}
-        onKeyDown={(event) => {
-          if (event.key === "Yellow" || event.keyCode === 405) {
-            event.preventDefault();
-            event.stopPropagation();
-            onToggle();
-          }
-        }}
         type="button"
       >
         <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-[9px] bg-panel-2 text-muted">
@@ -122,21 +115,23 @@ function ChannelRow({
           </span>
         </span>
       </button>
-      <span
+      <button
         aria-label={
           favorite
             ? `${channel.name} está nos favoritos`
-            : `${channel.name} não está nos favoritos. Use a tecla amarela para favoritar`
+            : `${channel.name} não está nos favoritos`
         }
-        className="grid size-9 shrink-0 place-items-center rounded-md p-1"
-        role="img"
+        className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-md p-1 focus-visible:outline-2 focus-visible:outline-focus"
+        data-channel-favorite="true"
+        onClick={onToggle}
+        type="button"
       >
         <Heart
           aria-hidden="true"
           className={`size-5 shrink-0 ${favorite ? "fill-gold text-gold" : "text-gold-bright"}`}
           strokeWidth={1.8}
         />
-      </span>
+      </button>
     </article>
   );
 }

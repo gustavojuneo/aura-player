@@ -138,6 +138,7 @@ export function DetailHero({
           </Link>
           <Button
             className="h-10 px-5 text-xs sm:h-12 sm:text-sm"
+            data-favorite-action="true"
             onClick={onToggleFavorite}
             variant="secondary"
           >

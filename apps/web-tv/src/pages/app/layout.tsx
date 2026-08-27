@@ -11,9 +11,11 @@ import {
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
+import { useTvFavoriteShortcut } from "../../hooks/use-tv-favorite-shortcut";
 
 export function AppLayout() {
   useAppLifecycle();
+  useTvFavoriteShortcut();
   useTvDirectionalNavigation();
   const [sessionExpired, setSessionExpired] = useState(false);
   const { pathname } = useLocation();
