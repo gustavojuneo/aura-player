@@ -1,5 +1,5 @@
 import type Hls from "hls.js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../../../features/playback/playback";
 import type { PlaybackPreferences } from "../../../services/playback-preferences";
 import type {
@@ -61,7 +61,7 @@ export function usePlaybackEngine({
   const [retryKey, setRetryKey] = useState(0);
   const [volume, setVolume] = useState(1);
 
-  const attemptAutoplay = () => {
+  const attemptAutoplay = useCallback(() => {
     const video = videoRef.current;
     if (!autoPlay || !video?.paused) return;
     video.muted = false;
@@ -76,7 +76,7 @@ export function usePlaybackEngine({
         })
         .catch(() => undefined);
     });
-  };
+  }, [autoPlay]);
 
   useEffect(() => {
     void retryKey;
@@ -374,14 +374,6 @@ export function usePlaybackEngine({
             0,
           );
   }, [isReady, quality]);
-  useEffect(() => {
-    if (!autoPlay || isLoading) return;
-    attemptAutoplay();
-    const timer = window.setInterval(attemptAutoplay, 250);
-    window.setTimeout(() => window.clearInterval(timer), 5000);
-    return () => window.clearInterval(timer);
-  }, [attemptAutoplay, autoPlay, isLoading]);
-
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;

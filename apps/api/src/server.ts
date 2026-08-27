@@ -1,13 +1,10 @@
 import dns from "node:dns/promises";
 import net from "node:net";
-import { Readable } from "node:stream";
-import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { z } from "zod";
 import { env } from "./env.ts";
 
-type Target = { expiresAt: number; url: URL };
 type XtreamCredentials = { server: URL; username: string; password: string };
 const xtreamCredentialsSchema = z.object({
   password: z.string().min(1),
@@ -20,8 +17,6 @@ const app = Fastify({ logger: true });
 await app.register(cors, {
   origin: [env.CLIENT_URL, /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/],
 });
-const targets = new Map<string, Target>();
-const targetTtlMs = 5 * 60 * 1000;
 const allowedHosts = new Set(
   env.IPTV_PROXY_ALLOWED_HOSTS.split(",")
     .map((host) => host.trim().toLowerCase())
@@ -666,67 +661,6 @@ async function validateTarget(rawUrl: unknown) {
   return url;
 }
 
-async function validateRedirect(rawUrl: string, previous: URL) {
-  const url = new URL(rawUrl, previous);
-  if (!["http:", "https:"].includes(url.protocol))
-    throw new Error("UNSUPPORTED_REDIRECT_PROTOCOL");
-  const hostname = url.hostname.toLowerCase();
-  const addresses = await dns.lookup(hostname, { all: true });
-  if (addresses.some(({ address }) => isPrivateAddress(address)))
-    throw new Error("REDIRECT_PRIVATE_TARGET");
-  return url;
-}
-
-async function fetchMedia(
-  url: URL,
-  range: string | undefined,
-  requestUserAgent: string | undefined,
-) {
-  let current = url;
-  let useConfiguredUserAgent = true;
-  const userAgent =
-    requestUserAgent?.trim() ||
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
-  for (let redirects = 0; redirects <= 5; redirects += 1) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
-    let response: Response;
-    try {
-      response = await fetch(current, {
-        headers: {
-          Accept: "*/*",
-          ...(range ? { Range: range } : {}),
-          ...(useConfiguredUserAgent ? { "User-Agent": userAgent } : {}),
-        },
-        redirect: "manual",
-        signal: controller.signal,
-      });
-      if (response.status === 403 && useConfiguredUserAgent) {
-        await response.body?.cancel();
-        useConfiguredUserAgent = false;
-        response = await fetch(current, {
-          headers: {
-            Accept: "*/*",
-            ...(range ? { Range: range } : {}),
-          },
-          redirect: "manual",
-          signal: controller.signal,
-        });
-      }
-    } finally {
-      clearTimeout(timeout);
-    }
-    if (![301, 302, 303, 307, 308].includes(response.status)) {
-      return response;
-    }
-    const location = response.headers.get("location");
-    await response.body?.cancel();
-    if (!location) throw new Error("REDIRECT_WITHOUT_LOCATION");
-    current = await validateRedirect(location, current);
-  }
-  throw new Error("TOO_MANY_REDIRECTS");
-}
-
 async function resolveMediaRedirect(
   url: URL,
   headers: {
@@ -756,33 +690,6 @@ async function resolveMediaRedirect(
   return resolvedUrl;
 }
 
-function cleanupTargets() {
-  const now = Date.now();
-  for (const [id, target] of targets)
-    if (target.expiresAt <= now) targets.delete(id);
-}
-
-app.post<{ Body: { url?: string } }>(
-  "/media-targets",
-  async (request, reply) => {
-    try {
-      const url = await validateTarget(request.body?.url);
-      cleanupTargets();
-      if (targets.size >= 100)
-        return reply
-          .code(429)
-          .send({ message: "Too many active media targets" });
-      const targetId = crypto.randomUUID();
-      targets.set(targetId, { expiresAt: Date.now() + targetTtlMs, url });
-      return reply
-        .code(201)
-        .send({ targetId, expiresAt: Date.now() + targetTtlMs });
-    } catch {
-      return reply.code(400).send({ message: "Invalid media target" });
-    }
-  },
-);
-
 app.post<{ Body: { url?: string } }>(
   "/media-resolve",
   async (request, reply) => {
@@ -802,14 +709,6 @@ app.post<{ Body: { url?: string } }>(
             ? request.headers["user-agent"]
             : undefined,
       });
-      if (
-        resolvedUrl.protocol === "http:" &&
-        typeof request.headers.origin === "string" &&
-        request.headers.origin.startsWith("https://") &&
-        resolvedUrl.hostname !== url.hostname
-      ) {
-        resolvedUrl.protocol = "https:";
-      }
       return reply.send({ resolvedUrl: resolvedUrl.toString() });
     } catch (error) {
       request.log.error(
@@ -826,61 +725,6 @@ app.post<{ Body: { url?: string } }>(
               : undefined,
         },
         "Media redirect resolution failed",
-      );
-      return reply.code(502).send({ message: "Media unavailable" });
-    }
-  },
-);
-
-app.get<{ Params: { targetId: string } }>(
-  "/media/:targetId",
-  async (request, reply) => {
-    cleanupTargets();
-    const target = targets.get(request.params.targetId);
-    reply.header("Access-Control-Allow-Origin", env.CLIENT_URL);
-    if (!target)
-      return reply.code(404).send({ message: "Media target expired" });
-    try {
-      const requestUserAgent = request.headers["user-agent"];
-      const response = await fetchMedia(
-        target.url,
-        request.headers.range,
-        typeof requestUserAgent === "string" ? requestUserAgent : undefined,
-      );
-      if (!response.ok || !response.body)
-        return reply
-          .code(response.status)
-          .send({ message: "Media unavailable" });
-      reply.code(response.status);
-      reply.header("Cache-Control", "no-store");
-      for (const header of [
-        "content-type",
-        "content-length",
-        "content-range",
-        "accept-ranges",
-      ]) {
-        const value = response.headers.get(header);
-        if (value) reply.header(header, value);
-      }
-      const body = Readable.fromWeb(
-        response.body as unknown as NodeReadableStream,
-      );
-      reply.raw.on("close", () => {
-        if (!reply.raw.writableFinished) body.destroy();
-      });
-      return reply.send(body);
-    } catch (error) {
-      request.log.error(
-        {
-          errorCause:
-            error instanceof Error && error.cause instanceof Error
-              ? error.cause.message
-              : undefined,
-          errorMessage: error instanceof Error ? error.message : String(error),
-          errorName: error instanceof Error ? error.name : undefined,
-          targetHost: target.url.hostname,
-        },
-        "Media proxy failed",
       );
       return reply.code(502).send({ message: "Media unavailable" });
     }

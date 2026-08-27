@@ -38,7 +38,7 @@ For the API project, add these Production variables:
 
 ```text
 CLIENT_URL=https://<web-project>.vercel.app
-IPTV_PROXY_ALLOWED_HOSTS=uexme.pics,dnsvornakapp.online
+IPTV_PROXY_ALLOWED_HOSTS=uexme.pics,dnsvornakapp.online,sh.hx3060.com,sh.playtz.shop
 ```
 
 `PORT` is supplied by Vercel and is not needed in the Vercel project. Add the

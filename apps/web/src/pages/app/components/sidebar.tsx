@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { type FocusEvent, useState } from "react";
 import { SourceSelector } from "../../../components/source-selector";
@@ -7,12 +8,14 @@ import {
   getActiveSourceId,
   setActiveSourceId,
 } from "../../../services/catalog-db";
+import { refreshCatalogSource } from "../../../services/catalog-service";
 import { useAppLayoutStore } from "../../../stores/app-layout-store";
 import { Brand } from "./brand";
 import { APP_NAVIGATION } from "./navigation";
 import { NavigationItem } from "./navigation-item";
 
 export function Sidebar() {
+  const navigate = useNavigate();
   const { sidebarCollapsed, toggleSidebar } = useAppLayoutStore();
   const [isHovered, setIsHovered] = useState(false);
   const [hasFocusWithin, setHasFocusWithin] = useState(false);
@@ -28,6 +31,14 @@ export function Sidebar() {
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setHasFocusWithin(false);
     }
+  };
+
+  const handleSourceChange = (sourceId: string) => {
+    const nextSource = sources.find((source) => source.id === sourceId);
+    if (!nextSource || sourceId === getActiveSourceId()) return;
+    setActiveSourceId(sourceId);
+    void navigate({ to: "/app" });
+    void refreshCatalogSource(nextSource).catch(() => undefined);
   };
 
   return (
@@ -97,7 +108,7 @@ export function Sidebar() {
               <SourceSelector
                 activeSourceId={activeSourceId}
                 className="w-full"
-                onChange={(sourceId) => setActiveSourceId(sourceId)}
+                onChange={handleSourceChange}
                 onOpenChange={setIsSourceSelectorOpen}
                 sources={sources}
               />
