@@ -24,9 +24,7 @@ function lazyPage(
 }
 
 const LandingPage = lazyPage(() =>
-  import("@iptv/web-shared/pages").then(({ LandingPage: page }) => ({
-    default: page,
-  })),
+  import("../pages").then(({ LandingPage: page }) => ({ default: page })),
 );
 const HomePage = lazyPage(
   () =>

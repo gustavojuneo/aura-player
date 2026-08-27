@@ -1,7 +1,6 @@
+import { Button } from "@iptv/web-shared/components/ui";
+import { defaultHeroAspectRatio } from "@iptv/web-shared/hooks/use-image-aspect-ratio";
 import type { CSSProperties } from "react";
-
-import { Button } from "../../components/ui";
-import { defaultHeroAspectRatio } from "../../hooks/use-image-aspect-ratio";
 
 const heroImage =
   "https://images.unsplash.com/photo-1659514530020-4681fb340b55?auto=format&fit=crop&w=1800&q=85";

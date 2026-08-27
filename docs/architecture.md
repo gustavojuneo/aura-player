@@ -149,6 +149,7 @@ capabilities:
 apps/web-app/src/
 |-- app-layout.tsx
 |-- lib/router.tsx
+|-- pages/index.tsx                web-app-only public landing page
 |-- env.ts
 `-- main.tsx
 
@@ -164,12 +165,12 @@ packages/web-shared/src/
 |-- features/
 |-- hooks/
 |-- http/
-|-- pages/                         route modules used by both products
+|-- pages/                         application routes reused by both products
 |-- services/
 |-- stores/
 |-- utils/
 |-- workers/
-|-- env.ts
+|-- runtime-config.ts
 `-- styles.css
 ```
 
@@ -270,9 +271,11 @@ Internal files may be reorganized without changing consumer imports.
 
 ### `pages`
 
-Contains route entries and components exclusive to each route. The landing page
-has its own `pages/components/` directory. Nested routes must remain nested
-under their URL parent; do not flatten `/app/*` pages beside `/app`.
+Contains route entries and components exclusive to each route. The
+web-app-only landing page lives under `apps/web-app/src/pages/`; shared package
+pages contain only routes intentionally consumed by both frontend products.
+Nested routes must remain nested under their URL parent; do not flatten
+`/app/*` pages beside `/app`.
 
 Example:
 
