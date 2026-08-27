@@ -34,9 +34,9 @@ layouts, environment schema, Vite configuration, public assets, deployment or
 packaging configuration, and direct dependencies. Applications must not import
 from one another.
 
-The current `apps/web` application remains the implementation source until the
-incremental migration is complete. This ADR records the target architecture;
-it does not claim that the target directories already exist.
+At the time this ADR was accepted, `apps/web` remained the implementation
+source during the incremental migration. The implementation now uses the
+target `apps/web-app`, `apps/web-tv`, and `packages/web-shared` boundaries.
 
 ### Product-specific source and dependencies
 
@@ -168,8 +168,8 @@ or unusable abstractions.
 - Some visually similar route and layout composition may exist in both
   applications when the interaction models differ; this is intentional
   platform ownership, not automatic duplication of business logic.
-- The migration requires temporary coordination while `apps/web` remains the
-  current implementation and shared boundaries are extracted incrementally.
+- The migration required temporary coordination while `apps/web` was replaced
+  and shared boundaries were extracted incrementally.
 - Adding a feature to both products may require separate route and UI
   composition while still reusing the underlying domain, data, and playback
   capabilities.

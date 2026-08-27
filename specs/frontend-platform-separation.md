@@ -12,9 +12,9 @@ React frontend into a browser application named `web-app` and a TV web
 application named `web-tv`. It also defines code-sharing constraints and the TV
 player volume contract.
 
-The current implementation remains in `apps/web` until the migration is
-complete. This specification defines the target behavior and acceptance
-criteria; it does not describe the target as already implemented.
+At acceptance time, the implementation was still in `apps/web`. The migration
+now targets `apps/web-app` and `apps/web-tv`; this specification remains the
+normative contract for their boundaries and behavior.
 
 The route and feature allocation beyond the confirmed platform-specific
 requirements remains a separate product decision. Before a route is removed
@@ -149,9 +149,9 @@ cloning the complete current frontend.
 
 ### FPS-MIGRATION-002: Current-state accuracy
 
-Until migration is complete, commands and operational documentation must
-continue to identify `apps/web` as the current implementation while clearly
-identifying `apps/web-app` and `apps/web-tv` as the accepted target.
+Commands and operational documentation must identify `apps/web-app` and
+`apps/web-tv` as the current applications. Historical references to `apps/web`
+must be explicitly marked as legacy migration context.
 
 ## Acceptance criteria
 

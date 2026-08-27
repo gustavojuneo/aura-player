@@ -3,7 +3,7 @@
 The repository is configured for two independent Vercel Projects that use the
 same Git repository:
 
-- `apps/web`: the Vite frontend;
+- `apps/web-app`: the Vite browser frontend;
 - `apps/api`: the Fastify API deployed as a Vercel Node backend.
 
 ## Create the projects
@@ -13,7 +13,7 @@ repository for both. In each project set the Root Directory to the matching
 application directory:
 
 ```text
-apps/web
+apps/web-app
 apps/api
 ```
 

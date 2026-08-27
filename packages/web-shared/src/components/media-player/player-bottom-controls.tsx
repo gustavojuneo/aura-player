@@ -12,8 +12,8 @@ import {
   Volume2,
   VolumeOff,
 } from "lucide-react";
-import { env } from "../../env";
 import { formatPlaybackTime } from "../../features/playback/playback";
+import { getSharedRuntime } from "../../runtime-config";
 import {
   ASPECT_RATIO_OPTIONS,
   type PlayerAspectRatio,
@@ -148,7 +148,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 <Volume2 className="size-4" />
               )}
             </ControlButton>
-            {env.VITE_SHOW_VOLUME_SLIDER && (
+            {getSharedRuntime().showVolumeSlider && (
               <input
                 aria-keyshortcuts="ArrowUp ArrowDown"
                 aria-label="Volume do player"
@@ -262,7 +262,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
               }
             />
           </PlayerTooltip>
-          {env.VITE_SHOW_FULLSCREEN && (
+          {getSharedRuntime().showFullscreen && (
             <ControlButton
               label="Tela cheia"
               onClick={onToggleFullscreen}

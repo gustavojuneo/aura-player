@@ -1,12 +1,16 @@
 import axios from "axios";
 
-import { env } from "../env";
+import { getSharedRuntime } from "../runtime-config";
 
 export const httpClient = axios.create({
-  baseURL: env.VITE_API_URL,
   headers: {
     Accept: "application/json",
   },
+});
+
+httpClient.interceptors.request.use((config) => {
+  config.baseURL ??= getSharedRuntime().apiUrl;
+  return config;
 });
 
 httpClient.interceptors.response.use(

@@ -53,7 +53,7 @@ pnpm install
 pnpm webos:package
 ```
 
-The command builds the web application and packages it with `ares-package`.
+The command builds the TV application and packages it with `ares-package`.
 The webOS build uses the published backend at
 `https://aura-api-ia1i.onrender.com`, injected by the package script.
 The packaged application enables the webOS cross-domain capability so it can
@@ -65,7 +65,7 @@ the API media proxy.
 The generated package is written to:
 
 ```text
-apps/web/release/
+apps/web-tv/release/
 ```
 
 The generated file normally has a name similar to:
@@ -107,10 +107,10 @@ The device should appear with the name `tv` and an SSH connection.
 ## Install the application
 
 Replace the package filename below with the actual file in
-`apps/web/release/`:
+`apps/web-tv/release/`:
 
 ```bash
-pnpm exec ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
+pnpm exec ares-install --device tv apps/web-tv/release/com.aura.iptv_1.0.0_all.ipk
 ```
 
 Verify that the application is installed:
@@ -141,12 +141,12 @@ Build a new package and install it again:
 
 ```bash
 pnpm webos:package
-pnpm exec ares-install --device tv apps/web/release/com.aura.iptv_1.0.0_all.ipk
+pnpm exec ares-install --device tv apps/web-tv/release/com.aura.iptv_1.0.0_all.ipk
 pnpm exec ares-launch --device tv com.aura.iptv
 ```
 
 For a production release, update the version in
-`apps/web/public/appinfo.json` before packaging.
+`apps/web-tv/public/appinfo.json` before packaging.
 
 ## Remove the application
 
@@ -182,7 +182,7 @@ from the TV.
 ### Adding a source reports a network error
 
 Rebuild and reinstall the package after confirming that `allowCrossDomain` is
-enabled in `apps/web/public/appinfo.json`. Packaged webOS applications run from
+enabled in `apps/web-tv/public/appinfo.json`. Packaged webOS applications run from
 a local application origin and need this capability to reach the Render API
 and external IPTV providers.
 

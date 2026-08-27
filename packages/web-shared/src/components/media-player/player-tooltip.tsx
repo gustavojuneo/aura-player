@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { env } from "../../env";
+import { getSharedRuntime } from "../../runtime-config";
 import { Tooltip } from "../ui";
 
 export function PlayerTooltip({
@@ -11,7 +11,7 @@ export function PlayerTooltip({
   label: string;
   shortcut?: string;
 }) {
-  if (!env.VITE_SHOW_PLAYER_TOOLTIPS) return children;
+  if (!getSharedRuntime().showPlayerTooltips) return children;
   return (
     <Tooltip
       content={

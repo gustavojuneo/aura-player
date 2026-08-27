@@ -142,48 +142,35 @@ The web application uses:
 
 ### Structure
 
-Planned structure for `apps/web/src/`:
+The frontend is split between application-owned composition and browser-shared
+capabilities:
 
 ```text
-src/
-|-- components/
-|   |-- ui/
-|   |-- carousel.tsx
-|   |-- catalog.tsx
-|   |-- header.tsx
-|   |-- media-player/
-|   |   |-- index.tsx
-|   |   |-- media-player.tsx
-|   |   |-- player-content-list.tsx
-|   |   |-- player-live-guide.tsx
-|   |   `-- player-next-episode.tsx
-|   `-- ...shared-components.tsx
-|-- pages/
-|   |-- components/                 landing-page-only components
-|   |-- app/
-|   |   |-- layout.tsx              /app and descendant layout
-|   |   |-- onboarding/index.tsx
-|   |   |-- (favorites|movies|series|channels|player)/index.tsx
-|   |   `-- index.tsx
-|   `-- index.tsx
-|-- utils/
-|   `-- cn.ts
-|-- lib/
-|-- services/
-|   |-- auth/
-|   |   `-- login.ts
-|   `-- users/
-|       `-- load-user-profile.ts
-|-- http/
-|   |-- client.ts
-|   |-- auth/
-|   |   `-- login.ts
-|   `-- users/
-|       `-- fetch-user-profile.ts
-|-- contexts/
-|-- hooks/
+apps/web-app/src/
+|-- app-layout.tsx
+|-- lib/router.tsx
 |-- env.ts
 `-- main.tsx
+
+apps/web-tv/src/
+|-- app-layout.tsx
+|-- hooks/use-tv-directional-navigation.ts
+|-- lib/router.tsx
+|-- env.ts
+`-- main.tsx
+
+packages/web-shared/src/
+|-- components/
+|-- features/
+|-- hooks/
+|-- http/
+|-- pages/                         route modules used by both products
+|-- services/
+|-- stores/
+|-- utils/
+|-- workers/
+|-- env.ts
+`-- styles.css
 ```
 
 This tree is a reference. Create files and directories as the application requires them.

@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "./",
+  publicDir: "../../packages/web-shared/public",
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

@@ -171,13 +171,13 @@ Flush on reconnect, application startup, window focus, pause or player exit, com
 Recommended future modules:
 
 ```text
-apps/web/src/http/user/
+packages/web-shared/src/http/user/
 ├── preferences.ts
 ├── favorites.ts
 ├── playback-progress.ts
 └── watched-episodes.ts
 
-apps/web/src/services/user/
+packages/web-shared/src/services/user/
 ├── load-user-preferences.ts
 ├── manage-favorites.ts
 ├── manage-playback-progress.ts
@@ -252,4 +252,3 @@ Add tests for unauthenticated access rejection, ownership isolation, preference 
 10. Run full lint, typecheck, test, and build checks.
 
 Update this document if authentication, identity resolution, or synchronization decisions change.
-

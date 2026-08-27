@@ -58,8 +58,12 @@ This repository is a pnpm/Turborepo monorepo:
 
 ```text
 apps/
-├── api/    Fastify provider gateway and catalog normalization
-└── web/    React/Vite application and browser-side catalog state
+├── api/       Fastify provider gateway and catalog normalization
+├── web-app/   Desktop and mobile browser application
+└── web-tv/    TV web application and LG webOS package
+
+packages/
+└── web-shared/ Browser React catalog, data, UI, and playback capabilities
 ```
 
 The web application uses React, Vite, TypeScript, Tailwind CSS, TanStack
@@ -92,9 +96,9 @@ pnpm test
 pnpm format
 ```
 
-The web application lives in `apps/web` and the API lives in `apps/api`.
-Configure local environment variables using the examples in
-`apps/web/.env.example` and `apps/api/.env.example`. Never commit real source
+The browser application lives in `apps/web-app`, the TV application in
+`apps/web-tv`, and the API in `apps/api`. Configure local environment variables
+using the examples in the corresponding application and API directories. Never commit real source
 credentials or `.env` files.
 
 ## LG webOS package
@@ -109,7 +113,7 @@ pnpm webos:package
 
 The LG webOS CLI is installed as a workspace development dependency, so no
 global CLI installation is required. The command writes the package to
-`apps/web/release`. The webOS build uses the published Render API at
+`apps/web-tv/release`. The webOS build uses the published Render API at
 `https://aura-api-ia1i.onrender.com`, injected by the package script.
 
 ## Continuous integration and releases

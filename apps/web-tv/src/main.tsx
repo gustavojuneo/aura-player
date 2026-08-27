@@ -3,8 +3,21 @@ import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { queryClient } from "@iptv/web-shared/lib-query-client";
+import { configureSharedRuntime } from "@iptv/web-shared/runtime-config";
+import { env } from "./env";
 import { router } from "./lib/router";
 import "./styles.css";
+
+configureSharedRuntime({
+  apiUrl: env.VITE_API_URL,
+  baseUrl: env.BASE_URL,
+  mediaSourceMode: env.VITE_MEDIA_SOURCE_MODE,
+  playbackUrls: env.VITE_PLAYBACK_URLS,
+  showFullscreen: env.VITE_SHOW_FULLSCREEN,
+  showPlayerTooltips: env.VITE_SHOW_PLAYER_TOOLTIPS,
+  showSeekButtons: env.VITE_SHOW_SEEK_BUTTONS,
+  showVolumeSlider: env.VITE_SHOW_VOLUME_SLIDER,
+});
 
 const rootElement = document.getElementById("root");
 

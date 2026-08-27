@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { env } from "../env";
 import { resolveMediaUrl } from "../http/media-resolve";
+import { getSharedRuntime } from "../runtime-config";
 
 export function usePlaybackSource(
   url: string | undefined,
@@ -10,7 +10,7 @@ export function usePlaybackSource(
   const [error, setError] = useState<Error | null>(null);
   useEffect(() => {
     let cancelled = false;
-    const useDirectSource = env.VITE_MEDIA_SOURCE_MODE === "direct";
+    const useDirectSource = getSharedRuntime().mediaSourceMode === "direct";
     if (!url || !shouldProxy || useDirectSource) {
       setSource(url);
       setError(null);

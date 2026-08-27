@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { env } from "../../../env";
+import { getSharedRuntime } from "../../../runtime-config";
 import type { PlayerAspectRatio } from "../../../utils/constants";
 
 type UsePlayerControlsParams = {
@@ -165,7 +165,7 @@ export function usePlayerControls({
         event.key === "f" ||
         event.key === "ArrowLeft" ||
         event.key === "ArrowRight" ||
-        (env.VITE_SHOW_VOLUME_SLIDER &&
+        (getSharedRuntime().showVolumeSlider &&
           (event.key === "ArrowUp" || event.key === "ArrowDown")) ||
         event.key === "Home" ||
         event.key === "End" ||
@@ -194,7 +194,7 @@ export function usePlayerControls({
         event.preventDefault();
         queueSeek(5, "keyboard");
       } else if (
-        env.VITE_SHOW_VOLUME_SLIDER &&
+        getSharedRuntime().showVolumeSlider &&
         (event.key === "ArrowUp" || event.key === "ArrowDown")
       ) {
         const video = videoRef.current;

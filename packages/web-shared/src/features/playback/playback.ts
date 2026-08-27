@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { env } from "../../env";
+import { getSharedRuntime } from "../../runtime-config";
 
 export const playbackDescriptorSchema = z.object({
   contentId: z.string().min(1),
@@ -61,7 +61,7 @@ export function createPlaybackDescriptor(
 }
 
 export function resolvePlaybackUrl(contentId: string): string | undefined {
-  const configured = env.VITE_PLAYBACK_URLS;
+  const configured = getSharedRuntime().playbackUrls;
   if (!configured) return undefined;
 
   try {

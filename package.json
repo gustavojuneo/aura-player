@@ -10,7 +10,7 @@
     "lint:fix": "biome check --write .",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "webos:package": "pnpm --filter @iptv/web build --mode webos && pnpm exec ares-package apps/web/dist -o apps/web/release"
+    "webos:package": "pnpm --filter @iptv/web-tv build && pnpm exec ares-package apps/web-tv/dist -o apps/web-tv/release"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",

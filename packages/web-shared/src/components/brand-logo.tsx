@@ -1,4 +1,4 @@
-import { env } from "../env";
+import { getSharedRuntime } from "../runtime-config";
 import { cn } from "../utils/cn";
 
 export function BrandLogo({
@@ -18,7 +18,7 @@ export function BrandLogo({
         alt=""
         aria-hidden="true"
         className={cn("size-9 shrink-0 rounded-[22%]", markClassName)}
-        src={`${env.BASE_URL}logo.svg`}
+        src={`${getSharedRuntime().baseUrl}logo.svg`}
       />
       <span
         className={cn(

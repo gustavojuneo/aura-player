@@ -2,6 +2,10 @@
   "name": "@iptv/web-shared",
   "private": true,
   "type": "module",
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --pretty false"
+  },
   "exports": {
     "./*": "./src/*"
   },

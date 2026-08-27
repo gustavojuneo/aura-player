@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { env } from "../../env";
+import { getSharedRuntime } from "../../runtime-config";
 import { Tooltip } from "../ui";
 
 export function ControlButton({
@@ -31,7 +31,7 @@ export function ControlButton({
       {children}
     </button>
   );
-  if (!env.VITE_SHOW_PLAYER_TOOLTIPS) return control;
+  if (!getSharedRuntime().showPlayerTooltips) return control;
   return (
     <Tooltip
       content={
