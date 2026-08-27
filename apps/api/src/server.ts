@@ -1,5 +1,6 @@
 import dns from "node:dns/promises";
 import net from "node:net";
+import { Readable } from "node:stream";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { z } from "zod";
@@ -654,40 +655,83 @@ async function validateTarget(rawUrl: unknown) {
   return url;
 }
 
-async function resolveMediaRedirect(
-  url: URL,
+const MEDIA_PROXY_MAX_REDIRECTS = 5;
+const mediaProxyHeaders = [
+  "accept-ranges",
+  "cache-control",
+  "content-disposition",
+  "content-length",
+  "content-range",
+  "content-type",
+  "etag",
+  "last-modified",
+  "expires",
+] as const;
+
+type MediaRequestHeaders = {
+  range?: string;
+  ifRange?: string;
+  ifNoneMatch?: string;
+  ifModifiedSince?: string;
+  origin?: string;
+  referer?: string;
+  userAgent?: string;
+};
+
+async function fetchMediaUpstream(
+  initialUrl: URL,
   headers: {
-    origin?: string;
-    referer?: string;
-    userAgent?: string;
+    request: MediaRequestHeaders;
   },
 ) {
   const userAgent =
-    headers.userAgent?.trim() ||
+    headers.request.userAgent?.trim() ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
-  const response = await fetch(url, {
-    headers: {
-      Accept: "*/*",
-      Range: "bytes=0-0",
-      "User-Agent": userAgent,
-      ...(headers.origin ? { Origin: headers.origin } : {}),
-      ...(headers.referer ? { Referer: headers.referer } : {}),
-    },
-    redirect: "follow",
-  });
-  const resolvedUrl = new URL(response.url);
-  await response.body?.cancel();
-  const addresses = await dns.lookup(resolvedUrl.hostname, { all: true });
-  if (addresses.some(({ address }) => isPrivateAddress(address)))
-    throw new Error("MEDIA_REDIRECT_PRIVATE_TARGET");
+  const requestHeaders = {
+    Accept: "*/*",
+    "User-Agent": userAgent,
+    ...(headers.request.range ? { Range: headers.request.range } : {}),
+    ...(headers.request.ifRange ? { "If-Range": headers.request.ifRange } : {}),
+    ...(headers.request.ifNoneMatch
+      ? { "If-None-Match": headers.request.ifNoneMatch }
+      : {}),
+    ...(headers.request.ifModifiedSince
+      ? { "If-Modified-Since": headers.request.ifModifiedSince }
+      : {}),
+    ...(headers.request.origin ? { Origin: headers.request.origin } : {}),
+    ...(headers.request.referer ? { Referer: headers.request.referer } : {}),
+  };
 
-  // Some IPTV providers redirect HTTP stream URLs to HTTPS even when the
-  // HTTPS endpoint has an invalid certificate (commonly when the target is an
-  // IP address). Preserve the requested protocol while keeping the resolved
-  // path and query string.
-  if (url.protocol === "http:") resolvedUrl.protocol = "http:";
+  let currentUrl = initialUrl;
+  for (
+    let redirectCount = 0;
+    redirectCount <= MEDIA_PROXY_MAX_REDIRECTS;
+    redirectCount += 1
+  ) {
+    await validateTarget(currentUrl.toString());
+    let response: Response;
+    try {
+      response = await fetch(currentUrl, {
+        headers: requestHeaders,
+        redirect: "manual",
+      });
+    } catch (error) {
+      // A few IPTV hosts expose a broken certificate on HTTPS but serve the
+      // same media over HTTP. The backend can safely make that downgrade
+      // because the browser only talks to this proxy over its own origin.
+      if (currentUrl.protocol !== "https:") throw error;
+      currentUrl = new URL(currentUrl);
+      currentUrl.protocol = "http:";
+      continue;
+    }
 
-  return resolvedUrl;
+    if (response.status < 300 || response.status >= 400) return response;
+    const location = response.headers.get("location");
+    await response.body?.cancel();
+    if (!location) throw new Error("MEDIA_REDIRECT_WITHOUT_LOCATION");
+    currentUrl = new URL(location, currentUrl);
+  }
+  throw new Error("MEDIA_TOO_MANY_REDIRECTS");
 }
 
 app.post<{ Body: { url?: string } }>(
@@ -695,21 +739,13 @@ app.post<{ Body: { url?: string } }>(
   async (request, reply) => {
     try {
       const url = await validateTarget(request.body?.url);
-      const resolvedUrl = await resolveMediaRedirect(url, {
-        origin:
-          typeof request.headers.origin === "string"
-            ? request.headers.origin
-            : undefined,
-        referer:
-          typeof request.headers.referer === "string"
-            ? request.headers.referer
-            : undefined,
-        userAgent:
-          typeof request.headers["user-agent"] === "string"
-            ? request.headers["user-agent"]
-            : undefined,
-      });
-      return reply.send({ resolvedUrl: resolvedUrl.toString() });
+      const host = request.headers.host;
+      if (!host) throw new Error("MISSING_REQUEST_HOST");
+      const proxyUrl = new URL(
+        `/media-proxy?url=${encodeURIComponent(url.toString())}`,
+        `${request.protocol}://${host}`,
+      );
+      return reply.send({ resolvedUrl: proxyUrl.toString() });
     } catch (error) {
       request.log.error(
         {
@@ -730,6 +766,67 @@ app.post<{ Body: { url?: string } }>(
     }
   },
 );
+
+app.route<{ Querystring: { url?: string } }>({
+  method: ["GET", "HEAD"],
+  url: "/media-proxy",
+  handler: async (request, reply) => {
+    try {
+      const url = await validateTarget(request.query.url);
+      const response = await fetchMediaUpstream(url, {
+        request: {
+          ifModifiedSince:
+            typeof request.headers["if-modified-since"] === "string"
+              ? request.headers["if-modified-since"]
+              : undefined,
+          ifNoneMatch:
+            typeof request.headers["if-none-match"] === "string"
+              ? request.headers["if-none-match"]
+              : undefined,
+          ifRange:
+            typeof request.headers["if-range"] === "string"
+              ? request.headers["if-range"]
+              : undefined,
+          origin:
+            typeof request.headers.origin === "string"
+              ? request.headers.origin
+              : undefined,
+          range:
+            typeof request.headers.range === "string"
+              ? request.headers.range
+              : undefined,
+          referer:
+            typeof request.headers.referer === "string"
+              ? request.headers.referer
+              : undefined,
+          userAgent:
+            typeof request.headers["user-agent"] === "string"
+              ? request.headers["user-agent"]
+              : undefined,
+        },
+      });
+
+      for (const header of mediaProxyHeaders) {
+        const value = response.headers.get(header);
+        if (value) reply.header(header, value);
+      }
+      reply.code(response.status);
+      if (request.method === "HEAD" || !response.body) {
+        await response.body?.cancel();
+        return reply.send();
+      }
+      return reply.send(Readable.fromWeb(response.body as never));
+    } catch (error) {
+      request.log.error(
+        {
+          errorMessage: error instanceof Error ? error.message : String(error),
+        },
+        "Media proxy request failed",
+      );
+      return reply.code(502).send({ message: "Media unavailable" });
+    }
+  },
+});
 
 app.get("/health", async () => ({ status: "ok" }));
 
