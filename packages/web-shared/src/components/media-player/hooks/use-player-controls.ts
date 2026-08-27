@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { env } from "../../../env";
 import type { PlayerAspectRatio } from "../../../utils/constants";
 
 type UsePlayerControlsParams = {
@@ -164,8 +165,8 @@ export function usePlayerControls({
         event.key === "f" ||
         event.key === "ArrowLeft" ||
         event.key === "ArrowRight" ||
-        event.key === "ArrowUp" ||
-        event.key === "ArrowDown" ||
+        (env.VITE_SHOW_VOLUME_SLIDER &&
+          (event.key === "ArrowUp" || event.key === "ArrowDown")) ||
         event.key === "Home" ||
         event.key === "End" ||
         /^[0-9]$/.test(event.key);
@@ -192,7 +193,10 @@ export function usePlayerControls({
       } else if (!isLive && event.key === "ArrowRight") {
         event.preventDefault();
         queueSeek(5, "keyboard");
-      } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      } else if (
+        env.VITE_SHOW_VOLUME_SLIDER &&
+        (event.key === "ArrowUp" || event.key === "ArrowDown")
+      ) {
         const video = videoRef.current;
         if (!video) return;
         event.preventDefault();

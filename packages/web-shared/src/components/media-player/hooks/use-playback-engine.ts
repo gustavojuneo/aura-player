@@ -1,5 +1,6 @@
 import type Hls from "hls.js";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { env } from "../../../env";
 import type { PlaybackDescriptor } from "../../../features/playback/playback";
 import type { PlaybackPreferences } from "../../../services/playback-preferences";
 import type {
@@ -378,6 +379,7 @@ export function usePlaybackEngine({
     const video = videoRef.current;
     if (!video) return;
     if (video.muted) {
+      if (!env.VITE_SHOW_VOLUME_SLIDER) video.volume = 1;
       video.muted = false;
       setIsMuted(false);
     }
@@ -398,7 +400,11 @@ export function usePlaybackEngine({
   const toggleMute = () => {
     const video = videoRef.current;
     const muted = !isMuted;
-    const nextVolume = !muted && volume === 0 ? 1 : volume;
+    const nextVolume = env.VITE_SHOW_VOLUME_SLIDER
+      ? !muted && volume === 0
+        ? 1
+        : volume
+      : 1;
     if (video) {
       video.muted = muted;
       video.volume = nextVolume;
@@ -407,6 +413,7 @@ export function usePlaybackEngine({
     setVolume(nextVolume);
   };
   const changeVolume = (nextVolume: number) => {
+    if (!env.VITE_SHOW_VOLUME_SLIDER) return;
     const video = videoRef.current;
     if (video) {
       video.muted = nextVolume === 0;

@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b && vite build",
-    "dev": "vite",
+    "build": "tsc -b && vite build --mode webos",
+    "dev": "vite --mode webos",
     "lint": "biome check .",
     "test": "node -e \"console.log('No tests configured')\"",
     "typecheck": "tsc -b --pretty false"

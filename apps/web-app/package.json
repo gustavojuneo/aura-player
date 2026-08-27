@@ -15,8 +15,7 @@
     "@tanstack/react-router": "^1.131.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "@tanstack/react-query": "^5.85.0",
-    "@tanstack/react-router": "^1.131.0"
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "^1.0.0",
