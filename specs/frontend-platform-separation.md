@@ -93,6 +93,14 @@ TV platform behavior and the TV API endpoint must be defined by the
 variables for media source mode, player controls, keyboard shortcuts, TV
 navigation, playback URL overrides, or the configured TV API endpoint.
 
+### FPS-TV-006: Player back navigation
+
+The `web-tv` application must receive and handle the LG remote Back button
+instead of allowing the webOS platform to apply browser history automatically.
+From an episode player, both the visible player Back button and the LG remote
+Back button must navigate directly to that series details page, regardless of
+previous episode navigation history.
+
 ## Shared code requirements
 
 ### FPS-SHARED-001: Concrete reuse
@@ -195,3 +203,5 @@ The specification is satisfied when:
    the browser application retains its required desktop and mobile behavior.
 10. `web-tv` displays the catalog loading splash before its shell on startup and
     during source loading or updates.
+11. Pressing the visible or remote Back button from an episode player opens the
+    current series details page and does not open a previously played episode.
