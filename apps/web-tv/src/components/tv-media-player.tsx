@@ -10,6 +10,7 @@ import { usePlaybackPreferences } from "@aura/web-shared/services/playback-prefe
 import type { PlayerAspectRatio } from "@aura/web-shared/utils/constants";
 import { Pause, Play } from "lucide-react";
 import { useState } from "react";
+import { useTvPlayerControls } from "../hooks/use-tv-player-controls";
 import { TvPlayerControls } from "./tv-player-controls";
 
 export function TvMediaPlayer({
@@ -38,7 +39,7 @@ export function TvMediaPlayer({
   });
   const [aspectRatio, setAspectRatio] = useState<PlayerAspectRatio>("original");
   const [contentListOpen, setContentListOpen] = useState(false);
-  const [controlsVisible] = useState(true);
+  const { controlsVisible, revealControls } = useTvPlayerControls();
   const [liveGuideOpen, setLiveGuideOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const nextEpisode = useNextEpisodeCountdown({
@@ -77,6 +78,7 @@ export function TvMediaPlayer({
       data-player-root
       className="relative flex h-dvh min-h-[560px] w-full flex-col overflow-hidden bg-[#080806] text-text"
       onClick={(event) => {
+        revealControls();
         const target = event.target as HTMLElement;
         if (
           target.closest(
@@ -88,6 +90,7 @@ export function TvMediaPlayer({
         playback.togglePlay();
       }}
       onKeyDown={(event) => {
+        revealControls();
         if (event.key === "Escape" || event.keyCode === 461) {
           event.preventDefault();
           if (contentListOpen) closeContentList();
@@ -104,6 +107,8 @@ export function TvMediaPlayer({
           playback.togglePlay();
         }
       }}
+      onFocusCapture={revealControls}
+      onTouchStart={revealControls}
     >
       <PlayerVideo
         aspectRatio={aspectRatio}
@@ -111,6 +116,12 @@ export function TvMediaPlayer({
         descriptor={descriptor}
         videoRef={playback.videoRef}
       />
+      {controlsVisible && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),transparent_24%,transparent_70%,rgba(0,0,0,0.9))]"
+        />
+      )}
       <PlayerHeader
         controlsVisible={controlsVisible}
         descriptor={descriptor}
