@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { memo, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -118,7 +118,7 @@ const _movies: Movie[] = [
   },
 ];
 
-const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
+const MovieCard = function MovieCard({ movie }: { movie: Movie }) {
   return (
     <article
       className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${movie.accent} p-3.5 transition-transform hover:-translate-y-1`}
@@ -162,7 +162,7 @@ const MovieCard = memo(function MovieCard({ movie }: { movie: Movie }) {
       </div>
     </article>
   );
-});
+};
 
 export function MoviesPage() {
   const [genre, setGenre] = useState("Todos");
@@ -176,36 +176,29 @@ export function MoviesPage() {
   const continueIds = new Set(
     progress.filter((p) => p.mediaType === "movie").map((p) => p.contentId),
   );
-  const movieCatalog = useMemo<Movie[]>(
-    () =>
-      importedMovies.map((movie) => ({
-        accent: "from-[#243442] to-[#171510]",
-        categories: movie.categories?.length
-          ? movie.categories
-          : movie.groupTitle
-            ? [movie.groupTitle]
-            : ["Sem categoria"],
-        genre: movie.categories?.[0] ?? movie.groupTitle ?? "Sem categoria",
-        id: movie.id,
-        logoUrl: movie.logoUrl,
-        metadata: movie.year ? String(movie.year) : "Filme",
-        title: movie.title,
-      })),
-    [importedMovies],
-  );
+  const movieCatalog = importedMovies.map((movie) => ({
+    accent: "from-[#243442] to-[#171510]",
+    categories: movie.categories?.length
+      ? movie.categories
+      : movie.groupTitle
+        ? [movie.groupTitle]
+        : ["Sem categoria"],
+    genre: movie.categories?.[0] ?? movie.groupTitle ?? "Sem categoria",
+    id: movie.id,
+    logoUrl: movie.logoUrl,
+    metadata: movie.year ? String(movie.year) : "Filme",
+    title: movie.title,
+  }));
 
-  const categories = useMemo(
-    () => [
-      "Todos",
-      ...(continueIds.size ? ["Continuar Assistindo"] : []),
-      ...new Set(
-        movieCatalog.flatMap((movie) =>
-          movie.categories?.length ? movie.categories : [movie.genre],
-        ),
+  const categories = [
+    "Todos",
+    ...(continueIds.size ? ["Continuar Assistindo"] : []),
+    ...new Set(
+      movieCatalog.flatMap((movie) =>
+        movie.categories?.length ? movie.categories : [movie.genre],
       ),
-    ],
-    [continueIds.size, movieCatalog],
-  );
+    ),
+  ];
   const {
     visibleItems: visibleMovies,
     filteredCount,

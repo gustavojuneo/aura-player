@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { CatalogItem } from "../../../features/catalog/catalog";
 import {
@@ -99,33 +99,26 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
       : undefined;
   const { hidden: nextEpisodeHidden, hideForSeries } =
     useNextEpisodePreference(seriesId);
-  const liveCategories = useMemo(
-    () => [
-      ...new Set(
-        liveCatalog.items.map(
-          (channel) =>
-            channel.groupTitle ?? channel.categories?.[0] ?? "Sem categoria",
-        ),
+  const liveCategories = [
+    ...new Set(
+      liveCatalog.items.map(
+        (channel) =>
+          channel.groupTitle ?? channel.categories?.[0] ?? "Sem categoria",
       ),
-    ],
-    [liveCatalog.items],
-  );
+    ),
+  ];
   const currentLiveCategory =
     item?.groupTitle ?? item?.categories?.[0] ?? liveCategories[0];
   const [selectedLiveCategory, setSelectedLiveCategory] = useState<string>();
   const liveCategory =
     selectedLiveCategory ?? currentLiveCategory ?? "Sem categoria";
-  const seasons = useMemo(
-    () =>
-      [
-        ...new Set(
-          seriesDetails.episodes.map(
-            (currentEpisode) => currentEpisode.seasonNumber ?? 1,
-          ),
-        ),
-      ].sort((first, second) => first - second),
-    [seriesDetails.episodes],
-  );
+  const seasons = [
+    ...new Set(
+      seriesDetails.episodes.map(
+        (currentEpisode) => currentEpisode.seasonNumber ?? 1,
+      ),
+    ),
+  ].sort((first, second) => first - second);
   const firstSeason =
     item?.seasonNumber ?? seasons[0] ?? (kind === "episode" ? 1 : 0);
   const [selectedSeason, setSelectedSeason] = useState(firstSeason);
@@ -136,28 +129,17 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
   }, [item?.seasonNumber, kind]);
   const rawStreamUrl = item?.streamUrl ?? resolvePlaybackUrl(contentId);
   const playbackSource = usePlaybackSource(rawStreamUrl, Boolean(rawStreamUrl));
-  const descriptor = useMemo(
-    () =>
-      createPlaybackDescriptor({
-        contentId,
-        delivery: item?.delivery,
-        isLive: kind === "live",
-        position: loadPlaybackProgress().find(
-          (progress) => progress.contentId === contentId,
-        )?.positionSecs,
-        secondaryTitle: contentSecondaryTitle,
-        streamUrl: playbackSource.source,
-        title: contentTitle,
-      }),
-    [
-      contentId,
-      contentSecondaryTitle,
-      contentTitle,
-      item?.delivery,
-      kind,
-      playbackSource.source,
-    ],
-  );
+  const descriptor = createPlaybackDescriptor({
+    contentId,
+    delivery: item?.delivery,
+    isLive: kind === "live",
+    position: loadPlaybackProgress().find(
+      (progress) => progress.contentId === contentId,
+    )?.positionSecs,
+    secondaryTitle: contentSecondaryTitle,
+    streamUrl: playbackSource.source,
+    title: contentTitle,
+  });
   const goBack = () => {
     if (kind === "episode" && seriesId) {
       void navigate({

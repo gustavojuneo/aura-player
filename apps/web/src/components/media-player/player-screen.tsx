@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import {
   markEpisodeWatched,
   removePlaybackProgress,
@@ -44,65 +44,53 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
     setSelectedSeason,
   } = state;
   const lastSavedAt = useRef(0);
-  const saveProgress = useCallback(
-    (positionSecs: number, durationSecs: number) => {
-      if (
-        kind === "live" ||
-        durationSecs <= 0 ||
-        Date.now() - lastSavedAt.current < 5000
-      )
-        return;
-      lastSavedAt.current = Date.now();
-      savePlaybackProgress({
-        contentId,
-        mediaType: kind,
-        ...(kind === "episode"
-          ? {
-              seriesId: state.seriesId,
-              seasonNumber: state.item?.seasonNumber,
-              episodeNumber: state.item?.episodeNumber,
-            }
-          : {}),
-        positionSecs,
-        durationSecs,
-        updatedAt: Date.now(),
-      });
-    },
-    [
+  const saveProgress = (positionSecs: number, durationSecs: number) => {
+    if (
+      kind === "live" ||
+      durationSecs <= 0 ||
+      Date.now() - lastSavedAt.current < 5000
+    )
+      return;
+    lastSavedAt.current = Date.now();
+    savePlaybackProgress({
       contentId,
-      kind,
-      state.item?.episodeNumber,
-      state.item?.seasonNumber,
-      state.seriesId,
-    ],
-  );
-  const complete = useCallback(() => {
+      mediaType: kind,
+      ...(kind === "episode"
+        ? {
+            seriesId: state.seriesId,
+            seasonNumber: state.item?.seasonNumber,
+            episodeNumber: state.item?.episodeNumber,
+          }
+        : {}),
+      positionSecs,
+      durationSecs,
+      updatedAt: Date.now(),
+    });
+  };
+  const complete = () => {
     if (kind === "live") return;
     removePlaybackProgress(contentId);
     if (kind === "episode" && state.seriesId) {
       markEpisodeWatched(state.seriesId, contentId);
     }
-  }, [contentId, kind, state.seriesId]);
+  };
 
-  const renderNextEpisode = useCallback(
-    (
-      remainingSeconds: number,
-      onSelect: () => void,
-      onHideCountdown: () => void,
-    ) =>
-      nextEpisode && !nextEpisodeHidden ? (
-        <PlayerNextEpisode
-          episode={nextEpisode}
-          onHide={() => {
-            onHideCountdown();
-            hideForSeries();
-          }}
-          onSelect={onSelect}
-          remainingSeconds={remainingSeconds}
-        />
-      ) : null,
-    [hideForSeries, nextEpisode, nextEpisodeHidden],
-  );
+  const renderNextEpisode = (
+    remainingSeconds: number,
+    onSelect: () => void,
+    onHideCountdown: () => void,
+  ) =>
+    nextEpisode && !nextEpisodeHidden ? (
+      <PlayerNextEpisode
+        episode={nextEpisode}
+        onHide={() => {
+          onHideCountdown();
+          hideForSeries();
+        }}
+        onSelect={onSelect}
+        remainingSeconds={remainingSeconds}
+      />
+    ) : null;
 
   if (state.playbackSource.error) {
     return (

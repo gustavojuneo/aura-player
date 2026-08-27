@@ -1,5 +1,5 @@
 import type Hls from "hls.js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PlaybackDescriptor } from "../../../features/playback/playback";
 import type { PlaybackPreferences } from "../../../services/playback-preferences";
 import type {
@@ -61,7 +61,7 @@ export function usePlaybackEngine({
   const [retryKey, setRetryKey] = useState(0);
   const [volume, setVolume] = useState(1);
 
-  const attemptAutoplay = useCallback(() => {
+  const attemptAutoplay = () => {
     const video = videoRef.current;
     if (!autoPlay || !video?.paused) return;
     video.muted = false;
@@ -76,7 +76,7 @@ export function usePlaybackEngine({
         })
         .catch(() => undefined);
     });
-  }, [autoPlay]);
+  };
 
   useEffect(() => {
     void retryKey;
@@ -382,7 +382,7 @@ export function usePlaybackEngine({
     return () => window.clearInterval(timer);
   }, [attemptAutoplay, autoPlay, isLoading]);
 
-  const togglePlay = useCallback(() => {
+  const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
     if (video.muted) {
@@ -398,16 +398,12 @@ export function usePlaybackEngine({
           ),
         );
     else video.pause();
-  }, []);
-  const seek = useCallback(
-    (value: number) => {
-      if (videoRef.current && duration > 0)
-        videoRef.current.currentTime = value;
-      setCurrentTime(value);
-    },
-    [duration],
-  );
-  const toggleMute = useCallback(() => {
+  };
+  const seek = (value: number) => {
+    if (videoRef.current && duration > 0) videoRef.current.currentTime = value;
+    setCurrentTime(value);
+  };
+  const toggleMute = () => {
     const video = videoRef.current;
     const muted = !isMuted;
     const nextVolume = !muted && volume === 0 ? 1 : volume;
@@ -417,8 +413,8 @@ export function usePlaybackEngine({
     }
     setIsMuted(muted);
     setVolume(nextVolume);
-  }, [isMuted, volume]);
-  const changeVolume = useCallback((nextVolume: number) => {
+  };
+  const changeVolume = (nextVolume: number) => {
     const video = videoRef.current;
     if (video) {
       video.muted = nextVolume === 0;
@@ -426,11 +422,11 @@ export function usePlaybackEngine({
     }
     setVolume(nextVolume);
     setIsMuted(nextVolume === 0);
-  }, []);
-  const retry = useCallback(() => {
+  };
+  const retry = () => {
     setError(null);
     setRetryKey((value) => value + 1);
-  }, []);
+  };
 
   return {
     changeVolume,

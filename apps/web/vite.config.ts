@@ -7,5 +7,12 @@ export default defineConfig({
   build: {
     target: "chrome68",
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler", { target: "19" }]],
+      },
+    }),
+    tailwindcss(),
+  ],
 });

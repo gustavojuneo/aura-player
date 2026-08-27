@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HeartOff, Menu, Radio } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { Carousel } from "../../../components/carousel";
 import { FavoriteButton } from "../../../components/favorite-button";
 import {
@@ -296,26 +296,22 @@ function MediaGrid({
   onToggle: (kind: FavoriteKind, id: string) => void;
   carousel?: boolean;
 }) {
-  const media = useMemo(
-    () =>
-      items.map((item) =>
-        kind === "movie"
-          ? {
-              id: item.id,
-              imageUrl: (item as CatalogItem).logoUrl,
-              meta: (item as CatalogItem).year
-                ? String((item as CatalogItem).year)
-                : "Filme",
-              title: item.title,
-            }
-          : {
-              id: item.id,
-              imageUrl: (item as CatalogSeries).posterUrl,
-              meta: `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`,
-              title: item.title,
-            },
-      ),
-    [items, kind],
+  const media = items.map((item) =>
+    kind === "movie"
+      ? {
+          id: item.id,
+          imageUrl: (item as CatalogItem).logoUrl,
+          meta: (item as CatalogItem).year
+            ? String((item as CatalogItem).year)
+            : "Filme",
+          title: item.title,
+        }
+      : {
+          id: item.id,
+          imageUrl: (item as CatalogSeries).posterUrl,
+          meta: `${(item as CatalogSeries).seasonCount} ${(item as CatalogSeries).seasonCount === 1 ? "temporada" : "temporadas"}`,
+          title: item.title,
+        },
   );
   const renderCard = (item: MediaCardItem, index: number) => (
     <MediaCard
@@ -357,7 +353,7 @@ type MediaCardItem = {
   title: string;
 };
 
-const MediaCard = memo(function MediaCard({
+const MediaCard = function MediaCard({
   carousel,
   item,
   kind,
@@ -370,10 +366,7 @@ const MediaCard = memo(function MediaCard({
   onToggle: (kind: FavoriteKind, id: string) => void;
   variant: "amber" | "blue";
 }) {
-  const handleToggle = useCallback(
-    () => onToggle(kind, item.id),
-    [item.id, kind, onToggle],
-  );
+  const handleToggle = () => onToggle(kind, item.id);
   return (
     <article
       className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 cursor-pointer flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br p-3.5 shadow-[inset_0_-90px_70px_-28px_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-focus ${carousel ? "w-[240px] min-w-[240px] shrink-0" : "w-full"} ${variant === "amber" ? "from-[#78502a] to-[#171510]" : "from-[#30475d] to-[#171510]"}`}
@@ -410,7 +403,7 @@ const MediaCard = memo(function MediaCard({
       </span>
     </article>
   );
-});
+};
 
 function CategoryFavoritesContent({
   category,
@@ -501,18 +494,9 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
     useCatalogItems("live");
   const { items: movies, isLoading: moviesLoading } = useCatalogItems("movie");
   const { items: series, isLoading: seriesLoading } = useCatalogSeries();
-  const favoriteChannels = useMemo(
-    () => newestFavorites(channels, favorites, "channel"),
-    [channels, favorites],
-  );
-  const favoriteMovies = useMemo(
-    () => newestFavorites(movies, favorites, "movie"),
-    [favorites, movies],
-  );
-  const favoriteSeries = useMemo(
-    () => newestFavorites(series, favorites, "series"),
-    [favorites, series],
-  );
+  const favoriteChannels = newestFavorites(channels, favorites, "channel");
+  const favoriteMovies = newestFavorites(movies, favorites, "movie");
+  const favoriteSeries = newestFavorites(series, favorites, "series");
   const previewMovies = favoriteMovies.slice(0, 10);
   const previewSeries = favoriteSeries.slice(0, 10);
   const previewChannels = favoriteChannels.slice(0, 20);

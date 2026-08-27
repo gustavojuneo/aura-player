@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const hiddenSeriesKey = "aura:hidden-next-episode-series";
 
@@ -40,13 +40,13 @@ export function useNextEpisodePreference(seriesId?: string) {
     setHidden(seriesId ? readHiddenSeries().has(seriesId) : false);
   }, [seriesId]);
 
-  const hideForSeries = useCallback(() => {
+  const hideForSeries = () => {
     if (!seriesId) return;
     const hiddenSeries = readHiddenSeries();
     hiddenSeries.add(seriesId);
     writeHiddenSeries(hiddenSeries);
     setHidden(true);
-  }, [seriesId]);
+  };
 
   return { hidden, hideForSeries };
 }

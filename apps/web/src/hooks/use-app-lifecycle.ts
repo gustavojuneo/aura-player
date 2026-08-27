@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { clearCatalogMemory, getActiveSourceId } from "../services/catalog-db";
 import {
   loadCatalogSources,
@@ -10,12 +10,12 @@ import { clearCatalogDataCaches } from "./use-catalog-data";
 let hasInitializedApp = false;
 
 export function useAppLifecycle() {
-  const refreshActiveSource = useCallback(async () => {
+  const refreshActiveSource = async () => {
     const sources = await loadCatalogSources();
     const activeSourceId = getActiveSourceId();
     const activeSource = sources.find((source) => source.id === activeSourceId);
     if (activeSource) await refreshCatalogSource(activeSource);
-  }, []);
+  };
 
   useEffect(() => {
     const handlePageHide = () => {

@@ -1,5 +1,5 @@
 import { Link, useParams, useRouter } from "@tanstack/react-router";
-import { useMemo } from "react";
+
 import { Carousel } from "../../../../components/carousel";
 import {
   DetailCard,
@@ -23,34 +23,26 @@ export function MovieDetailsPage() {
   const progress = loadPlaybackProgress().find(
     (entry) => entry.contentId === movieId,
   );
-  const relatedCategories = useMemo(
-    () =>
-      new Set(
-        [
-          ...(item?.categories ?? []),
-          ...(item?.groupTitle ? [item.groupTitle] : []),
-        ].map((category) => category.trim().toLocaleLowerCase()),
-      ),
-    [item],
+  const relatedCategories = new Set(
+    [
+      ...(item?.categories ?? []),
+      ...(item?.groupTitle ? [item.groupTitle] : []),
+    ].map((category) => category.trim().toLocaleLowerCase()),
   );
-  const relatedMovies = useMemo(
-    () =>
-      movies
-        .filter((movie) => {
-          if (movie.id === movieId || relatedCategories.size === 0) {
-            return false;
-          }
-          const movieCategories = [
-            ...movie.categories,
-            ...(movie.groupTitle ? [movie.groupTitle] : []),
-          ];
-          return movieCategories.some((category) =>
-            relatedCategories.has(category.trim().toLocaleLowerCase()),
-          );
-        })
-        .slice(0, 15),
-    [movieId, movies, relatedCategories],
-  );
+  const relatedMovies = movies
+    .filter((movie) => {
+      if (movie.id === movieId || relatedCategories.size === 0) {
+        return false;
+      }
+      const movieCategories = [
+        ...movie.categories,
+        ...(movie.groupTitle ? [movie.groupTitle] : []),
+      ];
+      return movieCategories.some((category) =>
+        relatedCategories.has(category.trim().toLocaleLowerCase()),
+      );
+    })
+    .slice(0, 15);
 
   if (isLoading || isMetadataLoading) return <DetailHeroSkeleton />;
   if (item?.kind !== "movie")

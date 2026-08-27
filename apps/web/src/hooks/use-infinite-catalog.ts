@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 
 const pageSize = 40;
 
@@ -13,11 +13,9 @@ export function useInfiniteCatalog<T>(
   const [page, setPage] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const resetKey = `${category}|${deferredQuery}|${items.length}|${items[0] ? JSON.stringify(items[0]) : ""}`;
-  const filteredItems = useMemo(
-    () =>
-      items.filter((item) => filter(item, deferredQuery, category)).sort(sort),
-    [category, deferredQuery, filter, items, sort],
-  );
+  const filteredItems = items
+    .filter((item) => filter(item, deferredQuery, category))
+    .sort(sort);
   const visibleItems = filteredItems.slice(0, page * pageSize);
 
   useEffect(() => {

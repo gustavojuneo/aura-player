@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type FavoriteKind = "channel" | "movie" | "series";
 export type Favorite = { id: string; kind: FavoriteKind };
@@ -52,15 +52,10 @@ export function useFavorites() {
     };
   }, []);
 
-  const isFavorite = useCallback(
-    (kind: FavoriteKind, id: string) =>
-      favorites.some(
-        (favorite) => favorite.kind === kind && favorite.id === id,
-      ),
-    [favorites],
-  );
+  const isFavorite = (kind: FavoriteKind, id: string) =>
+    favorites.some((favorite) => favorite.kind === kind && favorite.id === id);
 
-  const toggleFavorite = useCallback((kind: FavoriteKind, id: string) => {
+  const toggleFavorite = (kind: FavoriteKind, id: string) => {
     const current = readFavorites();
     const exists = current.some(
       (favorite) => favorite.kind === kind && favorite.id === id,
@@ -73,7 +68,7 @@ export function useFavorites() {
     setFavorites(next);
     persistFavorites(next);
     notifyFavoritesChanged();
-  }, []);
+  };
 
   return { favorites, isFavorite, toggleFavorite };
 }

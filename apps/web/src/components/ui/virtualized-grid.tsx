@@ -1,11 +1,4 @@
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { cn } from "../../utils/cn";
 
@@ -52,7 +45,7 @@ export function VirtualizedGrid<T>({
     width: 0,
   });
 
-  const updateViewport = useCallback(() => {
+  const updateViewport = () => {
     const container = containerRef.current;
     if (!container) return;
     const scrollParent = findScrollParent(container);
@@ -88,7 +81,7 @@ export function VirtualizedGrid<T>({
         ? current
         : { ...next, top: snappedTop },
     );
-  }, [columnCount, gap]);
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -118,7 +111,7 @@ export function VirtualizedGrid<T>({
     };
   }, [updateViewport]);
 
-  const layout = useMemo(() => {
+  const layout = (() => {
     const columns = Math.max(1, columnCount(viewport.width));
     const columnWidth =
       viewport.width > 0 ? (viewport.width - gap * (columns - 1)) / columns : 0;
@@ -144,9 +137,9 @@ export function VirtualizedGrid<T>({
       rowPitch,
       totalHeight,
     };
-  }, [columnCount, gap, items.length, overscanRows, viewport]);
+  })();
 
-  const visibleItems = useMemo(() => {
+  const visibleItems = (() => {
     if (viewport.width === 0 || layout.lastRow < layout.firstRow) return [];
     const firstIndex = layout.firstRow * layout.columns;
     const lastIndex = Math.min(
@@ -157,7 +150,7 @@ export function VirtualizedGrid<T>({
       index: firstIndex + offset,
       item,
     }));
-  }, [items, layout, viewport.width]);
+  })();
 
   return (
     <div

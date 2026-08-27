@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PlayerAspectRatio } from "../../../utils/constants";
 
 type UsePlayerControlsParams = {
@@ -53,24 +53,21 @@ export function usePlayerControls({
     };
   }, [contentId]);
 
-  const revealControls = useCallback(
-    (hideAfterMs = 5000, _forceHide = false) => {
-      setControlsVisible(true);
-      if (hideTimerRef.current !== null)
-        window.clearTimeout(hideTimerRef.current);
-      if (hideControls)
-        hideTimerRef.current = window.setTimeout(() => {
-          document
-            .querySelector<HTMLElement>(
-              '[data-player-primary-controls] button[aria-label="Reproduzir"], [data-player-primary-controls] button[aria-label="Pausar"]',
-            )
-            ?.focus({ preventScroll: true });
-          setControlsVisible(false);
-          setContentListOpen(false);
-        }, hideAfterMs);
-    },
-    [hideControls],
-  );
+  const revealControls = (hideAfterMs = 5000, _forceHide = false) => {
+    setControlsVisible(true);
+    if (hideTimerRef.current !== null)
+      window.clearTimeout(hideTimerRef.current);
+    if (hideControls)
+      hideTimerRef.current = window.setTimeout(() => {
+        document
+          .querySelector<HTMLElement>(
+            '[data-player-primary-controls] button[aria-label="Reproduzir"], [data-player-primary-controls] button[aria-label="Pausar"]',
+          )
+          ?.focus({ preventScroll: true });
+        setControlsVisible(false);
+        setContentListOpen(false);
+      }, hideAfterMs);
+  };
 
   useEffect(() => {
     if (!hideControls) {
@@ -86,52 +83,52 @@ export function usePlayerControls({
     };
   }, [hideControls, revealControls]);
 
-  const queueSeek = useCallback(
-    (delta: number, source: "button" | "keyboard" = "button") => {
-      if (isLive || !isReady) return;
-      const video = videoRef.current;
-      if (!video) return;
-      pendingSeekRef.current += delta;
-      if (source === "keyboard") {
-        const max =
-          duration > 0
-            ? duration
-            : Number.isFinite(video.duration)
-              ? video.duration
-              : Number.POSITIVE_INFINITY;
-        const preview = Math.min(
-          max,
-          Math.max(0, video.currentTime + pendingSeekRef.current),
-        );
-        seekPreviewRef.current = preview;
-        setSeekPreview(preview);
-      }
-      if (seekTimerRef.current !== null)
-        window.clearTimeout(seekTimerRef.current);
-      seekTimerRef.current = window.setTimeout(() => {
-        const currentVideo = videoRef.current;
-        if (!currentVideo) return;
-        const max =
-          duration > 0
-            ? duration
-            : Number.isFinite(currentVideo.duration)
-              ? currentVideo.duration
-              : Number.POSITIVE_INFINITY;
-        const time = Math.min(
-          max,
-          Math.max(0, currentVideo.currentTime + pendingSeekRef.current),
-        );
-        currentVideo.currentTime = time;
-        pendingSeekRef.current = 0;
-        seekPreviewRef.current = null;
-        setSeekPreview(null);
-        seekTimerRef.current = null;
-      }, 400);
-    },
-    [duration, isLive, isReady, videoRef],
-  );
+  const queueSeek = (
+    delta: number,
+    source: "button" | "keyboard" = "button",
+  ) => {
+    if (isLive || !isReady) return;
+    const video = videoRef.current;
+    if (!video) return;
+    pendingSeekRef.current += delta;
+    if (source === "keyboard") {
+      const max =
+        duration > 0
+          ? duration
+          : Number.isFinite(video.duration)
+            ? video.duration
+            : Number.POSITIVE_INFINITY;
+      const preview = Math.min(
+        max,
+        Math.max(0, video.currentTime + pendingSeekRef.current),
+      );
+      seekPreviewRef.current = preview;
+      setSeekPreview(preview);
+    }
+    if (seekTimerRef.current !== null)
+      window.clearTimeout(seekTimerRef.current);
+    seekTimerRef.current = window.setTimeout(() => {
+      const currentVideo = videoRef.current;
+      if (!currentVideo) return;
+      const max =
+        duration > 0
+          ? duration
+          : Number.isFinite(currentVideo.duration)
+            ? currentVideo.duration
+            : Number.POSITIVE_INFINITY;
+      const time = Math.min(
+        max,
+        Math.max(0, currentVideo.currentTime + pendingSeekRef.current),
+      );
+      currentVideo.currentTime = time;
+      pendingSeekRef.current = 0;
+      seekPreviewRef.current = null;
+      setSeekPreview(null);
+      seekTimerRef.current = null;
+    }, 400);
+  };
 
-  const toggleFullscreen = useCallback(() => {
+  const toggleFullscreen = () => {
     const element = videoRef.current?.parentElement;
     if (
       element &&
@@ -144,7 +141,7 @@ export function usePlayerControls({
       typeof document.exitFullscreen === "function"
     )
       void document.exitFullscreen();
-  }, [videoRef]);
+  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import type {
   CatalogItem,
   CatalogSeries,
@@ -160,14 +160,14 @@ export function useCatalogItems(kind: CatalogItem["kind"]) {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const load = useCallback(() => {
+  const load = () => {
     setLoading(true);
     setError(null);
     void loadActiveCatalog(kind)
       .then(setItems)
       .catch(setError)
       .finally(() => setLoading(false));
-  }, [kind]);
+  };
   useEffect(() => {
     load();
     const handleLoading = () => setLoading(true);
@@ -192,14 +192,14 @@ export function useCatalogSeries() {
   const [items, setItems] = useState<CatalogSeries[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const load = useCallback(() => {
+  const load = () => {
     setLoading(true);
     setError(null);
     void loadActiveSeries()
       .then(setItems)
       .catch(setError)
       .finally(() => setLoading(false));
-  }, []);
+  };
   useEffect(() => {
     load();
     const handleLoading = () => setLoading(true);
@@ -447,16 +447,13 @@ export function useCatalogSources() {
   const isRefreshing = useCatalogRefreshInProgress();
   const [sources, setSources] = useState<CatalogSource[]>([]);
   const [isLoading, setLoading] = useState(true);
-  const load = useCallback(
-    () =>
-      void loadCatalogSources()
-        .then((loadedSources) => {
-          setSources(loadedSources);
-          void refreshExpiredCatalogSources(loadedSources);
-        })
-        .finally(() => setLoading(false)),
-    [],
-  );
+  const load = () =>
+    void loadCatalogSources()
+      .then((loadedSources) => {
+        setSources(loadedSources);
+        void refreshExpiredCatalogSources(loadedSources);
+      })
+      .finally(() => setLoading(false));
   useEffect(() => {
     load();
     window.addEventListener("aura-catalog-change", load);

@@ -9,7 +9,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import type mpegts from "mpegts.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LivePageSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -437,28 +437,27 @@ export function TvPage() {
       params: { channelId },
     });
   };
-  const channels = useMemo<Channel[]>(
-    () =>
-      items.map((item) => ({
-        current: item.groupTitle ?? item.categories?.[0] ?? "Sem categoria",
-        delivery: item.delivery,
-        id: item.id,
-        logoUrl: item.logoUrl,
-        name: item.title,
-        providerId: item.providerId,
-        sourceId: item.sourceId,
-        streamUrl: item.streamUrl,
-      })),
-    [items],
-  );
-  const categories = useMemo<Array<[string, number]>>(() => {
+  const channels = items.map((item) => ({
+    current: item.groupTitle ?? item.categories?.[0] ?? "Sem categoria",
+    delivery: item.delivery,
+    id: item.id,
+    logoUrl: item.logoUrl,
+    name: item.title,
+    providerId: item.providerId,
+    sourceId: item.sourceId,
+    streamUrl: item.streamUrl,
+  }));
+  const categories: Array<[string, number]> = (() => {
     const counts = new Map<string, number>();
     for (const channel of channels) {
       counts.set(channel.current, (counts.get(channel.current) ?? 0) + 1);
     }
-    return [["Todos", channels.length], ...counts.entries()];
-  }, [channels]);
-  const visibleChannels = useMemo<Channel[]>(() => {
+    return [
+      ["Todos", channels.length] as [string, number],
+      ...counts.entries(),
+    ];
+  })();
+  const visibleChannels = (() => {
     return channels.filter(
       (channel) =>
         channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
@@ -466,8 +465,8 @@ export function TvPage() {
           category === "Todos" ||
           channel.current === category),
     );
-  }, [category, channels, query]);
-  const epgChannelsForView = useMemo(() => {
+  })();
+  const epgChannelsForView = (() => {
     const grouped = new Map<string, Channel>();
     for (const channel of visibleChannels) {
       const name = channelGroupName(channel.name);
@@ -484,8 +483,8 @@ export function TvPage() {
       });
     }
     return [...grouped.values()];
-  }, [visibleChannels]);
-  const epgChannelsForRequest = useMemo(() => {
+  })();
+  const epgChannelsForRequest = (() => {
     if (category !== "Todos") return epgChannelsForView;
     const categoriesSeen = new Set<string>();
     return epgChannelsForView.filter((channel) => {
@@ -493,7 +492,7 @@ export function TvPage() {
       categoriesSeen.add(channel.current);
       return true;
     });
-  }, [category, epgChannelsForView]);
+  })();
   const epgForChannels = useXtreamEpgForChannels(epgChannelsForRequest);
   const guides = epgChannelsForRequest.map((channel) => ({
     category: channel.current,
@@ -503,7 +502,7 @@ export function TvPage() {
         `${channel.sourceId}:${channel.providerId}`,
       ) ?? [],
   }));
-  const displayGuides = useMemo(() => {
+  const displayGuides = (() => {
     if (category !== "Todos") {
       return guides.filter((guide) => guide.category === category);
     }
@@ -513,7 +512,7 @@ export function TvPage() {
       categoriesSeen.add(guide.category);
       return true;
     });
-  }, [category, guides]);
+  })();
 
   return (
     <>

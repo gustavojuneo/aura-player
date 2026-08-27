@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { memo, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -118,7 +118,7 @@ const _series: Series[] = [
   },
 ];
 
-const SeriesCard = memo(function SeriesCard({ item }: { item: Series }) {
+const SeriesCard = function SeriesCard({ item }: { item: Series }) {
   return (
     <article
       className={`[content-visibility:auto] group relative flex aspect-[2/3] min-w-0 flex-col justify-end overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br ${item.accent} p-3.5 transition-transform hover:-translate-y-1`}
@@ -160,7 +160,7 @@ const SeriesCard = memo(function SeriesCard({ item }: { item: Series }) {
       </div>
     </article>
   );
-});
+};
 
 export function SeriesPage() {
   const [genre, setGenre] = useState("Todos");
@@ -176,36 +176,29 @@ export function SeriesPage() {
       .filter((p) => p.mediaType === "episode" && p.seriesId)
       .map((p) => p.seriesId as string),
   );
-  const seriesCatalog = useMemo<Series[]>(
-    () =>
-      importedSeries.map((item) => ({
-        accent: "from-[#243442] to-[#171510]",
-        categories: item.categories?.length
-          ? item.categories
-          : item.groupTitle
-            ? [item.groupTitle]
-            : ["Sem categoria"],
-        genre: item.categories?.[0] ?? item.groupTitle ?? "Sem categoria",
-        id: item.id,
-        posterUrl: item.posterUrl,
-        seasons: item.seasonCount,
-        title: item.title,
-      })),
-    [importedSeries],
-  );
+  const seriesCatalog = importedSeries.map((item) => ({
+    accent: "from-[#243442] to-[#171510]",
+    categories: item.categories?.length
+      ? item.categories
+      : item.groupTitle
+        ? [item.groupTitle]
+        : ["Sem categoria"],
+    genre: item.categories?.[0] ?? item.groupTitle ?? "Sem categoria",
+    id: item.id,
+    posterUrl: item.posterUrl,
+    seasons: item.seasonCount,
+    title: item.title,
+  }));
 
-  const categories = useMemo(
-    () => [
-      "Todos",
-      ...(continueIds.size ? ["Continuar Assistindo"] : []),
-      ...new Set(
-        seriesCatalog.flatMap((item) =>
-          item.categories?.length ? item.categories : [item.genre],
-        ),
+  const categories = [
+    "Todos",
+    ...(continueIds.size ? ["Continuar Assistindo"] : []),
+    ...new Set(
+      seriesCatalog.flatMap((item) =>
+        item.categories?.length ? item.categories : [item.genre],
       ),
-    ],
-    [continueIds.size, seriesCatalog],
-  );
+    ),
+  ];
   const {
     visibleItems: visibleSeries,
     filteredCount,

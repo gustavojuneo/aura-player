@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type UseNextEpisodeCountdownParams = {
   contentId: string;
@@ -27,7 +27,7 @@ export function useNextEpisodeCountdown({
   const countdownValueRef = useRef<number | null>(null);
   const startedRef = useRef(false);
 
-  const clear = useCallback(() => {
+  const clear = () => {
     if (startTimerRef.current !== null)
       window.clearTimeout(startTimerRef.current);
     if (countdownTimerRef.current !== null)
@@ -36,7 +36,7 @@ export function useNextEpisodeCountdown({
     countdownTimerRef.current = null;
     countdownValueRef.current = null;
     setCountdown(null);
-  }, []);
+  };
 
   useEffect(() => {
     void contentId;
