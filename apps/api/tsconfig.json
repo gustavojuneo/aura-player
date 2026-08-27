@@ -1,5 +1,5 @@
 {
-  "extends": "@iptv/config-typescript/node.json",
+  "extends": "@aura/config-typescript/node.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",

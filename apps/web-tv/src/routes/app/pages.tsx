@@ -1,4 +1,4 @@
-import { HomePageSkeleton } from "@iptv/web-shared/components/catalog-skeleton";
+import { HomePageSkeleton } from "@aura/web-shared/components/catalog-skeleton";
 import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
 import {
   EpisodePlayerPage as TvEpisodePlayerPage,
@@ -22,68 +22,68 @@ function lazyPage(
 
 export const HomePage = lazyPage(
   () =>
-    import("@iptv/web-shared/pages/app").then(({ HomePage: page }) => ({
+    import("@aura/web-shared/pages/app").then(({ HomePage: page }) => ({
       default: page,
     })),
   <HomePageSkeleton onRetry={() => window.location.reload()} />,
 );
 export const FavoritesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/favorites").then(
+  import("@aura/web-shared/pages/app/favorites").then(
     ({ FavoritesPage: page }) => ({ default: page }),
   ),
 );
 export const FavoriteMoviesPage = lazyPage(async () => {
   const { FavoritesPage: Page } = await import(
-    "@iptv/web-shared/pages/app/favorites"
+    "@aura/web-shared/pages/app/favorites"
   );
   return { default: () => <Page category="movie" /> };
 });
 export const FavoriteSeriesPage = lazyPage(async () => {
   const { FavoritesPage: Page } = await import(
-    "@iptv/web-shared/pages/app/favorites"
+    "@aura/web-shared/pages/app/favorites"
   );
   return { default: () => <Page category="series" /> };
 });
 export const FavoriteChannelsPage = lazyPage(async () => {
   const { FavoritesPage: Page } = await import(
-    "@iptv/web-shared/pages/app/favorites"
+    "@aura/web-shared/pages/app/favorites"
   );
   return { default: () => <Page category="channel" /> };
 });
 export const MoviesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/movies").then(({ MoviesPage: page }) => ({
+  import("@aura/web-shared/pages/app/movies").then(({ MoviesPage: page }) => ({
     default: page,
   })),
 );
 export const MovieDetailsPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/movies/$movieId").then(
+  import("@aura/web-shared/pages/app/movies/$movieId").then(
     ({ MovieDetailsPage: page }) => ({ default: page }),
   ),
 );
 export const MoviePlayerPage = TvMoviePlayerPage;
 export const SeriesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/series").then(({ SeriesPage: page }) => ({
+  import("@aura/web-shared/pages/app/series").then(({ SeriesPage: page }) => ({
     default: page,
   })),
 );
 export const SeriesDetailsPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/series/$seriesId").then(
+  import("@aura/web-shared/pages/app/series/$seriesId").then(
     ({ SeriesDetailsPage: page }) => ({ default: page }),
   ),
 );
 export const EpisodePlayerPage = TvEpisodePlayerPage;
 export const SettingsPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/settings").then(
+  import("@aura/web-shared/pages/app/settings").then(
     ({ SettingsPage: page }) => ({ default: page }),
   ),
 );
 export const SourcesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/sources").then(
+  import("@aura/web-shared/pages/app/sources").then(
     ({ SourcesPage: page }) => ({ default: page }),
   ),
 );
 export const TvPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/tv").then(({ TvPage: page }) => ({
+  import("@aura/web-shared/pages/app/tv").then(({ TvPage: page }) => ({
     default: page,
   })),
 );

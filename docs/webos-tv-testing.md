@@ -1,7 +1,7 @@
-# Testing AURA IPTV on an LG webOS TV
+# Testing AURA Player on an LG webOS TV
 
 This guide describes how to package, install, launch, update, and remove the
-AURA IPTV application on a physical LG webOS TV for development testing.
+AURA Player application on a physical LG webOS TV for development testing.
 
 ## Requirements
 
@@ -57,7 +57,7 @@ The command builds the TV application and packages it with `ares-package`.
 The webOS build uses the published backend at
 `https://aura-api-ia1i.onrender.com`, configured by the TV application itself.
 The packaged application enables the webOS cross-domain capability so it can
-reach the API and user-configured IPTV providers from its local application
+reach the API and user-configured content providers from its local application
 origin.
 Provider thumbnails and streams retain their original HTTP or HTTPS protocol;
 the webOS build plays provider streams directly instead of routing them through
@@ -71,7 +71,7 @@ apps/web-tv/release/
 The generated file normally has a name similar to:
 
 ```text
-com.aura.iptv_1.0.0_all.ipk
+com.aura.player_1.0.0_all.ipk
 ```
 
 ## Register the TV with the CLI
@@ -110,7 +110,7 @@ Replace the package filename below with the actual file in
 `apps/web-tv/release/`:
 
 ```bash
-pnpm exec ares-install --device tv apps/web-tv/release/com.aura.iptv_1.0.0_all.ipk
+pnpm exec ares-install --device tv apps/web-tv/release/com.aura.player_1.0.0_all.ipk
 ```
 
 Verify that the application is installed:
@@ -122,7 +122,7 @@ pnpm exec ares-install --device tv --list
 The application ID is:
 
 ```text
-com.aura.iptv
+com.aura.player
 ```
 
 ## Launch the application
@@ -130,7 +130,7 @@ com.aura.iptv
 Launch from the notebook:
 
 ```bash
-pnpm exec ares-launch --device tv com.aura.iptv
+pnpm exec ares-launch --device tv com.aura.player
 ```
 
 The application can also be opened from the TV launcher after installation.
@@ -141,8 +141,8 @@ Build a new package and install it again:
 
 ```bash
 pnpm webos:package
-pnpm exec ares-install --device tv apps/web-tv/release/com.aura.iptv_1.0.0_all.ipk
-pnpm exec ares-launch --device tv com.aura.iptv
+pnpm exec ares-install --device tv apps/web-tv/release/com.aura.player_1.0.0_all.ipk
+pnpm exec ares-launch --device tv com.aura.player
 ```
 
 For a production release, update the version in
@@ -151,7 +151,7 @@ For a production release, update the version in
 ## Remove the application
 
 ```bash
-pnpm exec ares-install --device tv --remove com.aura.iptv
+pnpm exec ares-install --device tv --remove com.aura.player
 ```
 
 ## Troubleshooting
@@ -184,7 +184,7 @@ from the TV.
 Rebuild and reinstall the package after confirming that `allowCrossDomain` is
 enabled in `apps/web-tv/public/appinfo.json`. Packaged webOS applications run from
 a local application origin and need this capability to reach the Render API
-and external IPTV providers.
+and external content providers.
 
 ### Streaming does not start
 

@@ -22,9 +22,9 @@ export function AppLayout() {
 
   useEffect(() => {
     const handleExpired = () => setSessionExpired(true);
-    window.addEventListener("iptv:session-expired", handleExpired);
+    window.addEventListener("aura:session-expired", handleExpired);
     return () =>
-      window.removeEventListener("iptv:session-expired", handleExpired);
+      window.removeEventListener("aura:session-expired", handleExpired);
   }, []);
 
   return (

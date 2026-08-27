@@ -1,5 +1,5 @@
-import { queryClient } from "@iptv/web-shared/lib-query-client";
-import { configureSharedRuntime } from "@iptv/web-shared/runtime-config";
+import { queryClient } from "@aura/web-shared/lib-query-client";
+import { configureSharedRuntime } from "@aura/web-shared/runtime-config";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";

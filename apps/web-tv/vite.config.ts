@@ -1,4 +1,4 @@
-import { createReactViteConfig } from "@iptv/config-vite";
+import { createReactViteConfig } from "@aura/config-vite";
 import appInfo from "./public/appinfo.json";
 
 export default createReactViteConfig({

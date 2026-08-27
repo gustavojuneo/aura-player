@@ -1,4 +1,4 @@
 {
-  "extends": "@iptv/config-typescript/react.json",
+  "extends": "@aura/config-typescript/react.json",
   "include": ["src"]
 }

@@ -23,7 +23,7 @@ export function SourceSelector({
   const active = selected?.status === "ready";
   return (
     <SelectField
-      aria-label="Selecionar fonte IPTV"
+      aria-label="Selecionar fonte de conteúdo"
       className={className}
       leading={
         <span

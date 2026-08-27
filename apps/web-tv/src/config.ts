@@ -1,4 +1,4 @@
-import type { SharedRuntimeConfig } from "@iptv/web-shared/runtime-config";
+import type { SharedRuntimeConfig } from "@aura/web-shared/runtime-config";
 
 export function createWebTvRuntimeConfig(apiUrl: string): SharedRuntimeConfig {
   return {

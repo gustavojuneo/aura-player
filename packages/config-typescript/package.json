@@ -1,5 +1,5 @@
 {
-  "name": "@iptv/config-typescript",
+  "name": "@aura/config-typescript",
   "private": true,
   "files": [
     "*.json"

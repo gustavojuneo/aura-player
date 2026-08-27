@@ -693,7 +693,7 @@ async function fetchMediaUpstream(
         redirect: "manual",
       });
     } catch (error) {
-      // A few IPTV hosts expose a broken certificate on HTTPS but serve the
+      // A few provider hosts expose a broken certificate on HTTPS but serve the
       // same media over HTTP. The backend can safely make that downgrade
       // because the browser only talks to this proxy over its own origin.
       if (currentUrl.protocol !== "https:") throw error;

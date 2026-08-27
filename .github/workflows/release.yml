@@ -79,7 +79,7 @@ jobs:
 
             const packages = (await readdir("apps/web-tv/release"))
               .filter((file) => file.endsWith(".ipk"));
-            const expected = `com.aura.iptv_${version}_all.ipk`;
+            const expected = `com.aura.player_${version}_all.ipk`;
             if (packages.length !== 1 || packages[0] !== expected) {
               throw new Error(
                 `Expected only ${expected}, found: ${packages.join(", ") || "none"}`,

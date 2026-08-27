@@ -40,7 +40,7 @@ export function SourceOnboardingDialog({
               </DialogDescription>
             </div>
             <SourceForm
-              description="Informe os dados da sua primeira lista IPTV para começar."
+              description="Informe os dados da sua primeira fonte de conteúdo para começar."
               initialSource={{ name: "", type: "m3u" }}
               onSave={onSave}
               submitLabel="Adicionar"

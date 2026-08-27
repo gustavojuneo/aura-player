@@ -77,7 +77,7 @@ const emptyValues: SourceFormValues = {
 };
 
 export function SourceForm({
-  description = "Informe os dados da lista IPTV que deseja adicionar.",
+  description = "Informe os dados da fonte de conteúdo que deseja adicionar.",
   initialSource,
   onCancel,
   onSave,

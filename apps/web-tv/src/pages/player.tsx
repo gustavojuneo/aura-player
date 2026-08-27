@@ -1,4 +1,4 @@
-import { PlayerScreen } from "@iptv/web-shared/components/media-player/tv";
+import { PlayerScreen } from "@aura/web-shared/components/media-player/tv";
 import { TvMediaPlayer } from "../components/tv-media-player";
 
 export function MoviePlayerPage() {

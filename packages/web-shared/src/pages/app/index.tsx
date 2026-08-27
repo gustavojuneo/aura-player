@@ -177,7 +177,7 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
           EM DESTAQUE
         </p>
         <h1 className="m-0 font-display text-[1.75rem] font-bold leading-tight tracking-[-0.05em] text-text md:text-[2.188rem]">
-          {item?.title ?? "Seu catálogo IPTV"}
+          {item?.title ?? "Seu catálogo"}
         </h1>
         <p className="m-0 max-w-[470px] text-sm leading-[1.45] text-[#ddd5c8]">
           {item?.description ??

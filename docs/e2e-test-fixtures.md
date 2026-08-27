@@ -2,14 +2,14 @@
 
 The repository contains deterministic source fixtures for future end-to-end
 tests. They use fictional credentials and public sample videos; they are not
-production IPTV sources and must never be replaced with real provider data.
+production content sources and must never be replaced with real provider data.
 
 ## M3U fixture
 
 Use [`tests/fixtures/sources/aura-e2e.m3u`](../tests/fixtures/sources/aura-e2e.m3u)
 when a test needs to exercise M3U import. It contains one live item, one movie,
 and two episodes from one series. The public video URLs are suitable for media
-playback assertions and do not require an IPTV account.
+playback assertions and do not require a provider account.
 
 ## Xtream fixture
 

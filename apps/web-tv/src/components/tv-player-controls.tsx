@@ -1,13 +1,13 @@
 import type {
   PlayerQuality,
   PlayerQualityOption,
-} from "@iptv/web-shared/components/media-player/tv";
-import { SelectField } from "@iptv/web-shared/components/ui";
-import { formatPlaybackTime } from "@iptv/web-shared/features/playback/playback";
+} from "@aura/web-shared/components/media-player/tv";
+import { SelectField } from "@aura/web-shared/components/ui";
+import { formatPlaybackTime } from "@aura/web-shared/features/playback/playback";
 import {
   ASPECT_RATIO_OPTIONS,
   type PlayerAspectRatio,
-} from "@iptv/web-shared/utils/constants";
+} from "@aura/web-shared/utils/constants";
 import { TvPlayerControlButton } from "./tv-player-control-button";
 
 export function TvPlayerControls({

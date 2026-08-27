@@ -125,10 +125,11 @@ export function SourcesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text sm:text-[1.875rem]">
-            Listas IPTV
+            Fontes de conteúdo
           </h1>
           <p className="mt-1 mb-0 text-[0.8125rem] text-muted">
-            Adicione e gerencie suas listas IPTV neste navegador.
+            Adicione e gerencie as fontes que alimentam seu catálogo neste
+            navegador.
           </p>
         </div>
       </div>

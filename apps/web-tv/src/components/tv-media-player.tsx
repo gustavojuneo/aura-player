@@ -4,10 +4,10 @@ import {
   PlayerVideo,
   useNextEpisodeCountdown,
   usePlaybackEngine,
-} from "@iptv/web-shared/components/media-player/tv";
-import { ProductState } from "@iptv/web-shared/components/ui";
-import { usePlaybackPreferences } from "@iptv/web-shared/services/playback-preferences";
-import type { PlayerAspectRatio } from "@iptv/web-shared/utils/constants";
+} from "@aura/web-shared/components/media-player/tv";
+import { ProductState } from "@aura/web-shared/components/ui";
+import { usePlaybackPreferences } from "@aura/web-shared/services/playback-preferences";
+import type { PlayerAspectRatio } from "@aura/web-shared/utils/constants";
 import { useState } from "react";
 import { TvPlayerControls } from "./tv-player-controls";
 

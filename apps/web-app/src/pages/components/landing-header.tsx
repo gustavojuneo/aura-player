@@ -1,5 +1,5 @@
-import { BrandLogo } from "@iptv/web-shared/components/brand-logo";
-import { Button } from "@iptv/web-shared/components/ui";
+import { BrandLogo } from "@aura/web-shared/components/brand-logo";
+import { Button } from "@aura/web-shared/components/ui";
 import { Icon } from "./icon";
 
 function AuraMark() {

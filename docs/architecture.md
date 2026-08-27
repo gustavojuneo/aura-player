@@ -1,6 +1,6 @@
 # Project Architecture
 
-This document records the architectural decisions for the IPTV project. It describes the intended direction, layer boundaries, and directory responsibilities.
+This document records the architectural decisions for the AURA project. It describes the intended direction, layer boundaries, and directory responsibilities.
 
 The structure is incremental. Create directories only when there is real code to place in them.
 
@@ -742,7 +742,7 @@ No module should read environment variables directly. It should consume `env` or
 
 ### `core`
 
-Contains genuinely cross-cutting abstractions independent of the IPTV domain.
+Contains genuinely cross-cutting abstractions independent of the media catalog domain.
 
 Possible responsibilities:
 

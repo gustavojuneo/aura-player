@@ -1,13 +1,13 @@
-import { AppLoadingScreen } from "@iptv/web-shared/components/app-loading-screen";
-import { useAppLifecycle } from "@iptv/web-shared/hooks/use-app-lifecycle";
+import { AppLoadingScreen } from "@aura/web-shared/components/app-loading-screen";
+import { useAppLifecycle } from "@aura/web-shared/hooks/use-app-lifecycle";
 import {
   useCatalogRefreshError,
   useCatalogRefreshInProgress,
-} from "@iptv/web-shared/hooks/use-catalog-data";
+} from "@aura/web-shared/hooks/use-catalog-data";
 import {
   SessionExpiredState,
   Sidebar,
-} from "@iptv/web-shared/pages/app/components";
+} from "@aura/web-shared/pages/app/components";
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
@@ -25,9 +25,9 @@ export function AppLayout() {
 
   useEffect(() => {
     const handleExpired = () => setSessionExpired(true);
-    window.addEventListener("iptv:session-expired", handleExpired);
+    window.addEventListener("aura:session-expired", handleExpired);
     return () =>
-      window.removeEventListener("iptv:session-expired", handleExpired);
+      window.removeEventListener("aura:session-expired", handleExpired);
   }, []);
 
   if (isCatalogRefreshing) {

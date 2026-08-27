@@ -1,5 +1,5 @@
 {
-  "extends": "@iptv/config-typescript/vite.json",
+  "extends": "@aura/config-typescript/vite.json",
   "compilerOptions": {},
   "include": ["vite.config.ts"]
 }

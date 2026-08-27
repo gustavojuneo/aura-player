@@ -1,5 +1,5 @@
 {
-  "name": "iptv",
+  "name": "aura",
   "private": true,
   "packageManager": "pnpm@9.7.1",
   "engines": {
@@ -13,7 +13,7 @@
     "lint:fix": "biome check --write .",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "webos:package": "pnpm --filter @iptv/web-tv build && pnpm exec ares-package apps/web-tv/dist -o apps/web-tv/release"
+    "webos:package": "pnpm --filter @aura/web-tv build && pnpm exec ares-package apps/web-tv/dist -o apps/web-tv/release"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",

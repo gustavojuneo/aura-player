@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-import { createReactViteConfig } from "@iptv/config-vite";
+import { createReactViteConfig } from "@aura/config-vite";
 
 export default createReactViteConfig({
   base: "/",

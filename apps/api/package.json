@@ -1,5 +1,5 @@
 {
-  "name": "@iptv/api",
+  "name": "@aura/api",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,7 +19,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
-    "@iptv/config-typescript": "workspace:*",
+    "@aura/config-typescript": "workspace:*",
     "@types/node": "^24.0.0",
     "typescript": "~5.9.2"
   }

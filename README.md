@@ -1,7 +1,7 @@
-# AURA IPTV
+# AURA
 
-AURA is a source-first IPTV web application for organizing and playing media
-from IPTV sources that the user already owns or is legally entitled to use.
+AURA is a source-first media player for organizing and playing content from
+catalog sources that the user already owns or is legally entitled to use.
 It supports Xtream Codes credentials and M3U/M3U8 playlists while keeping the
 catalog cache and playback preferences in the browser.
 
@@ -36,7 +36,7 @@ The browser application currently exposes the following TanStack Router routes:
 | `/app/favorites/movies` | Favorite movies |
 | `/app/favorites/series` | Favorite series |
 | `/app/favorites/channels` | Favorite channels |
-| `/app/sources` | IPTV source management |
+| `/app/sources` | Catalog source management |
 | `/app/settings` | Playback, appearance, language, and data settings |
 
 The TV application uses hash history and exposes its application shell at `/`;
@@ -72,7 +72,7 @@ packages/
 
 The web application uses React, Vite, TypeScript, Tailwind CSS, TanStack
 Router, TanStack Query, Axios, React Hook Form, and Zod. The API uses Fastify
-and Zod, and permits outbound requests to arbitrary public IPTV hosts while
+and Zod, and permits outbound requests to arbitrary public provider hosts while
 rejecting private network targets.
 
 See [`docs/architecture.md`](docs/architecture.md) for the architectural

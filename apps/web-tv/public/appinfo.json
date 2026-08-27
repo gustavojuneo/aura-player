@@ -1,11 +1,11 @@
 {
-  "id": "com.aura.iptv",
+  "id": "com.aura.player",
   "version": "1.0.0",
   "vendor": "AURA",
   "type": "web",
   "allowCrossDomain": true,
   "main": "index.html",
-  "title": "AURA IPTV",
+  "title": "AURA Player",
   "icon": "logo.png",
   "largeIcon": "large-logo.png"
 }

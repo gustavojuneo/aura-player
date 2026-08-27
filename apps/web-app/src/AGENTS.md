@@ -1,6 +1,6 @@
 # Web Source Guide
 
-This directory contains the frontend source for the IPTV application. Follow
+This directory contains the frontend source for the AURA application. Follow
 the repository-level `AGENTS.md` and `docs/architecture.md` first.
 
 - Keep route composition in `pages/`, reusable behavior in `hooks/`, remote
