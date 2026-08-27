@@ -6,6 +6,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "./",
+  define: { __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(false) },
   publicDir: "../../packages/web-shared/public",
   resolve: {
     alias: {

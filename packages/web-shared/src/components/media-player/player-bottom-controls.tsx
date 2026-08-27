@@ -148,20 +148,21 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 <Volume2 className="size-4" />
               )}
             </ControlButton>
-            {getSharedRuntime().showVolumeSlider && (
-              <input
-                aria-keyshortcuts="ArrowUp ArrowDown"
-                aria-label="Volume do player"
-                className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
-                max={100}
-                min={0}
-                onChange={(event) =>
-                  onVolumeChange(Number(event.target.value) / 100)
-                }
-                type="range"
-                value={Math.round(volume * 100)}
-              />
-            )}
+            {__IPTV_SHOW_VOLUME_SLIDER__ &&
+              getSharedRuntime().showVolumeSlider && (
+                <input
+                  aria-keyshortcuts="ArrowUp ArrowDown"
+                  aria-label="Volume do player"
+                  className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
+                  max={100}
+                  min={0}
+                  onChange={(event) =>
+                    onVolumeChange(Number(event.target.value) / 100)
+                  }
+                  type="range"
+                  value={Math.round(volume * 100)}
+                />
+              )}
           </div>
           {!descriptor.isLive && (
             <span className="hidden text-[0.6875rem] text-muted sm:inline">
