@@ -7,5 +7,6 @@
   "main": "index.html",
   "title": "AURA Player",
   "icon": "logo.png",
-  "largeIcon": "large-logo.png"
+  "largeIcon": "large-logo.png",
+  "splashBackground": "splash.png"
 }
