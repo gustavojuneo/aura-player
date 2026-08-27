@@ -8,6 +8,18 @@ import {
   ASPECT_RATIO_OPTIONS,
   type PlayerAspectRatio,
 } from "@aura/web-shared/utils/constants";
+import {
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  ListVideo,
+  Pause,
+  Play,
+  Ratio,
+  Settings,
+  Volume2,
+  VolumeOff,
+} from "lucide-react";
 import { TvPlayerControlButton } from "./tv-player-control-button";
 
 export function TvPlayerControls({
@@ -97,13 +109,21 @@ export function TvPlayerControls({
             label={isPlaying ? "Pausar" : "Reproduzir"}
             onClick={onTogglePlay}
           >
-            {isPlaying ? "❚❚" : "▶"}
+            {isPlaying ? (
+              <Pause aria-hidden="true" className="size-4" />
+            ) : (
+              <Play aria-hidden="true" className="size-4 fill-current" />
+            )}
           </TvPlayerControlButton>
           <TvPlayerControlButton
             label={isMuted ? "Ativar som" : "Silenciar"}
             onClick={onToggleMute}
           >
-            {isMuted ? "🔇" : "🔊"}
+            {isMuted ? (
+              <VolumeOff aria-hidden="true" className="size-4" />
+            ) : (
+              <Volume2 aria-hidden="true" className="size-4" />
+            )}
           </TvPlayerControlButton>
         </div>
         <div className="flex items-center gap-1">
@@ -114,14 +134,14 @@ export function TvPlayerControls({
                 label="Episódio anterior"
                 onClick={onPrevious ?? (() => undefined)}
               >
-                ←
+                <ChevronLeft aria-hidden="true" className="size-4" />
               </TvPlayerControlButton>
               <TvPlayerControlButton
                 disabled={!onNext}
                 label="Próximo episódio"
                 onClick={onNext ?? (() => undefined)}
               >
-                →
+                <ChevronRight aria-hidden="true" className="size-4" />
               </TvPlayerControlButton>
             </>
           )}
@@ -131,7 +151,7 @@ export function TvPlayerControls({
               label="Lista de conteúdo"
               onClick={onContentList}
             >
-              ☷
+              <ListVideo aria-hidden="true" className="size-4" />
             </TvPlayerControlButton>
           )}
           {isLive && (
@@ -140,7 +160,7 @@ export function TvPlayerControls({
               label={liveGuideOpen ? "Fechar programação" : "Abrir programação"}
               onClick={onLiveGuideToggle}
             >
-              ◷
+              <CalendarClock aria-hidden="true" className="size-4" />
             </TvPlayerControlButton>
           )}
           <div className="relative">
@@ -148,7 +168,7 @@ export function TvPlayerControls({
               label="Configurações"
               onClick={onSettingsToggle}
             >
-              ⚙
+              <Settings aria-hidden="true" className="size-4" />
             </TvPlayerControlButton>
             {settingsOpen && (
               <div
@@ -186,7 +206,7 @@ export function TvPlayerControls({
               );
             }}
           >
-            ⛶
+            <Ratio aria-hidden="true" className="size-4" />
           </TvPlayerControlButton>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
 import { ProductState } from "@aura/web-shared/components/ui";
 import { usePlaybackPreferences } from "@aura/web-shared/services/playback-preferences";
 import type { PlayerAspectRatio } from "@aura/web-shared/utils/constants";
+import { Pause, Play } from "lucide-react";
 import { useState } from "react";
 import { TvPlayerControls } from "./tv-player-controls";
 
@@ -120,7 +121,11 @@ export function TvMediaPlayer({
           onClick={playback.togglePlay}
           type="button"
         >
-          {playback.isPlaying ? "❚❚" : "▶"}
+          {playback.isPlaying ? (
+            <Pause aria-hidden="true" className="size-8" />
+          ) : (
+            <Play aria-hidden="true" className="ml-1 size-8 fill-current" />
+          )}
         </button>
       </div>
       {descriptor.isLive && liveGuideOpen && renderLiveGuide && (
