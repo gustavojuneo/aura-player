@@ -5,7 +5,7 @@
 
 ## Scope
 
-This specification defines the API media proxy's provider-host validation.
+This specification defines the API media resolver's provider-host validation.
 
 ### PROXY-001: Public provider hosts
 
@@ -26,27 +26,22 @@ examples and deployment configuration must not define it.
 ### PROXY-004: Media streaming
 
 `media-resolve` must follow the provider redirect chain and return the final
-media URL to the frontend. The API must also provide a proxy URL for cases in
-which a secure frontend cannot directly load an HTTP final URL.
+media URL to the frontend. The frontend is responsible for loading that URL.
 
 ### PROXY-005: Redirect and certificate tolerance
 
 The resolver must follow a bounded chain of HTTP redirects, validate every
 redirect target against the private-target protection, and support providers
 whose HTTPS media endpoint has an invalid certificate when the same endpoint is
-available over HTTP. The frontend must load the returned final URL whenever
-the browser platform permits it, and use the proxy only when required by
-browser mixed-content rules.
+available over HTTP.
 
 ## Acceptance criteria
 
 1. A public provider host not present in any project configuration can be
-   validated by the media proxy.
+   validated by the media resolver.
 2. Private network targets remain rejected.
 3. Removing `IPTV_PROXY_ALLOWED_HOSTS` from the API environment does not prevent
    the API from starting.
 4. HTTP and HTTPS initial URLs resolve to final HTTP or HTTPS media URLs.
-5. A secure frontend uses the media proxy only when the resolved final URL is
-   HTTP; otherwise it loads the resolved final URL directly.
-6. Range requests sent to the media proxy are forwarded and the upstream
-   content-range metadata is returned to the player.
+5. The frontend uses the resolved final URL for playback, including when it is
+   HTTP and the application is served over HTTPS.

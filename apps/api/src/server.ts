@@ -1,6 +1,5 @@
 import dns from "node:dns/promises";
 import net from "node:net";
-import { Readable } from "node:stream";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { z } from "zod";
@@ -656,25 +655,10 @@ async function validateTarget(rawUrl: unknown) {
 }
 
 const MEDIA_PROXY_MAX_REDIRECTS = 5;
-const mediaProxyHeaders = [
-  "accept-ranges",
-  "cache-control",
-  "content-disposition",
-  "content-length",
-  "content-range",
-  "content-type",
-  "etag",
-  "last-modified",
-  "expires",
-] as const;
-
 type MediaRequestHeaders = {
-  range?: string;
-  ifRange?: string;
-  ifNoneMatch?: string;
-  ifModifiedSince?: string;
   origin?: string;
   referer?: string;
+  range?: string;
   userAgent?: string;
 };
 
@@ -691,13 +675,6 @@ async function fetchMediaUpstream(
     Accept: "*/*",
     "User-Agent": userAgent,
     ...(headers.request.range ? { Range: headers.request.range } : {}),
-    ...(headers.request.ifRange ? { "If-Range": headers.request.ifRange } : {}),
-    ...(headers.request.ifNoneMatch
-      ? { "If-None-Match": headers.request.ifNoneMatch }
-      : {}),
-    ...(headers.request.ifModifiedSince
-      ? { "If-Modified-Since": headers.request.ifModifiedSince }
-      : {}),
     ...(headers.request.origin ? { Origin: headers.request.origin } : {}),
     ...(headers.request.referer ? { Referer: headers.request.referer } : {}),
   };
@@ -760,14 +737,7 @@ app.post<{ Body: { url?: string } }>(
         },
       });
       await upstream.response.body?.cancel();
-      const proxyUrl = new URL(
-        `/media-proxy?url=${encodeURIComponent(upstream.url.toString())}`,
-        `${request.headers["x-forwarded-proto"] === "https" ? "https" : request.protocol}://${host}`,
-      );
-      return reply.send({
-        proxyUrl: proxyUrl.toString(),
-        resolvedUrl: upstream.url.toString(),
-      });
+      return reply.send({ resolvedUrl: upstream.url.toString() });
     } catch (error) {
       request.log.error(
         {
@@ -788,67 +758,6 @@ app.post<{ Body: { url?: string } }>(
     }
   },
 );
-
-app.route<{ Querystring: { url?: string } }>({
-  method: ["GET", "HEAD"],
-  url: "/media-proxy",
-  handler: async (request, reply) => {
-    try {
-      const url = await validateTarget(request.query.url);
-      const response = await fetchMediaUpstream(url, {
-        request: {
-          ifModifiedSince:
-            typeof request.headers["if-modified-since"] === "string"
-              ? request.headers["if-modified-since"]
-              : undefined,
-          ifNoneMatch:
-            typeof request.headers["if-none-match"] === "string"
-              ? request.headers["if-none-match"]
-              : undefined,
-          ifRange:
-            typeof request.headers["if-range"] === "string"
-              ? request.headers["if-range"]
-              : undefined,
-          origin:
-            typeof request.headers.origin === "string"
-              ? request.headers.origin
-              : undefined,
-          range:
-            typeof request.headers.range === "string"
-              ? request.headers.range
-              : undefined,
-          referer:
-            typeof request.headers.referer === "string"
-              ? request.headers.referer
-              : undefined,
-          userAgent:
-            typeof request.headers["user-agent"] === "string"
-              ? request.headers["user-agent"]
-              : undefined,
-        },
-      });
-
-      for (const header of mediaProxyHeaders) {
-        const value = response.response.headers.get(header);
-        if (value) reply.header(header, value);
-      }
-      reply.code(response.response.status);
-      if (request.method === "HEAD" || !response.response.body) {
-        await response.response.body?.cancel();
-        return reply.send();
-      }
-      return reply.send(Readable.fromWeb(response.response.body as never));
-    } catch (error) {
-      request.log.error(
-        {
-          errorMessage: error instanceof Error ? error.message : String(error),
-        },
-        "Media proxy request failed",
-      );
-      return reply.code(502).send({ message: "Media unavailable" });
-    }
-  },
-});
 
 app.get("/health", async () => ({ status: "ok" }));
 

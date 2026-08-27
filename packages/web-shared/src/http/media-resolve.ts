@@ -2,7 +2,6 @@ import { z } from "zod";
 import { httpClient } from "./client";
 
 const mediaResolveSchema = z.object({
-  proxyUrl: z.string().url(),
   resolvedUrl: z.string().url(),
 });
 
