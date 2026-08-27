@@ -133,7 +133,10 @@ git push origin v1.0.0
 ```
 
 The release workflow derives the webOS application version from the tag. Tags
-must use the `vMAJOR.MINOR.PATCH` format.
+must use the `vMAJOR.MINOR.PATCH`, `vMAJOR.MINOR.PATCH-beta[.N]`, or
+`vMAJOR.MINOR.PATCH-rc[.N]` format. Beta and release-candidate tags are
+published as GitHub pre-releases, while final tags are published as regular
+releases. GitHub automatically generates the release notes for every version.
 
 The catalog is intentionally held only in the application process memory. It
 is cleared when the app page is terminated and is reloaded from the selected

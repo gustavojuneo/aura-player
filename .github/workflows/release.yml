@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v*"
 
 permissions:
   contents: write
@@ -43,13 +43,45 @@ jobs:
           node --input-type=module -e '
             import { readFile, writeFile } from "node:fs/promises";
             const path = "apps/web-tv/public/appinfo.json";
+            const tag = process.env.RELEASE_VERSION;
+            if (!/^v\d+\.\d+\.\d+(?:-(?:beta|rc)(?:\.\d+)?)?$/.test(tag)) {
+              throw new Error(`Invalid release tag: ${tag}`);
+            }
             const appInfo = JSON.parse(await readFile(path, "utf8"));
-            appInfo.version = process.env.RELEASE_VERSION.replace(/^v/, "");
+            appInfo.version = tag.slice(1);
             await writeFile(path, `${JSON.stringify(appInfo, null, 2)}\n`);
           '
 
       - name: Package webOS application
         run: pnpm webos:package
+
+      - name: Verify webOS package version
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          node --input-type=module -e '
+            import { access, readFile, readdir } from "node:fs/promises";
+            const tag = process.env.RELEASE_VERSION;
+            const version = tag.slice(1);
+            const appInfo = JSON.parse(
+              await readFile("apps/web-tv/dist/appinfo.json", "utf8"),
+            );
+            if (appInfo.version !== version) {
+              throw new Error(
+                `Built appinfo version ${appInfo.version} does not match ${version}`,
+              );
+            }
+
+            const packages = (await readdir("apps/web-tv/release"))
+              .filter((file) => file.endsWith(".ipk"));
+            const expected = `com.aura.iptv_${version}_all.ipk`;
+            if (packages.length !== 1 || packages[0] !== expected) {
+              throw new Error(
+                `Expected only ${expected}, found: ${packages.join(", ") || "none"}`,
+              );
+            }
+            await access(`apps/web-tv/release/${expected}`);
+          '
 
       - name: Create release archives
         run: |
@@ -59,4 +91,9 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" release-artifacts/* --generate-notes --verify-tag
+        run: |
+          release_flags=(--generate-notes --verify-tag)
+          if [[ "${GITHUB_REF_NAME}" =~ -(beta|rc)(\.[0-9]+)?$ ]]; then
+            release_flags+=(--prerelease)
+          fi
+          gh release create "${GITHUB_REF_NAME}" release-artifacts/* "${release_flags[@]}"
