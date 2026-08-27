@@ -87,6 +87,9 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
     showEpisodeNavigation,
     volume,
   } = props;
+  const displayedCurrentTime =
+    isReady && duration > 0 ? Math.min(currentTime, duration) : 0;
+
   return (
     <section
       aria-label="Controles de reprodução"
@@ -98,34 +101,35 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
           {descriptor.title}
           {descriptor.secondaryTitle ? ` · ${descriptor.secondaryTitle}` : ""}
         </p>
-        {!descriptor.isLive && duration > 0 && (
-          <span className="hidden text-[0.6875rem] text-muted sm:block">
-            {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
-          </span>
-        )}
       </div>
       {!descriptor.isLive && (
-        <PlayerTooltip
-          label="Posição da reprodução"
-          shortcut="←/→ · Home/End · 0–9"
-        >
-          <input
-            aria-keyshortcuts={
-              __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
-                ? "ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
-                : undefined
-            }
-            aria-label="Posição da reprodução"
-            className="h-1 w-full cursor-pointer accent-gold outline-none transition-[height] focus-visible:h-1.5 focus-visible:accent-gold-bright focus-visible:outline-none"
-            data-player-focus-anchor
-            data-player-progress
-            max={duration || 1}
-            min={0}
-            onChange={(event) => onSeek(Number(event.target.value))}
-            type="range"
-            value={isReady && duration > 0 ? Math.min(currentTime, duration) : 0}
-          />
-        </PlayerTooltip>
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between text-[0.6875rem] text-muted">
+            <span>{formatPlaybackTime(displayedCurrentTime)}</span>
+            <span>{formatPlaybackTime(duration)}</span>
+          </div>
+          <PlayerTooltip
+            label="Posição da reprodução"
+            shortcut="←/→ · Home/End · 0–9"
+          >
+            <input
+              aria-keyshortcuts={
+                __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
+                  ? "ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
+                  : undefined
+              }
+              aria-label="Posição da reprodução"
+              className="h-1 w-full cursor-pointer accent-gold outline-none transition-[height] focus-visible:h-1.5 focus-visible:accent-gold-bright focus-visible:outline-none"
+              data-player-focus-anchor
+              data-player-progress
+              max={duration || 1}
+              min={0}
+              onChange={(event) => onSeek(Number(event.target.value))}
+              type="range"
+              value={displayedCurrentTime}
+            />
+          </PlayerTooltip>
+        </div>
       )}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
@@ -174,11 +178,6 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 />
               )}
           </div>
-          {!descriptor.isLive && (
-            <span className="hidden text-[0.6875rem] text-muted sm:inline">
-              {formatPlaybackTime(currentTime)} / {formatPlaybackTime(duration)}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-1">
           {showEpisodeNavigation && (
