@@ -21,12 +21,10 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
-    "babel-plugin-react-compiler": "^1.0.0",
-    "@tailwindcss/vite": "^4.1.12",
+    "@iptv/config-typescript": "workspace:*",
+    "@iptv/config-vite": "workspace:*",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^5.0.2",
-    "tailwindcss": "^4.1.12",
     "typescript": "~5.9.2",
     "vite": "^7.1.3"
   }

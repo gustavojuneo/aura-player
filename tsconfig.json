@@ -1,4 +1,10 @@
 {
   "files": [],
-  "references": [{ "path": "./apps/web/tsconfig.app.json" }]
+  "references": [
+    { "path": "./apps/api/tsconfig.json" },
+    { "path": "./apps/web-app/tsconfig.json" },
+    { "path": "./apps/web-tv/tsconfig.json" },
+    { "path": "./packages/config-vite/tsconfig.json" },
+    { "path": "./packages/web-shared/tsconfig.json" }
+  ]
 }

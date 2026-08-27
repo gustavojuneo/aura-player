@@ -1,0 +1,23 @@
+{
+  "name": "@iptv/config-vite",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json --pretty false"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
+    "@vitejs/plugin-react": "^5.0.2",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "tailwindcss": "^4.1.12",
+    "vite": "^7.1.3"
+  },
+  "devDependencies": {
+    "@iptv/config-typescript": "workspace:*",
+    "typescript": "~5.9.2"
+  }
+}

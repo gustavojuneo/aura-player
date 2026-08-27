@@ -1,0 +1,4 @@
+{
+  "extends": "@iptv/config-typescript/vite.json",
+  "include": ["src"]
+}

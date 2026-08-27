@@ -1,12 +1,10 @@
 {
+  "extends": "@iptv/config-typescript/node.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "rewriteRelativeImportExtensions": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"]

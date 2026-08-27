@@ -1,0 +1,13 @@
+{
+  "name": "@iptv/config-typescript",
+  "private": true,
+  "files": [
+    "*.json"
+  ],
+  "exports": {
+    "./base.json": "./base.json",
+    "./node.json": "./node.json",
+    "./react.json": "./react.json",
+    "./vite.json": "./vite.json"
+  }
+}

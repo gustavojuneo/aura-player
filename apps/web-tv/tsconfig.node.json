@@ -1,16 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "strict": true,
-    "skipLibCheck": true
-  },
+  "extends": "@iptv/config-typescript/vite.json",
+  "compilerOptions": {},
   "include": ["vite.config.ts"]
 }

@@ -68,6 +68,21 @@ volume to 100 percent because system volume is controlled by the television.
 See [ADR 0003](adr/0003-separate-web-app-and-web-tv.md) for the complete
 decision, migration constraints, alternatives, and consequences.
 
+### Shared configuration packages
+
+Configuration shared by multiple workspace consumers lives in dedicated
+packages rather than in a broad application package:
+
+```text
+packages/config-typescript/   TypeScript base, Node, React, and Vite presets
+packages/config-vite/         React, Tailwind, compiler, and common Vite setup
+```
+
+Applications extend the TypeScript presets and compose the Vite helper with
+their own aliases, platform defines, assets, and plugins. Product-specific
+configuration remains in the application, and configuration packages must not
+import application environment modules.
+
 ## Documentation
 
 Each document has a specific purpose:
