@@ -96,14 +96,14 @@ export function SettingsPage() {
           markClassName="size-7"
           textClassName="text-lg font-extrabold lg:text-[1.188rem]"
         />
-        <button
-          className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
+        <Button
+          className="h-9 rounded-lg px-3 text-sm"
           onClick={() => router.history.back()}
-          type="button"
+          variant="quiet"
         >
           <span className="hidden sm:inline">← Início</span>
           <X className="size-5 sm:hidden" />
-        </button>
+        </Button>
       </header>
       <h1 className="m-0 font-display text-[1.75rem] font-bold tracking-[-0.05em] text-text sm:text-[1.875rem]">
         Configurações

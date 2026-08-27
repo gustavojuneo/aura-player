@@ -3,7 +3,7 @@ import { Icon } from "../../../components/icon";
 import type { NavigationItem as NavigationItemData } from "./navigation";
 
 const itemClassName =
-  "flex items-center gap-3 rounded-[10px] text-left text-[0.8125rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  "group flex items-center gap-3 rounded-[10px] border text-left text-[0.8125rem] font-semibold transition-colors focus:!outline-none focus-visible:!outline-none";
 
 export function NavigationItem({
   collapsed = false,
@@ -17,26 +17,28 @@ export function NavigationItem({
   const mobileClassName = mobile
     ? "h-auto w-16 flex-col gap-1 px-0 text-[0.625rem]"
     : collapsed
-      ? "h-10 w-10 shrink-0 justify-center px-0 group-hover/sidebar:h-10 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-2.5 group-focus-within/sidebar:h-10 group-focus-within/sidebar:w-full group-focus-within/sidebar:justify-start group-focus-within/sidebar:px-2.5"
-      : "h-10 w-full px-2.5";
+      ? "grid size-10 shrink-0 place-items-center p-0"
+      : "h-10 w-full px-0";
 
   if (item.to) {
     return (
       <Link
+        data-sidebar-item="true"
         activeOptions={{ exact: item.to === "/app" }}
         activeProps={{
-          className: `${itemClassName} border border-gold/80 bg-[#3b2e18] text-text ${mobileClassName}`,
+          "data-status": "active",
+          className: `${itemClassName} border-transparent bg-transparent text-text ${mobileClassName}`,
         }}
-        className={`${itemClassName} border border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
+        className={`${itemClassName} border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
         to={item.to}
       >
-        <Icon
-          className={`size-5 shrink-0 ${mobile ? "text-current" : "text-muted"}`}
-          name={item.icon}
-        />
-        <span
-          className={`truncate ${collapsed ? "hidden group-hover/sidebar:inline group-focus-within/sidebar:inline" : ""}`}
-        >
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-transparent text-current transition-colors group-data-[status=active]:bg-panel-2 group-focus-visible:bg-gold group-focus-visible:text-ink">
+          <Icon
+            className={`size-5 ${mobile ? "text-current" : "text-muted"} group-data-[status=active]:text-text group-focus-visible:text-ink`}
+            name={item.icon}
+          />
+        </span>
+        <span className={`truncate ${collapsed ? "hidden" : ""}`}>
           {mobile && item.label === "TV ao vivo" ? "Ao vivo" : item.label}
         </span>
       </Link>
@@ -45,14 +47,18 @@ export function NavigationItem({
 
   return (
     <button
-      className={`${itemClassName} border border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
+      data-sidebar-item="true"
+      className={`${itemClassName} border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
       disabled
       type="button"
     >
-      <Icon className="size-5 shrink-0" name={item.icon} />
-      <span
-        className={`truncate ${collapsed ? "hidden group-hover/sidebar:inline group-focus-within/sidebar:inline" : ""}`}
-      >
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors group-focus-visible:bg-gold group-focus-visible:text-ink">
+        <Icon
+          className="size-5 group-focus-visible:text-ink"
+          name={item.icon}
+        />
+      </span>
+      <span className={`truncate ${collapsed ? "hidden" : ""}`}>
         {item.label}
       </span>
     </button>

@@ -10,7 +10,7 @@ export function AppLoadingScreen() {
       role="status"
     >
       <div className="flex flex-col items-center gap-5 text-center">
-        <BrandLogo />
+        <BrandLogo className="w-full justify-center" />
         <LoaderCircle
           aria-hidden="true"
           className="size-8 animate-spin text-gold"

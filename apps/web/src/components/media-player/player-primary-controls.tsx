@@ -27,7 +27,7 @@ export function PlayerPrimaryControls({
       {env.VITE_DEVICE_TYPE !== "tv" && !isLive && (
         <button
           aria-label="Retroceder 10 segundos"
-          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
+          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/15 bg-black/35 px-3 text-base font-bold text-text opacity-70 outline-2 outline-offset-2 outline-transparent transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
           disabled={isLoading}
           onClick={() => onSeek(-10)}
           type="button"
@@ -55,7 +55,7 @@ export function PlayerPrimaryControls({
       {env.VITE_DEVICE_TYPE !== "tv" && !isLive && (
         <button
           aria-label="Avançar 10 segundos"
-          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-base font-bold text-text opacity-60 transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
+          className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/15 bg-black/35 px-3 text-base font-bold text-text opacity-70 outline-2 outline-offset-2 outline-transparent transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
           disabled={isLoading}
           onClick={() => onSeek(10)}
           type="button"

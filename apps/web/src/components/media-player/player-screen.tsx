@@ -132,7 +132,10 @@ export function PlayerFallback() {
         <h1 className="font-display text-2xl font-bold">
           Player não encontrado
         </h1>
-        <Link className="mt-4 inline-block text-sm text-gold-bright" to="/app">
+        <Link
+          className="mt-4 inline-flex h-10 items-center rounded-lg border border-line bg-panel-2 px-4 text-sm font-bold text-gold-bright outline-2 outline-offset-2 outline-transparent transition-colors hover:border-gold/60 hover:bg-panel hover:text-text focus-visible:outline-focus"
+          to="/app"
+        >
           Voltar ao início
         </Link>
       </div>

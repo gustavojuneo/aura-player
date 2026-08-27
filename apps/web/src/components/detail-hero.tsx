@@ -107,13 +107,13 @@ export function DetailHero({
             {description}
           </p>
           {canExpandDescription && (
-            <button
-              className="mt-1 inline-flex min-h-7 items-center rounded-md text-xs font-bold text-gold-bright underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-focus"
+            <Button
+              className="mt-1 h-8 rounded-lg px-3 text-xs"
               onClick={() => setIsDescriptionExpanded((expanded) => !expanded)}
-              type="button"
+              variant="text"
             >
               {isDescriptionExpanded ? "Ver menos" : "Ver mais"}
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex flex-col gap-2.5 sm:flex-row">

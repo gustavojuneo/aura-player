@@ -90,12 +90,13 @@ export function AccessModal({ onClose }: { onClose: () => void }) {
             <input className="accent-gold" type="checkbox" />
             Lembrar de mim
           </label>
-          <button
-            className="font-bold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          <Button
+            className="h-9 rounded-lg px-3 text-xs"
             type="button"
+            variant="text"
           >
             Esqueci minha senha
-          </button>
+          </Button>
         </div>
         <Button className="h-12 w-full" type="submit" variant="primary">
           Entrar

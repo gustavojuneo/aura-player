@@ -1,4 +1,4 @@
-import { ScrollArea, Skeleton } from "./ui";
+import { Button, ScrollArea, Skeleton } from "./ui";
 
 export function CatalogGridSkeleton() {
   return (
@@ -60,13 +60,13 @@ export function HomePageSkeleton({ onRetry }: { onRetry: () => void }) {
           </div>
         </section>
       ))}
-      <button
-        className="self-start text-xs font-bold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+      <Button
+        className="h-9 self-start px-3 text-xs"
         onClick={onRetry}
-        type="button"
+        variant="text"
       >
         Tentar novamente
-      </button>
+      </Button>
     </div>
   );
 }

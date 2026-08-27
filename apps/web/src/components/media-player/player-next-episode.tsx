@@ -49,7 +49,7 @@ export function PlayerNextEpisode({
             A seguir
           </p>
           <button
-            className="shrink-0 cursor-pointer text-xs font-semibold text-white/60 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-focus"
+            className="shrink-0 cursor-pointer rounded-lg border border-white/15 bg-black/45 px-3 py-2 text-xs font-semibold text-white/70 outline-2 outline-offset-2 outline-transparent transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-focus"
             onClick={(event) => {
               event.stopPropagation();
               onHide();

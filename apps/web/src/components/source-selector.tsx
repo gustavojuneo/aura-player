@@ -6,12 +6,14 @@ export function SourceSelector({
   sources = [],
   activeSourceId,
   onChange,
+  onOpenChange,
   className,
 }: {
   source?: string;
   sources?: CatalogSource[];
   activeSourceId?: string;
   onChange?: (sourceId: string) => void;
+  onOpenChange?: (open: boolean) => void;
   className?: string;
 }) {
   const selected = sources.find((item) => item.id === activeSourceId);
@@ -29,6 +31,7 @@ export function SourceSelector({
         />
       }
       onValueChange={(value) => onChange?.(value)}
+      onOpenChange={onOpenChange}
       options={sources.map((item) => ({
         disabled: item.status !== "ready",
         label: `${item.name} · ${item.status === "ready" ? "pronta" : item.status}`,

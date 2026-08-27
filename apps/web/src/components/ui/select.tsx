@@ -13,6 +13,7 @@ export function SelectField({
   "aria-label": ariaLabel,
   className,
   leading,
+  onOpenChange,
   onValueChange,
   options,
   placeholder,
@@ -23,6 +24,7 @@ export function SelectField({
   "aria-label": string;
   className?: string;
   leading?: ReactNode;
+  onOpenChange?: (open: boolean) => void;
   onValueChange: (value: string) => void;
   options: readonly SelectFieldOption[];
   placeholder?: ReactNode;
@@ -38,6 +40,7 @@ export function SelectField({
   return (
     <BaseSelect.Root
       items={items}
+      onOpenChange={onOpenChange}
       onValueChange={(nextValue) => {
         if (nextValue !== null) onValueChange(nextValue);
       }}

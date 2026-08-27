@@ -12,7 +12,7 @@ export function PlayerHeader({
     <header className="relative z-10 flex items-start justify-between px-5 pt-6 sm:px-9 sm:pt-7">
       <button
         data-player-back
-        className="flex min-w-0 cursor-pointer items-start gap-3 text-left text-text transition-colors hover:text-gold-bright focus-visible:outline-2 focus-visible:outline-focus"
+        className="flex min-w-0 cursor-pointer items-start gap-3 rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-left text-text outline-2 outline-offset-2 outline-transparent transition-colors hover:bg-white/10 hover:text-gold-bright focus-visible:outline-focus"
         onClick={onBack}
         type="button"
       >

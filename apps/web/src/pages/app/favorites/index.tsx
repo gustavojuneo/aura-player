@@ -129,13 +129,13 @@ function SectionControls({
   return (
     <div className="flex shrink-0 items-center gap-2">
       {showMore && (
-        <button
-          className="text-xs font-bold text-gold-bright hover:text-text focus-visible:outline-2 focus-visible:outline-focus"
+        <Button
+          className="h-8 rounded-lg px-3 text-xs"
           onClick={onViewAll ?? onToggleExpanded}
-          type="button"
+          variant="text"
         >
           {expanded ? "Ver menos" : "Ver mais"}
-        </button>
+        </Button>
       )}
     </div>
   );

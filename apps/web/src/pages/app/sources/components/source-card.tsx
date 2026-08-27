@@ -1,7 +1,7 @@
 import { Link as LinkIcon, MoreHorizontal, Server } from "lucide-react";
 import { useState } from "react";
 
-import { ProductState } from "../../../../components/ui";
+import { Button, ProductState } from "../../../../components/ui";
 import type { Source } from "../types";
 
 const statusLabel = {
@@ -88,27 +88,27 @@ export function SourceCard({
         </p>
       </div>
       <div className="flex items-center justify-between gap-2 sm:justify-end">
-        <button
-          className="text-xs font-semibold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+        <Button
+          className="h-8 rounded-lg px-3 text-xs"
           onClick={onActivate}
-          type="button"
+          variant="text"
         >
           {active ? "Ativa" : "Ativar"}
-        </button>
-        <button
-          className="text-xs font-semibold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+        </Button>
+        <Button
+          className="h-8 rounded-lg px-3 text-xs"
           onClick={onEdit}
-          type="button"
+          variant="text"
         >
           Editar
-        </button>
-        <button
-          className="text-xs font-semibold text-gold-bright hover:text-gold focus-visible:outline-2 focus-visible:outline-focus"
+        </Button>
+        <Button
+          className="h-8 rounded-lg px-3 text-xs"
           onClick={onRefresh}
-          type="button"
+          variant="text"
         >
           Atualizar
-        </button>
+        </Button>
         <button
           aria-label={`Mais ações para ${source.name}`}
           className="grid size-8 place-items-center rounded-lg text-gold-bright hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-focus"
@@ -121,14 +121,14 @@ export function SourceCard({
       {menuOpen && (
         <div className="absolute right-3 top-[calc(100%-8px)] z-10 flex min-w-32 flex-col rounded-lg border border-line bg-panel-2 p-1 shadow-xl">
           <button
-            className="rounded-md px-3 py-2 text-left text-xs font-semibold text-text hover:bg-panel"
+            className="rounded-md bg-panel-2 px-3 py-2 text-left text-xs font-semibold text-text outline-2 outline-offset-2 outline-transparent hover:bg-panel focus-visible:outline-focus"
             onClick={onRefresh}
             type="button"
           >
             Atualizar
           </button>
           <button
-            className="rounded-md px-3 py-2 text-left text-xs font-semibold text-danger-strong hover:bg-danger-surface"
+            className="rounded-md bg-panel-2 px-3 py-2 text-left text-xs font-semibold text-danger-strong outline-2 outline-offset-2 outline-transparent hover:bg-danger-surface focus-visible:outline-focus"
             onClick={onDelete}
             type="button"
           >
