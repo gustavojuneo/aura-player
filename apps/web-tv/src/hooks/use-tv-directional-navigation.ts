@@ -1205,6 +1205,18 @@ export function useTvDirectionalNavigation() {
         return;
       }
       if (document.querySelector('[role="dialog"]')) return;
+      const detailsRoute =
+        pathname.match(/^\/series\/[^/]+$/)?.[0] ||
+        pathname.match(/^\/movies\/[^/]+$/)?.[0];
+      if (detailsRoute) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void router.navigate({
+          replace: true,
+          to: detailsRoute.startsWith("/series") ? "/series" : "/movies",
+        });
+        return;
+      }
       if (!document.querySelector("[data-player-root]") && pathname !== "/") {
         event.preventDefault();
         void router.history.back();

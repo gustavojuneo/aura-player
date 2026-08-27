@@ -101,6 +101,12 @@ From an episode player, both the visible player Back button and the LG remote
 Back button must navigate directly to that series details page, regardless of
 previous episode navigation history.
 
+### FPS-TV-007: Details back navigation
+
+When the `web-tv` application is on movie or series details, the LG remote Back
+button must navigate to the corresponding catalog list instead of traversing
+history back to a player page.
+
 ## Shared code requirements
 
 ### FPS-SHARED-001: Concrete reuse
@@ -205,3 +211,5 @@ The specification is satisfied when:
     during source loading or updates.
 11. Pressing the visible or remote Back button from an episode player opens the
     current series details page and does not open a previously played episode.
+12. Pressing the remote Back button from movie or series details opens the
+    corresponding catalog list and does not open a player page.
