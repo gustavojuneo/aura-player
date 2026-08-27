@@ -144,3 +144,28 @@ body {
   min-height: 100vh;
   margin: 0;
 }
+
+/* TVs have substantially less GPU headroom than desktop browsers. Keep the
+   same layout and interaction model while avoiding expensive compositing. */
+[data-device-type="tv"] .backdrop-blur-sm,
+[data-device-type="tv"] .backdrop-blur-md,
+[data-device-type="tv"] .backdrop-blur-lg,
+[data-device-type="tv"] .backdrop-blur-\[2px\] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-device-type="tv"] .shadow-2xl,
+[data-device-type="tv"]
+  .shadow-\[inset_-90px_70px_-28px_rgba\(0\,0\,0\,0\.9\)\] {
+  box-shadow: none;
+}
+
+[data-device-type="tv"] .transition-transform,
+[data-device-type="tv"]
+  .transition-\[background-color\,border-color\,box-shadow\],
+[data-device-type="tv"] .animate-favorite-slide-next,
+[data-device-type="tv"] .animate-favorite-slide-previous {
+  transition: none;
+  animation: none;
+}

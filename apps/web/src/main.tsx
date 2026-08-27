@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-
+import { env } from "./env";
 import { queryClient } from "./lib/query-client";
 import { router } from "./lib/router";
 import "./styles.css";
@@ -12,6 +12,8 @@ const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element was not found");
 }
+
+rootElement.dataset.deviceType = env.VITE_DEVICE_TYPE;
 
 createRoot(rootElement).render(
   <StrictMode>

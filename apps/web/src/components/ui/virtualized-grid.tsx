@@ -39,6 +39,7 @@ export function VirtualizedGrid<T>({
 }: VirtualizedGridProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
+  const updateViewportRef = useRef<() => void>(() => undefined);
   const [viewport, setViewport] = useState<ViewportState>({
     height: 0,
     top: 0,
@@ -83,6 +84,8 @@ export function VirtualizedGrid<T>({
     );
   };
 
+  updateViewportRef.current = updateViewport;
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -92,11 +95,11 @@ export function VirtualizedGrid<T>({
       if (frameRef.current !== null) return;
       frameRef.current = window.requestAnimationFrame(() => {
         frameRef.current = null;
-        updateViewport();
+        updateViewportRef.current();
       });
     };
 
-    updateViewport();
+    updateViewportRef.current();
     target.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate, { passive: true });
     const resizeObserver = new ResizeObserver(scheduleUpdate);
@@ -109,7 +112,7 @@ export function VirtualizedGrid<T>({
       if (frameRef.current !== null)
         window.cancelAnimationFrame(frameRef.current);
     };
-  }, [updateViewport]);
+  }, []);
 
   const layout = (() => {
     const columns = Math.max(1, columnCount(viewport.width));
