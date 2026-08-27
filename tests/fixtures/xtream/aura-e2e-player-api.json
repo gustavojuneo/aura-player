@@ -1,0 +1,102 @@
+{
+  "account": {
+    "name": "AURA E2E Xtream",
+    "server": "https://aura-e2e.xtream.invalid",
+    "username": "aura-e2e-user",
+    "password": "aura-e2e-password"
+  },
+  "media": {
+    "live": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "movie": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "episodeOne": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "episodeTwo": "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+  },
+  "responses": {
+    "get_live_categories": [
+      { "category_id": "10", "category_name": "AURA E2E Live" }
+    ],
+    "get_live_streams": [
+      {
+        "category_id": "10",
+        "container_extension": "mp4",
+        "epg_channel_id": "aura-e2e-live",
+        "name": "AURA E2E Live",
+        "stream_icon": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+        "stream_id": "1001"
+      }
+    ],
+    "get_vod_categories": [
+      { "category_id": "20", "category_name": "AURA E2E Movies" }
+    ],
+    "get_vod_streams": [
+      {
+        "category_id": "20",
+        "container_extension": "mp4",
+        "name": "Big Buck Bunny",
+        "stream_icon": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+        "stream_id": "2001",
+        "year": "2008"
+      }
+    ],
+    "get_series_categories": [
+      { "category_id": "30", "category_name": "AURA E2E Series" }
+    ],
+    "get_series": [
+      {
+        "category_id": "30",
+        "cover": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+        "name": "AURA Test Series",
+        "num": 1,
+        "series_id": "3001"
+      }
+    ],
+    "get_vod_info": {
+      "info": {
+        "description": "AURA E2E public video fixture",
+        "movie_image": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+        "name": "Big Buck Bunny",
+        "rating": "7.5",
+        "releasedate": "2008"
+      }
+    },
+    "get_series_info": {
+      "episodes": {
+        "1": [
+          {
+            "container_extension": "mp4",
+            "direct_source": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "episode_num": 1,
+            "id": "300101",
+            "info": {
+              "duration_secs": 653,
+              "movie_image": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+              "plot": "AURA E2E episode one",
+              "rating": "7.0"
+            },
+            "season": 1,
+            "title": "AURA Test Series S01E01"
+          },
+          {
+            "container_extension": "mp4",
+            "direct_source": "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+            "episode_num": 2,
+            "id": "300102",
+            "info": {
+              "duration_secs": 888,
+              "movie_image": "https://storage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
+              "plot": "AURA E2E episode two",
+              "rating": "7.1"
+            },
+            "season": 1,
+            "title": "AURA Test Series S01E02"
+          }
+        ]
+      },
+      "info": {
+        "description": "AURA E2E series fixture",
+        "name": "AURA Test Series",
+        "rating": "7.2"
+      }
+    }
+  }
+}
