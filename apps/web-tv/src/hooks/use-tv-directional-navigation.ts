@@ -85,6 +85,20 @@ function getDirection(event: KeyboardEvent): Direction | undefined {
   return undefined;
 }
 
+function isActivationKey(event: KeyboardEvent) {
+  return event.key === "Enter" || event.key === "OK" || event.keyCode === 13;
+}
+
+function isBackKey(event: KeyboardEvent) {
+  return (
+    event.key === "Escape" ||
+    event.key === "Back" ||
+    event.key === "BrowserBack" ||
+    event.keyCode === 461 ||
+    event.which === 461
+  );
+}
+
 function getFocusKey(element: HTMLElement, prefix = "item") {
   const existing = focusKeys.get(element);
   if (existing) return existing;
@@ -962,8 +976,19 @@ export function useTvDirectionalNavigation() {
       if (activeElement.closest("[data-player-content-list]")) return;
 
       if (
-        (event.key === "Enter" || event.keyCode === 13) &&
+        isActivationKey(event) &&
         activeElement.hasAttribute("data-tv-select-trigger")
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        activeElement.click();
+        return;
+      }
+
+      if (
+        isActivationKey(event) &&
+        activeElement.closest("[data-player-root]") &&
+        activeElement instanceof HTMLButtonElement
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -1058,7 +1083,7 @@ export function useTvDirectionalNavigation() {
         void navigateByDirection(direction, { event });
         return;
       }
-      if (event.key === "Enter") {
+      if (isActivationKey(event)) {
         event.preventDefault();
         event.stopPropagation();
         SpatialNavigation.onEnterPress({ pressedKeys: {} });
@@ -1072,7 +1097,16 @@ export function useTvDirectionalNavigation() {
   useEffect(() => {
     if (!enabled) return;
     const handleBack = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" && event.keyCode !== 461) return;
+      if (!isBackKey(event)) return;
+
+      const player = document.querySelector<HTMLElement>("[data-player-root]");
+      if (player) {
+        // webOS sends the LG remote Back key as keyCode 461. Stop it before
+        // the browser/router can interpret it as history navigation.
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+
       const openSourceSelector = document.querySelector<HTMLElement>(
         "[data-source-selector-open] [data-tv-select-trigger]",
       );
@@ -1106,9 +1140,13 @@ export function useTvDirectionalNavigation() {
         '[data-player-content-list] [aria-label="Fechar lista de conteúdo"]',
       );
       if (contentListCloseButton) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
         contentListCloseButton.click();
+        return;
+      }
+      if (player) {
+        document
+          .querySelector<HTMLElement>('[data-player-root] [data-player-back]')
+          ?.click();
         return;
       }
       if (document.querySelector('[role="dialog"]')) return;

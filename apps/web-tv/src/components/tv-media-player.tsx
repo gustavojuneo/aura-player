@@ -91,6 +91,8 @@ export function TvMediaPlayer({
         if (event.key === "Escape" || event.keyCode === 461) {
           event.preventDefault();
           if (contentListOpen) closeContentList();
+          else if (settingsOpen) setSettingsOpen(false);
+          else if (liveGuideOpen) setLiveGuideOpen(false);
           else onBack();
         } else if (
           (event.key === "Enter" || event.key === " ") &&
