@@ -1120,7 +1120,7 @@ export function useTvDirectionalNavigation() {
         void router.history.back();
       }
     };
-    document.addEventListener("keydown", handleBack, true);
-    return () => document.removeEventListener("keydown", handleBack, true);
+    window.addEventListener("keydown", handleBack, true);
+    return () => window.removeEventListener("keydown", handleBack, true);
   }, [enabled, pathname, router]);
 }
