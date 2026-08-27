@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 
-const pageSize = 40;
+const pageSize = 20;
 
 export function useInfiniteCatalog<T>(
   items: T[],
