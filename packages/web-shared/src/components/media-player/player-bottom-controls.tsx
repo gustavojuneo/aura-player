@@ -114,7 +114,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 : undefined
             }
             aria-label="Posição da reprodução"
-            className="h-1 w-full cursor-pointer accent-gold"
+            className="h-1 w-full cursor-pointer accent-gold outline-none transition-[height] focus-visible:h-1.5 focus-visible:accent-gold-bright focus-visible:outline-none"
             data-player-focus-anchor
             data-player-progress
             max={duration || 1}
