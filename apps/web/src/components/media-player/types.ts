@@ -22,6 +22,7 @@ export type MediaPlayerProps = {
   renderContentList?: (
     onClose: () => void,
     avoidLiveGuide: boolean,
+    onInteraction: () => void,
   ) => ReactNode;
   showEpisodeNavigation?: boolean;
 };

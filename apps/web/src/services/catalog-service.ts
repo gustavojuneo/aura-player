@@ -2,6 +2,8 @@ import {
   type CatalogItem,
   type CatalogSeries,
   type CatalogSource,
+  normalizeM3uEntries,
+  parseM3uEntries,
   sourceSchema,
 } from "../features/catalog/catalog";
 import {
@@ -46,6 +48,7 @@ export const catalogCacheTtlMs = 24 * 60 * 60 * 1000;
 const catalogRefreshesInFlight = new Map<string, Promise<CatalogSource>>();
 const catalogRefreshListeners = new Set<() => void>();
 let appStartupLoading = true;
+let catalogRefreshError: Error | null = null;
 
 function notifyCatalogRefreshState() {
   for (const listener of catalogRefreshListeners) listener();
@@ -53,6 +56,10 @@ function notifyCatalogRefreshState() {
 
 export function isCatalogRefreshInProgress() {
   return appStartupLoading || catalogRefreshesInFlight.size > 0;
+}
+
+export function getCatalogRefreshError() {
+  return catalogRefreshError;
 }
 
 export function setAppStartupLoading(loading: boolean) {
@@ -167,18 +174,30 @@ export function refreshCatalogSource(source: CatalogSource) {
   if (currentRefresh) return currentRefresh;
 
   window.dispatchEvent(new Event("aura-catalog-loading"));
+  catalogRefreshError = null;
 
   const refresh =
     source.type === "xtream"
       ? syncXtreamSource(source)
       : importM3uSource(source);
   let trackedRefresh: Promise<CatalogSource>;
-  trackedRefresh = refresh.finally(() => {
-    if (catalogRefreshesInFlight.get(source.id) === trackedRefresh) {
-      catalogRefreshesInFlight.delete(source.id);
+  trackedRefresh = refresh
+    .catch((error: unknown) => {
+      catalogRefreshError =
+        source.type === "xtream"
+          ? new Error("Não foi possível sincronizar o catálogo Xtream.")
+          : error instanceof Error
+            ? error
+            : new Error("Não foi possível importar a fonte.");
       notifyCatalogRefreshState();
-    }
-  });
+      throw error;
+    })
+    .finally(() => {
+      if (catalogRefreshesInFlight.get(source.id) === trackedRefresh) {
+        catalogRefreshesInFlight.delete(source.id);
+        notifyCatalogRefreshState();
+      }
+    });
   catalogRefreshesInFlight.set(source.id, trackedRefresh);
   notifyCatalogRefreshState();
   return trackedRefresh;
@@ -201,6 +220,9 @@ export function importM3uSource(
   source: CatalogSource,
   handlers?: { onProgress?: (phase: string) => void },
 ) {
+  if (typeof Worker === "undefined")
+    return importM3uSourceWithoutWorker(source, handlers);
+
   return new Promise<CatalogSource>((resolve, reject) => {
     let catalogCleared = false;
     let writeChain = Promise.resolve();
@@ -254,10 +276,45 @@ export function importM3uSource(
     };
     worker.onerror = () => {
       worker.terminate();
-      reject(new Error("Não foi possível iniciar a importação da fonte."));
+      if (catalogCleared) {
+        reject(new Error("Não foi possível iniciar a importação da fonte."));
+        return;
+      }
+      void importM3uSourceWithoutWorker(source, handlers).then(resolve, reject);
     };
     worker.postMessage({ type: "import", source });
   });
+}
+
+async function importM3uSourceWithoutWorker(
+  source: CatalogSource,
+  handlers?: { onProgress?: (phase: string) => void },
+) {
+  if (!source.url) throw new Error("A fonte M3U não possui uma URL.");
+  handlers?.onProgress?.("fetching");
+  const response = await fetch(source.url, { redirect: "follow" });
+  if (!response.ok) throw new Error(`HTTP_${response.status}`);
+  const text = await response.text();
+  handlers?.onProgress?.("parsing");
+  const parsed = normalizeM3uEntries(parseM3uEntries(text), source.id);
+  handlers?.onProgress?.("saving");
+  await clearCatalogSource(source.id);
+  await putCatalogBatch(parsed.items, parsed.series);
+  const nextSource: CatalogSource = {
+    ...source,
+    status: parsed.items.length === 0 ? "empty" : "ready",
+    itemCount: parsed.items.length,
+    liveCount: parsed.liveCount,
+    movieCount: parsed.movieCount,
+    episodeCount: parsed.episodeCount,
+    ignoredCount: parsed.ignoredCount,
+    importedAt: source.importedAt ?? new Date().toISOString(),
+    refreshedAt: new Date().toISOString(),
+    errorMessage: undefined,
+  };
+  await putSource(nextSource);
+  window.dispatchEvent(new Event("aura-catalog-change"));
+  return nextSource;
 }
 
 export async function removeM3uSource(sourceId: string) {

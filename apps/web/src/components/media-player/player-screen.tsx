@@ -62,7 +62,11 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
 
   const renderContentList =
     kind === "live"
-      ? (onClose: () => void, avoidLiveGuide: boolean) => (
+      ? (
+          onClose: () => void,
+          avoidLiveGuide: boolean,
+          onInteraction: () => void,
+        ) => (
           <PlayerLiveContentList
             avoidLiveGuide={avoidLiveGuide}
             categories={liveCategories.length ? liveCategories : [liveCategory]}
@@ -70,6 +74,7 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
             currentChannelId={contentId}
             onCategoryChange={setSelectedLiveCategory}
             onClose={onClose}
+            onInteraction={onInteraction}
             onSelectChannel={(channelId) => {
               onClose();
               void state.navigateToChannel(channelId);
@@ -78,12 +83,17 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
           />
         )
       : kind === "episode"
-        ? (onClose: () => void, avoidLiveGuide: boolean) => (
+        ? (
+            onClose: () => void,
+            avoidLiveGuide: boolean,
+            onInteraction: () => void,
+          ) => (
             <PlayerSeriesContentList
               avoidLiveGuide={avoidLiveGuide}
               currentEpisodeId={contentId}
               episodes={seriesDetails.episodes}
               onClose={onClose}
+              onInteraction={onInteraction}
               onSeasonChange={setSelectedSeason}
               onSelectEpisode={(episode) => {
                 onClose();

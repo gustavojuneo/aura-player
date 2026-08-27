@@ -54,16 +54,19 @@ export function usePlayerControls({
     };
   }, [contentId]);
 
-  const revealControls = useCallback(() => {
-    setControlsVisible(true);
-    if (hideTimerRef.current !== null)
-      window.clearTimeout(hideTimerRef.current);
-    if (hideControls && isPlaying)
-      hideTimerRef.current = window.setTimeout(
-        () => setControlsVisible(false),
-        3000,
-      );
-  }, [hideControls, isPlaying]);
+  const revealControls = useCallback(
+    (hideAfterMs = 3000) => {
+      setControlsVisible(true);
+      if (hideTimerRef.current !== null)
+        window.clearTimeout(hideTimerRef.current);
+      if (hideControls && isPlaying)
+        hideTimerRef.current = window.setTimeout(() => {
+          setControlsVisible(false);
+          setContentListOpen(false);
+        }, hideAfterMs);
+    },
+    [hideControls, isPlaying],
+  );
 
   useEffect(() => {
     if (!hideControls || !isPlaying) {
@@ -144,6 +147,14 @@ export function usePlayerControls({
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      if (
+        target.closest(
+          "[data-player-content-list], [data-player-content-select-popup]",
+        )
+      ) {
+        revealControls(2000);
+        return;
+      }
       const key = event.key.toLowerCase();
       const isShortcut =
         event.key === " " ||

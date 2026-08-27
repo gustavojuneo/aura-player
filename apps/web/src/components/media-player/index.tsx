@@ -8,6 +8,7 @@ export {
   PlayerLiveContentList,
   PlayerSeriesContentList,
 } from "./player-content-list";
+export { PlayerContentSelector } from "./player-content-selector";
 export { PlayerHeader } from "./player-header";
 export { PlayerLiveGuide } from "./player-live-guide";
 export { PlayerNextEpisode } from "./player-next-episode";

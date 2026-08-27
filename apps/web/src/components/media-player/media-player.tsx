@@ -71,10 +71,15 @@ export function MediaPlayer({
   });
   const playerLoading = isLoading || !playback.isReady;
   const closeContentList = () => controls.setContentListOpen(false);
-  const toggleContentList = () =>
-    renderContentList
-      ? controls.setContentListOpen((open) => !open)
-      : onOpenContentList();
+  const keepContentListControlsVisible = () => controls.revealControls(2000);
+  const toggleContentList = () => {
+    if (!renderContentList) {
+      onOpenContentList();
+      return;
+    }
+    keepContentListControlsVisible();
+    controls.setContentListOpen((open) => !open);
+  };
   const handleSurfaceAction = (target: HTMLElement) => {
     if (isInteractiveTarget(target)) return;
     if (controls.contentListOpen) closeContentList();
@@ -89,9 +94,19 @@ export function MediaPlayer({
       onKeyDown={(event) => {
         if (event.key === "Escape" || event.keyCode === 461) {
           event.preventDefault();
+          if (controls.contentListOpen) {
+            closeContentList();
+            return;
+          }
           onBack();
           return;
         }
+        if (
+          controls.contentListOpen &&
+          event.key === "Enter" &&
+          (event.target as HTMLElement).closest('[role="dialog"]')
+        )
+          return;
         if (
           (event.key === "Enter" || event.key === " ") &&
           !isInteractiveTarget(event.target as HTMLElement)
@@ -100,8 +115,8 @@ export function MediaPlayer({
           handleSurfaceAction(event.target as HTMLElement);
         }
       }}
-      onMouseMove={controls.revealControls}
-      onTouchStart={controls.revealControls}
+      onMouseMove={() => controls.revealControls()}
+      onTouchStart={() => controls.revealControls()}
     >
       <PlayerVideo
         aspectRatio={controls.aspectRatio}
@@ -141,7 +156,11 @@ export function MediaPlayer({
       )}
       {controls.controlsVisible &&
         controls.contentListOpen &&
-        renderContentList?.(closeContentList, controls.liveGuideOpen)}
+        renderContentList?.(
+          closeContentList,
+          controls.liveGuideOpen,
+          keepContentListControlsVisible,
+        )}
       <PlayerHeader descriptor={descriptor} onBack={onBack} />
       <PlayerPrimaryControls
         controlsVisible={controls.controlsVisible}

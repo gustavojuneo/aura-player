@@ -1,7 +1,8 @@
 import { Play, Radio, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { CatalogItem } from "../../features/catalog/catalog";
-import { ScrollArea, SelectField } from "../ui";
+import { ScrollArea } from "../ui";
+import { PlayerContentSelector } from "./player-content-selector";
 
 const transparentPanel =
   "border border-white/15 bg-black/35 shadow-2xl backdrop-blur-md";
@@ -13,6 +14,7 @@ export function PlayerLiveContentList({
   currentChannelId,
   onCategoryChange,
   onClose,
+  onInteraction,
   onSelectChannel,
   selectedCategory,
 }: {
@@ -22,6 +24,7 @@ export function PlayerLiveContentList({
   currentChannelId: string;
   onCategoryChange: (category: string) => void;
   onClose: () => void;
+  onInteraction: () => void;
   onSelectChannel: (channelId: string) => void;
   selectedCategory: string;
 }) {
@@ -29,17 +32,18 @@ export function PlayerLiveContentList({
     <PlayerContentListShell
       eyebrow="TV AO VIVO"
       onClose={onClose}
+      onInteraction={onInteraction}
       avoidLiveGuide={avoidLiveGuide}
       title={selectedCategory}
     >
-      <SelectField
+      <PlayerContentSelector
         aria-label="Selecionar categoria de canais"
+        onInteraction={onInteraction}
         onValueChange={onCategoryChange}
         options={categories.map((category) => ({
           label: category,
           value: category,
         }))}
-        triggerClassName="w-full border-white/15 bg-transparent"
         value={selectedCategory}
       />
       {categories.length > 0 && (
@@ -99,6 +103,7 @@ export function PlayerSeriesContentList({
   currentEpisodeId,
   episodes,
   onClose,
+  onInteraction,
   onSeasonChange,
   onSelectEpisode,
   seasons,
@@ -108,6 +113,7 @@ export function PlayerSeriesContentList({
   currentEpisodeId: string;
   episodes: readonly CatalogItem[];
   onClose: () => void;
+  onInteraction: () => void;
   onSeasonChange: (season: number) => void;
   onSelectEpisode: (episode: CatalogItem) => void;
   seasons: readonly number[];
@@ -121,17 +127,18 @@ export function PlayerSeriesContentList({
     <PlayerContentListShell
       eyebrow="SÉRIE"
       onClose={onClose}
+      onInteraction={onInteraction}
       avoidLiveGuide={avoidLiveGuide}
       title={`Temporada ${selectedSeason}`}
     >
-      <SelectField
+      <PlayerContentSelector
         aria-label="Selecionar temporada"
+        onInteraction={onInteraction}
         onValueChange={(value) => onSeasonChange(Number(value))}
         options={seasons.map((season) => ({
           label: `Temporada ${season}`,
           value: String(season),
         }))}
-        triggerClassName="w-full border-white/15 bg-transparent"
         value={String(selectedSeason)}
       />
       <ScrollArea className="mt-3 min-h-0 flex-1">
@@ -176,15 +183,65 @@ function PlayerContentListShell({
   children,
   eyebrow,
   onClose,
+  onInteraction,
   title,
 }: {
   avoidLiveGuide: boolean;
   children: React.ReactNode;
   eyebrow: string;
   onClose: () => void;
+  onInteraction: () => void;
   title: string;
 }) {
   const contentListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleItemNavigation = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      if (
+        !(activeElement instanceof HTMLElement) ||
+        !contentListRef.current?.contains(activeElement) ||
+        !activeElement.matches('[data-player-content-item="true"]')
+      )
+        return;
+
+      onInteraction();
+      if (event.key === "Escape" || event.keyCode === 461) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        onClose();
+        return;
+      }
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+
+      const items = Array.from(
+        contentListRef.current.querySelectorAll<HTMLElement>(
+          '[data-player-content-item="true"]:not([disabled])',
+        ),
+      );
+      const currentIndex = items.indexOf(activeElement);
+      if (currentIndex < 0) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (event.key === "ArrowUp" && currentIndex === 0) {
+        contentListRef.current
+          .querySelector<HTMLElement>(
+            '[data-player-content-select="true"]:not([disabled])',
+          )
+          ?.focus();
+        return;
+      }
+      const nextIndex = Math.min(
+        items.length - 1,
+        Math.max(0, currentIndex + (event.key === "ArrowDown" ? 1 : -1)),
+      );
+      items[nextIndex]?.focus();
+    };
+    window.addEventListener("keydown", handleItemNavigation, true);
+    return () =>
+      window.removeEventListener("keydown", handleItemNavigation, true);
+  }, [onClose, onInteraction]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -201,6 +258,8 @@ function PlayerContentListShell({
     <div
       aria-label="Lista de conteúdo"
       className={`pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-end overflow-hidden bg-transparent p-4 pt-20 sm:p-8 sm:pt-24 ${avoidLiveGuide ? "bottom-[280px] sm:bottom-[300px]" : "bottom-[88px] sm:bottom-[112px]"}`}
+      data-player-content-list
+      onPointerDown={onInteraction}
       ref={contentListRef}
       role="dialog"
     >

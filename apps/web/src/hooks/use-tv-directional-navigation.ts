@@ -300,6 +300,15 @@ function getRegionItems(region: NavigationRegion) {
   );
 }
 
+function getSelectedSidebarItem() {
+  const sidebarItems = getRegionItems("sidebar");
+  return (
+    sidebarItems.find(
+      (item) => item.getAttribute("data-status") === "active",
+    ) ?? sidebarItems[0]
+  );
+}
+
 function createRegionResolver(region: NavigationRegion) {
   return (
     direction: Direction,
@@ -393,12 +402,12 @@ function handleRegionExit(
   }
 
   if (region === "catalog-categories") {
-    if (direction === "right") {
-      focusElement(findClosestByRow(element, getRegionItems("catalog-grid")));
+    if (direction === "left") {
+      focusElement(getSelectedSidebarItem());
       return false;
     }
-    if (direction === "left") {
-      focusElement(findClosestByRow(element, getRegionItems("sidebar")));
+    if (direction === "right") {
+      focusElement(findClosestByRow(element, getRegionItems("catalog-grid")));
       return false;
     }
     return true;
@@ -432,6 +441,13 @@ function handleRegionExit(
       return false;
     }
     if (direction === "up" && element.closest("[data-player-controls]")) {
+      const progress = document.querySelector<HTMLElement>(
+        '[data-player-controls] input[type="range"]',
+      );
+      if (progress) {
+        focusElement(progress);
+        return false;
+      }
       const primaryPlay = document.querySelector<HTMLElement>(
         '[data-player-primary-controls] button[aria-label="Reproduzir"], [data-player-primary-controls] button[aria-label="Pausar"]',
       );
@@ -610,7 +626,7 @@ function handleRegionExit(
       getRegionItems(region),
     );
     if (!sameRowItem && direction === "left" && region === "content") {
-      focusElement(findClosestByRow(element, getRegionItems("sidebar")));
+      focusElement(getSelectedSidebarItem());
       return false;
     }
     return Boolean(sameRowItem);
@@ -873,6 +889,15 @@ export function useTvDirectionalNavigation() {
     const handleDialogNavigation = (event: KeyboardEvent) => {
       const activeElement = document.activeElement;
       if (!(activeElement instanceof HTMLElement)) return;
+
+      if (activeElement.closest("[data-player-content-list]")) return;
+
+      if (
+        activeElement.matches(
+          '[data-player-content-item="true"], [data-player-content-select="true"]',
+        )
+      )
+        return;
 
       const direction = getDirection(event);
       if (
