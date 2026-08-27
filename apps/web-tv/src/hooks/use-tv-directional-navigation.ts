@@ -1073,6 +1073,15 @@ export function useTvDirectionalNavigation() {
     if (!enabled) return;
     const handleBack = (event: KeyboardEvent) => {
       if (event.key !== "Escape" && event.keyCode !== 461) return;
+      const openSourceSelector = document.querySelector<HTMLElement>(
+        "[data-source-selector-open] [data-tv-select-trigger]",
+      );
+      if (openSourceSelector) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openSourceSelector.click();
+        return;
+      }
       const openSelect = document.querySelector<HTMLElement>(
         '[data-tv-select-trigger][aria-expanded="true"], [data-tv-select-trigger][data-popup-open], [data-player-content-select="true"][aria-expanded="true"]',
       );

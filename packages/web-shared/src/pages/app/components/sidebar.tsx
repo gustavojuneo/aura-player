@@ -107,7 +107,10 @@ export function Sidebar({ isTv = false }: { isTv?: boolean }) {
           <div
             className={`mt-auto flex w-full flex-col gap-1 ${isExpanded ? "" : "items-center"}`}
           >
-            <div className={isExpanded ? "mb-2 w-full" : "hidden"}>
+            <div
+              className={isExpanded ? "mb-2 w-full" : "hidden"}
+              data-source-selector-open={isSourceSelectorOpen || undefined}
+            >
               <SourceSelector
                 activeSourceId={activeSourceId}
                 className="w-full"
