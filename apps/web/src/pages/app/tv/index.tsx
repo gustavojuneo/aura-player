@@ -33,6 +33,7 @@ import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { useFavorites } from "../../../services/favorites";
 import { markPlaybackNavigation } from "../../../services/playback-autoplay";
+import { usePlaybackPreferences } from "../../../services/playback-preferences";
 import { AppHeader } from "../components";
 
 type Channel = {
@@ -195,6 +196,7 @@ function ChannelPreview({
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const { preferences, updatePreference } = usePlaybackPreferences();
   const playbackSource = usePlaybackSource(
     channel?.streamUrl,
     Boolean(channel?.streamUrl),
@@ -222,9 +224,9 @@ function ChannelPreview({
     cleanEngine();
     setIsReady(false);
     setHasError(false);
-    video.muted = false;
+    video.muted = preferences.previewMuted;
     video.volume = 1;
-    setIsMuted(false);
+    setIsMuted(preferences.previewMuted);
 
     const play = () => {
       void video.play().catch(() => undefined);
@@ -273,7 +275,7 @@ function ChannelPreview({
     }
 
     return () => cleanEngine();
-  }, [channel, playbackSource.source]);
+  }, [channel, playbackSource.source, preferences.previewMuted]);
 
   return (
     <div className="group relative flex aspect-video min-w-0 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#74451f] to-[#191713]">
@@ -339,6 +341,7 @@ function ChannelPreview({
             if (!video) return;
             video.muted = !video.muted;
             setIsMuted(video.muted);
+            updatePreference("previewMuted", video.muted);
           }}
           type="button"
         >

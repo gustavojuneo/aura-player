@@ -16,6 +16,7 @@ import {
 import { useCatalogSeries } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
+import { usePlaybackProgress } from "../../../services/playback-progress";
 import { AppHeader } from "../components";
 
 type Series = {
@@ -169,6 +170,12 @@ export function SeriesPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   useSearchShortcut(searchInputRef);
   const { items: importedSeries, isLoading } = useCatalogSeries();
+  const progress = usePlaybackProgress();
+  const continueIds = new Set(
+    progress
+      .filter((p) => p.mediaType === "episode" && p.seriesId)
+      .map((p) => p.seriesId as string),
+  );
   const seriesCatalog = useMemo<Series[]>(
     () =>
       importedSeries.map((item) => ({
@@ -190,13 +197,14 @@ export function SeriesPage() {
   const categories = useMemo(
     () => [
       "Todos",
+      ...(continueIds.size ? ["Continuar Assistindo"] : []),
       ...new Set(
         seriesCatalog.flatMap((item) =>
           item.categories?.length ? item.categories : [item.genre],
         ),
       ),
     ],
-    [seriesCatalog],
+    [continueIds.size, seriesCatalog],
   );
   const {
     visibleItems: visibleSeries,
@@ -208,6 +216,7 @@ export function SeriesPage() {
     (item, search, category) =>
       (search.length > 0 ||
         category === "Todos" ||
+        (category === "Continuar Assistindo" && continueIds.has(item.id)) ||
         (item.categories?.length ? item.categories : [item.genre]).includes(
           category,
         )) &&

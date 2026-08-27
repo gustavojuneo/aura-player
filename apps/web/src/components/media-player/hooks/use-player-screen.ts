@@ -19,6 +19,7 @@ import {
   consumePlaybackNavigation,
   markPlaybackNavigation,
 } from "../../../services/playback-autoplay";
+import { loadPlaybackProgress } from "../../../services/playback-progress";
 import { recordRecentChannel } from "../../../services/recent-channels";
 
 const FALLBACK_TITLES: Record<
@@ -141,7 +142,9 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
         contentId,
         delivery: item?.delivery,
         isLive: kind === "live",
-        position: undefined,
+        position: loadPlaybackProgress().find(
+          (progress) => progress.contentId === contentId,
+        )?.positionSecs,
         secondaryTitle: contentSecondaryTitle,
         streamUrl: playbackSource.source,
         title: contentTitle,
@@ -156,6 +159,13 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
     ],
   );
   const goBack = () => {
+    if (kind === "episode" && seriesId) {
+      void navigate({
+        to: "/app/series/$seriesId",
+        params: { seriesId },
+      });
+      return;
+    }
     router.history.back();
   };
   const goToEpisode = (next: CatalogItem) => {
@@ -200,6 +210,7 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
     playbackSource,
     previousEpisode,
     seasons,
+    seriesId,
     selectedLiveCategory,
     selectedSeason,
     seriesDetails,

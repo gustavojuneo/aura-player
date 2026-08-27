@@ -7,6 +7,7 @@ export const playbackPreferencesSchema = z.object({
   hideControls: z.boolean(),
   reduceMotion: z.boolean(),
   quality: z.enum(["auto", "720p", "1080p"]),
+  previewMuted: z.boolean(),
 });
 
 export type PlaybackPreferences = z.infer<typeof playbackPreferencesSchema>;
@@ -17,6 +18,7 @@ export const defaultPlaybackPreferences: PlaybackPreferences = {
   hideControls: true,
   reduceMotion: false,
   quality: "auto",
+  previewMuted: true,
 };
 
 export const playbackPreferencesKey = "aura:playback-preferences";

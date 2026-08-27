@@ -18,6 +18,8 @@ type UsePlaybackEngineParams = {
   descriptor: PlaybackDescriptor;
   isLoading: boolean;
   preferences: PlaybackPreferences;
+  onProgress?: (positionSecs: number, durationSecs: number) => void;
+  onComplete?: () => void;
 };
 
 function destroyEngine(engine: PlaybackEngine, video: HTMLVideoElement) {
@@ -37,12 +39,15 @@ export function usePlaybackEngine({
   descriptor,
   isLoading,
   preferences,
+  onProgress,
+  onComplete,
 }: UsePlaybackEngineParams) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const engineRef = useRef<PlaybackEngine>(null);
   const hlsEngineRef = useRef<Hls | null>(null);
   const qualityEngineRef = useRef<QualityEngine | null>(null);
   const sessionRef = useRef(0);
+  const completionReportedRef = useRef(false);
   const [currentTime, setCurrentTime] = useState(descriptor.position ?? 0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +95,7 @@ export function usePlaybackEngine({
     }
     const streamUrl = descriptor.streamUrl;
     const session = ++sessionRef.current;
+    completionReportedRef.current = false;
     const fail = () => {
       if (session === sessionRef.current)
         setError(
@@ -272,9 +278,35 @@ export function usePlaybackEngine({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const onTimeUpdate = () => setCurrentTime(video.currentTime);
-    const onDurationChange = () =>
-      setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+    const onTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
+      onProgress?.(video.currentTime, video.duration);
+      if (
+        !completionReportedRef.current &&
+        !descriptor.isLive &&
+        Number.isFinite(video.duration) &&
+        video.duration > 0 &&
+        video.duration - video.currentTime <= 30
+      ) {
+        completionReportedRef.current = true;
+        onComplete?.();
+      }
+    };
+    const onEnded = () => onComplete?.();
+    const onDurationChange = () => {
+      const nextDuration = Number.isFinite(video.duration) ? video.duration : 0;
+      setDuration(nextDuration);
+      if (
+        preferences.autoResume &&
+        !descriptor.isLive &&
+        descriptor.position !== undefined &&
+        nextDuration > 0 &&
+        video.currentTime < 1
+      ) {
+        video.currentTime = Math.min(descriptor.position, nextDuration - 1);
+        setCurrentTime(video.currentTime);
+      }
+    };
     const onCanPlay = () => {
       setIsReady(true);
       attemptAutoplay();
@@ -296,6 +328,7 @@ export function usePlaybackEngine({
       }
     };
     video.addEventListener("timeupdate", onTimeUpdate);
+    video.addEventListener("ended", onEnded);
     video.addEventListener("durationchange", onDurationChange);
     video.addEventListener("loadedmetadata", onDurationChange);
     video.addEventListener("canplay", onCanPlay);
@@ -306,6 +339,7 @@ export function usePlaybackEngine({
     window.addEventListener("pagehide", onPageHide);
     return () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
+      video.removeEventListener("ended", onEnded);
       video.removeEventListener("durationchange", onDurationChange);
       video.removeEventListener("loadedmetadata", onDurationChange);
       video.removeEventListener("canplay", onCanPlay);
@@ -315,7 +349,14 @@ export function usePlaybackEngine({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
     };
-  }, [attemptAutoplay]);
+  }, [
+    attemptAutoplay,
+    descriptor.isLive,
+    descriptor.position,
+    onComplete,
+    onProgress,
+    preferences.autoResume,
+  ]);
 
   useEffect(() => {
     if (isReady) qualityEngineRef.current?.setQuality(quality);

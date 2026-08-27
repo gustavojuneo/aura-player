@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
+import {
+  markEpisodeWatched,
+  removePlaybackProgress,
+  savePlaybackProgress,
+} from "../../services/playback-progress";
 import {
   type PlayerScreenKind,
   usePlayerScreen,
@@ -38,13 +43,60 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
     setSelectedLiveCategory,
     setSelectedSeason,
   } = state;
+  const lastSavedAt = useRef(0);
+  const saveProgress = useCallback(
+    (positionSecs: number, durationSecs: number) => {
+      if (
+        kind === "live" ||
+        durationSecs <= 0 ||
+        Date.now() - lastSavedAt.current < 5000
+      )
+        return;
+      lastSavedAt.current = Date.now();
+      savePlaybackProgress({
+        contentId,
+        mediaType: kind,
+        ...(kind === "episode"
+          ? {
+              seriesId: state.seriesId,
+              seasonNumber: state.item?.seasonNumber,
+              episodeNumber: state.item?.episodeNumber,
+            }
+          : {}),
+        positionSecs,
+        durationSecs,
+        updatedAt: Date.now(),
+      });
+    },
+    [
+      contentId,
+      kind,
+      state.item?.episodeNumber,
+      state.item?.seasonNumber,
+      state.seriesId,
+    ],
+  );
+  const complete = useCallback(() => {
+    if (kind === "live") return;
+    removePlaybackProgress(contentId);
+    if (kind === "episode" && state.seriesId) {
+      markEpisodeWatched(state.seriesId, contentId);
+    }
+  }, [contentId, kind, state.seriesId]);
 
   const renderNextEpisode = useCallback(
-    (remainingSeconds: number, onSelect: () => void) =>
+    (
+      remainingSeconds: number,
+      onSelect: () => void,
+      onHideCountdown: () => void,
+    ) =>
       nextEpisode && !nextEpisodeHidden ? (
         <PlayerNextEpisode
           episode={nextEpisode}
-          onHide={hideForSeries}
+          onHide={() => {
+            onHideCountdown();
+            hideForSeries();
+          }}
           onSelect={onSelect}
           remainingSeconds={remainingSeconds}
         />
@@ -116,6 +168,8 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
       onPrevious={
         previousEpisode ? () => goToEpisode(previousEpisode) : undefined
       }
+      onProgress={saveProgress}
+      onComplete={complete}
       renderContentList={renderContentList}
       renderLiveGuide={
         kind === "live" ? (

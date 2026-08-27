@@ -16,6 +16,7 @@ import {
 import { useCatalogItems } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
+import { usePlaybackProgress } from "../../../services/playback-progress";
 import { AppHeader } from "../components";
 
 type Movie = {
@@ -171,6 +172,10 @@ export function MoviesPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   useSearchShortcut(searchInputRef);
   const { items: importedMovies, isLoading } = useCatalogItems("movie");
+  const progress = usePlaybackProgress();
+  const continueIds = new Set(
+    progress.filter((p) => p.mediaType === "movie").map((p) => p.contentId),
+  );
   const movieCatalog = useMemo<Movie[]>(
     () =>
       importedMovies.map((movie) => ({
@@ -192,13 +197,14 @@ export function MoviesPage() {
   const categories = useMemo(
     () => [
       "Todos",
+      ...(continueIds.size ? ["Continuar Assistindo"] : []),
       ...new Set(
         movieCatalog.flatMap((movie) =>
           movie.categories?.length ? movie.categories : [movie.genre],
         ),
       ),
     ],
-    [movieCatalog],
+    [continueIds.size, movieCatalog],
   );
   const {
     visibleItems: visibleMovies,
@@ -210,6 +216,7 @@ export function MoviesPage() {
     (movie, search, category) =>
       (search.length > 0 ||
         category === "Todos" ||
+        (category === "Continuar Assistindo" && continueIds.has(movie.id)) ||
         (movie.categories?.length ? movie.categories : [movie.genre]).includes(
           category,
         )) &&

@@ -23,6 +23,7 @@ type DetailHeroProps = {
     | "/app/series/$seriesId/episodes/$episodeId/watch";
   watchParams: Record<string, string>;
   watchLabel: string;
+  watchProgress?: number;
   extraContent?: ReactNode;
   fitViewport?: boolean;
 };
@@ -39,6 +40,7 @@ export function DetailHero({
   watchTo,
   watchParams,
   watchLabel,
+  watchProgress,
   extraContent,
   fitViewport = false,
 }: DetailHeroProps) {
@@ -124,7 +126,17 @@ export function DetailHero({
             onClick={markPlaybackNavigation}
             to={watchTo}
           >
-            <Play className="size-4 fill-current" /> {watchLabel}
+            <span className="relative flex items-center gap-2">
+              <Play className="size-4 fill-current" /> {watchLabel}
+              {watchProgress !== undefined && watchProgress > 0 && (
+                <span className="absolute inset-x-0 bottom-[-7px] h-0.5 overflow-hidden rounded-full bg-ink/30">
+                  <span
+                    className="block h-full bg-ink"
+                    style={{ width: `${Math.min(100, watchProgress)}%` }}
+                  />
+                </span>
+              )}
+            </span>
           </Link>
           <Button
             className="h-10 px-5 text-xs sm:h-12 sm:text-sm"

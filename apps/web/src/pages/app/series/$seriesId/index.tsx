@@ -9,6 +9,10 @@ import { ProductState, SelectField } from "../../../../components/ui";
 import { useCatalogSeriesDetails } from "../../../../hooks/use-catalog-data";
 import { useFavorites } from "../../../../services/favorites";
 import { markPlaybackNavigation } from "../../../../services/playback-autoplay";
+import {
+  loadWatchedEpisodes,
+  usePlaybackProgress,
+} from "../../../../services/playback-progress";
 
 const fallbackEpisodeImage = "/episode-no-image.png";
 const episodesPerPage = 20;
@@ -50,6 +54,13 @@ export function SeriesDetailsPage() {
   const { series, episodes, isLoading, isMetadataLoading } =
     useCatalogSeriesDetails(seriesId);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const playbackProgress = usePlaybackProgress();
+  const progress = playbackProgress.find(
+    (entry) => entry.mediaType === "episode" && entry.seriesId === seriesId,
+  );
+  const watchedEpisodes = new Set(
+    loadWatchedEpisodes(seriesId).map((entry) => entry.episodeKey),
+  );
   const [selectedSeason, setSelectedSeason] = useState<number>();
   const [currentPage, setCurrentPage] = useState(1);
   const seasons = [
@@ -61,10 +72,15 @@ export function SeriesDetailsPage() {
       ? selectedSeason
       : firstSeason;
   useEffect(() => {
+    const progressSeason = progress?.seasonNumber;
     if (seasons.length && !seasons.includes(selectedSeason ?? 0)) {
-      setSelectedSeason(firstSeason);
+      setSelectedSeason(
+        progressSeason && seasons.includes(progressSeason)
+          ? progressSeason
+          : firstSeason,
+      );
     }
-  }, [firstSeason, seasons, selectedSeason]);
+  }, [firstSeason, progress?.seasonNumber, seasons, selectedSeason]);
   const seasonEpisodes = episodes.filter(
     (episode) => (episode.seasonNumber ?? 1) === activeSeason,
   );
@@ -113,10 +129,19 @@ export function SeriesDetailsPage() {
         metadata={`${category} · ${series.episodeCount} episódios`}
         onToggleFavorite={() => toggleFavorite("series", series.id)}
         title={series.title}
-        watchLabel="Continuar série · E4"
+        watchLabel={
+          progress
+            ? `Continuar · T${progress.seasonNumber ?? 0} E${progress.episodeNumber ?? 0}`
+            : "Assistir série"
+        }
+        watchProgress={
+          progress
+            ? (progress.positionSecs / Math.max(progress.durationSecs, 1)) * 100
+            : undefined
+        }
         watchParams={{
           seriesId: series.id,
-          episodeId: seasonEpisodes[0]?.id ?? "",
+          episodeId: progress?.contentId ?? seasonEpisodes[0]?.id ?? "",
         }}
         watchTo="/app/series/$seriesId/episodes/$episodeId/watch"
         extraContent={
@@ -151,50 +176,96 @@ export function SeriesDetailsPage() {
           className="grid grid-cols-1 gap-3.5 sm:[grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]"
           data-tv-navigation-region="catalog-grid"
         >
-          {paginatedEpisodes.map((episode) => (
-            <Link
-              className="group min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
-              key={episode.id}
-              onClick={markPlaybackNavigation}
-              params={{ episodeId: episode.id, seriesId: series.id }}
-              to="/app/series/$seriesId/episodes/$episodeId/watch"
-            >
-              <article className="relative flex h-[82px] items-center gap-3 overflow-hidden rounded-xl border border-transparent bg-transparent p-2.5 transition-[background-color,border-color,box-shadow] group-hover:border-gold/70 group-hover:bg-panel-2 group-hover:shadow-[0_12px_28px_rgb(0_0_0_/_25%)] sm:h-[420px] sm:flex-col sm:items-stretch sm:justify-start sm:gap-3 sm:rounded-xl sm:p-3">
-                <div className="relative z-10 h-[60px] w-[90px] shrink-0 sm:h-[240px] sm:w-full">
-                  <img
-                    alt="Sem imagem disponível"
-                    className="size-full rounded-lg object-cover"
-                    decoding="async"
-                    loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = fallbackEpisodeImage;
-                    }}
-                    src={episodeImage(episode) || fallbackEpisodeImage}
-                  />
-                  <span className="pointer-events-none absolute inset-0 m-auto grid size-10 place-items-center rounded-full bg-gold text-ink opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-                    <Play aria-hidden="true" className="size-4 fill-current" />
-                  </span>
-                </div>
-                <div className="relative z-10 min-w-0 flex-1 sm:flex-none">
-                  <span className="block truncate text-sm font-bold text-text sm:text-lg">
-                    {episode.title}
-                  </span>
-                  <span className="mt-1 block line-clamp-2 text-[0.6875rem] leading-[1.4] text-[#d6d0c5] sm:text-sm sm:leading-[1.45]">
-                    {episode.description ?? "Descrição indisponível"}
-                  </span>
-                  <div className="mt-1 hidden items-center gap-2 text-sm text-[#d6d0c5] sm:flex">
-                    {formatDuration(episode.durationSecs) && (
-                      <span>{formatDuration(episode.durationSecs)}</span>
-                    )}
-                    {episode.rating !== undefined && episode.rating > 0 && (
-                      <span>★ {episode.rating.toFixed(1)}</span>
-                    )}
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
+          {paginatedEpisodes.map((episode) =>
+            (() => {
+              const episodeProgress = playbackProgress.find(
+                (entry) => entry.contentId === episode.id,
+              );
+              const watched = watchedEpisodes.has(episode.id);
+              const progressPercent = episodeProgress
+                ? Math.min(
+                    100,
+                    (episodeProgress.positionSecs /
+                      Math.max(episodeProgress.durationSecs, 1)) *
+                      100,
+                  )
+                : 0;
+              return (
+                <Link
+                  className="group min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
+                  key={episode.id}
+                  onClick={markPlaybackNavigation}
+                  params={{ episodeId: episode.id, seriesId: series.id }}
+                  to="/app/series/$seriesId/episodes/$episodeId/watch"
+                >
+                  <article className="relative flex h-[82px] items-center gap-3 overflow-hidden rounded-xl border border-transparent bg-transparent p-2.5 transition-[background-color,border-color,box-shadow] group-hover:border-gold/70 group-hover:bg-panel-2 group-hover:shadow-[0_12px_28px_rgb(0_0_0_/_25%)] sm:h-[420px] sm:flex-col sm:items-stretch sm:justify-start sm:gap-3 sm:rounded-xl sm:p-3">
+                    <div className="relative z-10 h-[60px] w-[90px] shrink-0 sm:h-[240px] sm:w-full">
+                      <img
+                        alt="Sem imagem disponível"
+                        className="size-full rounded-lg object-cover"
+                        decoding="async"
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = fallbackEpisodeImage;
+                        }}
+                        src={episodeImage(episode) || fallbackEpisodeImage}
+                      />
+                      {watched && (
+                        <span className="pointer-events-none absolute inset-0 grid place-items-center rounded-lg bg-black/70 px-2 text-center text-xs font-semibold tracking-[0.08em] text-gray-300/70">
+                          Assistido
+                        </span>
+                      )}
+                      {episodeProgress && !watched && (
+                        <span className="absolute inset-x-1 bottom-1 h-1 overflow-hidden rounded-full bg-black/70">
+                          <span
+                            className="block h-full bg-gold"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </span>
+                      )}
+                      <span className="pointer-events-none absolute inset-0 m-auto grid size-10 place-items-center rounded-full bg-gold text-ink opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                        <Play
+                          aria-hidden="true"
+                          className="size-4 fill-current"
+                        />
+                      </span>
+                    </div>
+                    <div className="relative z-10 min-w-0 flex-1 sm:flex-none">
+                      <span className="block truncate text-sm font-bold text-text sm:text-lg">
+                        {episode.title}
+                      </span>
+                      <span className="mt-1 block line-clamp-2 text-[0.6875rem] leading-[1.4] text-[#d6d0c5] sm:text-sm sm:leading-[1.45]">
+                        {episode.description ?? "Descrição indisponível"}
+                      </span>
+                      <div className="mt-1 hidden items-center gap-2 text-sm text-[#d6d0c5] sm:flex">
+                        {formatDuration(episode.durationSecs) && (
+                          <span>{formatDuration(episode.durationSecs)}</span>
+                        )}
+                        {episode.rating !== undefined && episode.rating > 0 && (
+                          <span>★ {episode.rating.toFixed(1)}</span>
+                        )}
+                      </div>
+                      {episodeProgress && !watched && (
+                        <span className="mt-2 block text-[0.6875rem] font-semibold text-gold-bright">
+                          Continuar ·{" "}
+                          {Math.max(
+                            1,
+                            Math.ceil(
+                              (episodeProgress.durationSecs -
+                                episodeProgress.positionSecs) /
+                                60,
+                            ),
+                          )}{" "}
+                          min restantes
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                </Link>
+              );
+            })(),
+          )}
         </div>
         {totalPages > 1 && (
           <nav

@@ -26,6 +26,7 @@ import {
   saveM3uSource,
   saveXtreamSource,
 } from "../../services/catalog-service";
+import { usePlaybackProgress } from "../../services/playback-progress";
 import {
   loadRecentChannels,
   type RecentChannel,
@@ -212,6 +213,17 @@ export function HomePage() {
   } = useCatalogSeries();
   const [recentChannels, setRecentChannels] =
     useState<RecentChannel[]>(loadRecentChannels);
+  const playbackProgress = usePlaybackProgress();
+  const progressCards = playbackProgress
+    .map((progress) => {
+      const item =
+        movieItems.find((candidate) => candidate.id === progress.contentId) ??
+        (progress.mediaType === "episode"
+          ? seriesItems.find((candidate) => candidate.id === progress.seriesId)
+          : undefined);
+      return item ? { progress, item } : undefined;
+    })
+    .filter((value): value is NonNullable<typeof value> => Boolean(value));
   useEffect(() => {
     const update = () => setRecentChannels(loadRecentChannels());
     window.addEventListener(recentChannelsEvent, update);
@@ -290,11 +302,24 @@ export function HomePage() {
             <FeaturedHero item={featured} />
             <section className="flex flex-col gap-3">
               <SectionHeader>Continuar assistindo</SectionHeader>
-              <ProductState
-                className="min-h-[110px]"
-                compact
-                kind="catalog-empty"
-              />
+              {progressCards.length ? (
+                <Carousel ariaLabel="Continuar assistindo">
+                  {progressCards.map(({ item, progress }, index) => (
+                    <MediaCard
+                      index={index}
+                      item={item}
+                      key={progress.contentId}
+                      kind={progress.mediaType === "movie" ? "movie" : "series"}
+                    />
+                  ))}
+                </Carousel>
+              ) : (
+                <ProductState
+                  className="min-h-[110px]"
+                  compact
+                  kind="catalog-empty"
+                />
+              )}
             </section>
             <section className="flex flex-col gap-3">
               <SectionHeader>Canais recentes</SectionHeader>

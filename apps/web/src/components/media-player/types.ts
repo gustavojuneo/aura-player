@@ -13,11 +13,14 @@ export type MediaPlayerProps = {
   onBack: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
+  onProgress?: (positionSecs: number, durationSecs: number) => void;
+  onComplete?: () => void;
   onOpenContentList: () => void;
   renderLiveGuide?: ReactNode;
   renderNextEpisode?: (
     remainingSeconds: number,
     onSelect: () => void,
+    onHide: () => void,
   ) => ReactNode;
   renderContentList?: (
     onClose: () => void,

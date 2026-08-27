@@ -62,8 +62,8 @@ export function useNextEpisodeCountdown({
     const start = () => {
       if (startedRef.current) return;
       startedRef.current = true;
-      countdownValueRef.current = 20;
-      setCountdown(20);
+      countdownValueRef.current = 30;
+      setCountdown(30);
       countdownTimerRef.current = window.setInterval(() => {
         const value = countdownValueRef.current;
         if (value === null) return;

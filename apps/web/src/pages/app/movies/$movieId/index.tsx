@@ -12,6 +12,7 @@ import {
   useCatalogItems,
 } from "../../../../hooks/use-catalog-data";
 import { useFavorites } from "../../../../services/favorites";
+import { loadPlaybackProgress } from "../../../../services/playback-progress";
 
 export function MovieDetailsPage() {
   const router = useRouter();
@@ -19,6 +20,9 @@ export function MovieDetailsPage() {
   const { item, isLoading, isMetadataLoading } = useCatalogItem(movieId);
   const { items: movies } = useCatalogItems("movie");
   const { isFavorite, toggleFavorite } = useFavorites();
+  const progress = loadPlaybackProgress().find(
+    (entry) => entry.contentId === movieId,
+  );
   const relatedCategories = useMemo(
     () =>
       new Set(
@@ -78,7 +82,16 @@ export function MovieDetailsPage() {
         onToggleFavorite={() => toggleFavorite("movie", item.id)}
         title={item.title}
         fitViewport
-        watchLabel="Continuar · 42 min"
+        watchLabel={
+          progress
+            ? `Continuar · ${Math.max(1, Math.ceil((progress.durationSecs - progress.positionSecs) / 60))} min`
+            : "Assistir"
+        }
+        watchProgress={
+          progress
+            ? (progress.positionSecs / Math.max(progress.durationSecs, 1)) * 100
+            : undefined
+        }
         watchParams={{ movieId: item.id }}
         watchTo="/app/movies/$movieId/watch"
       />

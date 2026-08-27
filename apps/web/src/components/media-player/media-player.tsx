@@ -34,6 +34,8 @@ export function MediaPlayer({
   onNext,
   onOpenContentList,
   onPrevious,
+  onProgress,
+  onComplete,
   renderContentList,
   renderLiveGuide,
   renderNextEpisode,
@@ -45,6 +47,8 @@ export function MediaPlayer({
     descriptor,
     isLoading,
     preferences,
+    onProgress,
+    onComplete,
   });
   const controls = usePlayerControls({
     contentId: descriptor.contentId,
@@ -154,10 +158,15 @@ export function MediaPlayer({
           className="absolute inset-x-5 bottom-[88px] z-20 flex justify-end sm:inset-x-[42px] sm:bottom-[112px]"
           data-player-action
         >
-          {renderNextEpisode(nextEpisode.nextEpisodeCountdown, () => {
-            nextEpisode.clearNextEpisode();
-            onNext?.();
-          })}
+          {renderNextEpisode(
+            nextEpisode.nextEpisodeCountdown,
+            () => {
+              nextEpisode.clearNextEpisode();
+              onComplete?.();
+              onNext?.();
+            },
+            nextEpisode.clearNextEpisode,
+          )}
         </div>
       )}
       {controls.controlsVisible &&

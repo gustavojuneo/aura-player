@@ -19,6 +19,7 @@ import {
   type PlaybackPreferences,
   usePlaybackPreferences,
 } from "../../../services/playback-preferences";
+import { clearPlaybackProgress } from "../../../services/playback-progress";
 
 type Section =
   | "account"
@@ -75,6 +76,7 @@ export function SettingsPage() {
   const clearData = () => {
     clearFavorites();
     clearPlaybackPreferences();
+    clearPlaybackProgress();
     updatePreference("autoResume", defaultPlaybackPreferences.autoResume);
     updatePreference(
       "autoNextEpisode",
@@ -83,6 +85,7 @@ export function SettingsPage() {
     updatePreference("hideControls", defaultPlaybackPreferences.hideControls);
     updatePreference("reduceMotion", defaultPlaybackPreferences.reduceMotion);
     updatePreference("quality", defaultPlaybackPreferences.quality);
+    updatePreference("previewMuted", defaultPlaybackPreferences.previewMuted);
     setClearDialog(false);
     setNotice(
       "Dados locais removidos. As preferências padrão foram restauradas.",
