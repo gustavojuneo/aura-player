@@ -8,7 +8,7 @@ export function createAppRouteTree(parentRoute: AnyRoute) {
   const appRoute = createRoute({
     component: AppLayout,
     getParentRoute: () => parentRoute,
-    path: "/",
+    id: "app",
   });
   const homeRoute = createRoute({
     component: HomePage,
