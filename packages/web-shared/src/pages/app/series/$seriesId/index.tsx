@@ -7,6 +7,7 @@ import {
 } from "../../../../components/detail-hero";
 import { ProductState, SelectField } from "../../../../components/ui";
 import { useCatalogSeriesDetails } from "../../../../hooks/use-catalog-data";
+import { appRoute } from "../../../../runtime-config";
 import { useFavorites } from "../../../../services/favorites";
 import { markPlaybackNavigation } from "../../../../services/playback-autoplay";
 import {
@@ -143,7 +144,7 @@ export function SeriesDetailsPage() {
           seriesId: series.id,
           episodeId: progress?.contentId ?? seasonEpisodes[0]?.id ?? "",
         }}
-        watchTo="/app/series/$seriesId/episodes/$episodeId/watch"
+        watchTo={appRoute("/series/$seriesId/episodes/$episodeId/watch")}
         extraContent={
           <SelectField
             aria-label="Selecionar temporada"
@@ -195,8 +196,14 @@ export function SeriesDetailsPage() {
                   className="group min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
                   key={episode.id}
                   onClick={markPlaybackNavigation}
-                  params={{ episodeId: episode.id, seriesId: series.id }}
-                  to="/app/series/$seriesId/episodes/$episodeId/watch"
+                  params={
+                    { episodeId: episode.id, seriesId: series.id } as never
+                  }
+                  to={
+                    appRoute(
+                      "/series/$seriesId/episodes/$episodeId/watch",
+                    ) as never
+                  }
                 >
                   <article className="relative flex h-[82px] items-center gap-3 overflow-hidden rounded-xl border border-transparent bg-transparent p-2.5 transition-[background-color,border-color,box-shadow] group-hover:border-gold/70 group-hover:bg-panel-2 group-hover:shadow-[0_12px_28px_rgb(0_0_0_/_25%)] sm:h-[420px] sm:flex-col sm:items-stretch sm:justify-start sm:gap-3 sm:rounded-xl sm:p-3">
                     <div className="relative z-10 h-[60px] w-[90px] shrink-0 sm:h-[240px] sm:w-full">

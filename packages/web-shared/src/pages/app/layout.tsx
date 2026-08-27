@@ -6,6 +6,7 @@ import {
   useCatalogRefreshError,
   useCatalogRefreshInProgress,
 } from "../../hooks/use-catalog-data";
+import { appRoute } from "../../runtime-config";
 import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
 
 export function AppLayout() {
@@ -14,10 +15,9 @@ export function AppLayout() {
   const { pathname } = useLocation();
   const isCatalogRefreshing = useCatalogRefreshInProgress();
   const catalogRefreshError = useCatalogRefreshError();
-  const isPlayerRoute =
-    /^\/app\/(movies\/[^/]+\/watch|series\/[^/]+\/episodes\/[^/]+\/watch|tv\/[^/]+\/watch)(\/|$)/.test(
-      pathname,
-    );
+  const isPlayerRoute = new RegExp(
+    `^${appRoute("/").replace("/", "\\/")}(movies\\/[^/]+\\/watch|series\\/[^/]+\\/episodes\\/[^/]+\\/watch|tv\\/[^/]+\\/watch)(\\/|$)`,
+  ).test(pathname);
   const isShelllessRoute = isPlayerRoute;
 
   useEffect(() => {
@@ -39,9 +39,10 @@ export function AppLayout() {
     >
       {!isShelllessRoute && <Sidebar />}
       <div className="relative min-w-0 flex-1" data-tv-app-content>
-        {isCatalogRefreshing && !pathname.startsWith("/app/sources") ? (
+        {isCatalogRefreshing && !pathname.startsWith(appRoute("/sources")) ? (
           <AppLoadingScreen />
-        ) : catalogRefreshError && !pathname.startsWith("/app/sources") ? (
+        ) : catalogRefreshError &&
+          !pathname.startsWith(appRoute("/sources")) ? (
           <AppLoadingScreen
             error={catalogRefreshError}
             onRetry={() => window.location.reload()}

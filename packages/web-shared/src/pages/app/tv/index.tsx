@@ -32,6 +32,7 @@ import {
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
+import { appRoute } from "../../../runtime-config";
 import { useFavorites } from "../../../services/favorites";
 import { markPlaybackNavigation } from "../../../services/playback-autoplay";
 import { usePlaybackPreferences } from "../../../services/playback-preferences";
@@ -371,8 +372,8 @@ function ProgramPanel({
     if (!channel) return;
     markPlaybackNavigation();
     void navigate({
-      to: "/app/tv/$channelId/watch",
-      params: { channelId: channel.id },
+      to: appRoute("/tv/$channelId/watch") as never,
+      params: { channelId: channel.id } as never,
     });
   };
   const epg = useXtreamEpg(
@@ -434,8 +435,8 @@ export function TvPage() {
       return;
     }
     void navigate({
-      to: "/app/tv/$channelId/watch",
-      params: { channelId },
+      to: appRoute("/tv/$channelId/watch") as never,
+      params: { channelId } as never,
     });
   };
   const channels = items.map((item) => ({

@@ -19,6 +19,7 @@ import {
   useXtreamEpg,
 } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
+import { appRoute } from "../../../runtime-config";
 import {
   type Favorite,
   type FavoriteKind,
@@ -27,9 +28,9 @@ import {
 import { markPlaybackNavigation } from "../../../services/playback-autoplay";
 
 const favoriteRoutes = {
-  channel: "/app/favorites/channels",
-  movie: "/app/favorites/movies",
-  series: "/app/favorites/series",
+  channel: "/favorites/channels",
+  movie: "/favorites/movies",
+  series: "/favorites/series",
 } as const;
 
 function newestFavorites<T extends { id: string }>(
@@ -232,8 +233,8 @@ function FavoriteChannelCard({
         onClick={() => {
           markPlaybackNavigation();
         }}
-        params={{ channelId: channel.id }}
-        to="/app/tv/$channelId/watch"
+        params={{ channelId: channel.id } as never}
+        to={appRoute("/tv/$channelId/watch") as never}
       />
       <span className="relative z-10 grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-lg bg-panel-2 text-muted">
         {channel.logoUrl ? (
@@ -385,8 +386,16 @@ const MediaCard = function MediaCard({
       <Link
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-focus"
-        params={kind === "movie" ? { movieId: item.id } : { seriesId: item.id }}
-        to={kind === "movie" ? "/app/movies/$movieId" : "/app/series/$seriesId"}
+        params={
+          (kind === "movie"
+            ? { movieId: item.id }
+            : { seriesId: item.id }) as never
+        }
+        to={
+          appRoute(
+            kind === "movie" ? "/movies/$movieId" : "/series/$seriesId",
+          ) as never
+        }
       />
       <div className="relative min-w-0">
         <h2 className="truncate text-sm font-bold text-text">{item.title}</h2>
@@ -558,7 +567,9 @@ export function FavoritesPage({ category }: { category?: FavoriteKind }) {
       {isLoading ? (
         <FavoritesSkeleton category={category} />
       ) : !hasVisibleFavorites ? (
-        <EmptyFavorites onExplore={() => void navigate({ to: "/app" })} />
+        <EmptyFavorites
+          onExplore={() => void navigate({ to: appRoute("/") })}
+        />
       ) : category ? (
         <CategoryFavoritesContent
           category={category}

@@ -14,6 +14,7 @@ import {
   useXtreamEpg,
 } from "../../../hooks/use-catalog-data";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
+import { appRoute } from "../../../runtime-config";
 import { useNextEpisodePreference } from "../../../services/next-episode-preferences";
 import {
   consumePlaybackNavigation,
@@ -143,8 +144,8 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
   const goBack = () => {
     if (kind === "episode" && seriesId) {
       void navigate({
-        to: "/app/series/$seriesId",
-        params: { seriesId },
+        to: appRoute("/series/$seriesId") as never,
+        params: { seriesId } as never,
       });
       return;
     }
@@ -155,19 +156,19 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
     setAllowAutoplay(true);
     setOptimisticEpisode(next);
     void navigate({
-      to: "/app/series/$seriesId/episodes/$episodeId/watch",
-      params: { episodeId: next.id, seriesId: seriesId ?? "" },
+      to: appRoute("/series/$seriesId/episodes/$episodeId/watch") as never,
+      params: { episodeId: next.id, seriesId: seriesId ?? "" } as never,
     });
   };
   const openContentList = () => {
-    if (kind === "live") return void navigate({ to: "/app/tv" });
-    if (kind === "movie") return void navigate({ to: "/app/movies" });
+    if (kind === "live") return void navigate({ to: appRoute("/tv") });
+    if (kind === "movie") return void navigate({ to: appRoute("/movies") });
     return goBack();
   };
   const navigateToChannel = (channelId: string) => {
     void navigate({
-      to: "/app/tv/$channelId/watch",
-      params: { channelId },
+      to: appRoute("/tv/$channelId/watch") as never,
+      params: { channelId } as never,
     });
   };
 

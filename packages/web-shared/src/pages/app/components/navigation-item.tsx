@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Icon } from "../../../components/icon";
+import { appRoute } from "../../../runtime-config";
 import type { NavigationItem as NavigationItemData } from "./navigation";
 
 const itemClassName =
@@ -20,17 +21,18 @@ export function NavigationItem({
       ? "grid size-10 shrink-0 place-items-center p-0"
       : "h-10 w-full px-0";
 
-  if (item.to) {
+  if (item.path) {
+    const to = appRoute(item.path);
     return (
       <Link
         data-sidebar-item="true"
-        activeOptions={{ exact: item.to === "/app" }}
+        activeOptions={{ exact: item.path === "/" }}
         activeProps={{
           "data-status": "active",
           className: `${itemClassName} border-transparent bg-transparent text-text ${mobileClassName}`,
         }}
         className={`${itemClassName} border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
-        to={item.to}
+        to={to}
       >
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-transparent text-current transition-colors group-data-[status=active]:bg-panel-2 group-focus-visible:!bg-gold group-focus-visible:!text-ink">
           <Icon

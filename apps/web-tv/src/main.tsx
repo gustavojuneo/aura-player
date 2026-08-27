@@ -11,6 +11,7 @@ import "./styles.css";
 configureSharedRuntime({
   apiUrl: env.VITE_API_URL,
   baseUrl: env.BASE_URL,
+  routeBasePath: "",
   mediaSourceMode: env.VITE_MEDIA_SOURCE_MODE,
   playbackUrls: env.VITE_PLAYBACK_URLS,
   showFullscreen: env.VITE_SHOW_FULLSCREEN,

@@ -11,6 +11,7 @@ import {
   useCatalogItem,
   useCatalogItems,
 } from "../../../../hooks/use-catalog-data";
+import { appRoute } from "../../../../runtime-config";
 import { useFavorites } from "../../../../services/favorites";
 import { loadPlaybackProgress } from "../../../../services/playback-progress";
 
@@ -85,7 +86,7 @@ export function MovieDetailsPage() {
             : undefined
         }
         watchParams={{ movieId: item.id }}
-        watchTo="/app/movies/$movieId/watch"
+        watchTo={appRoute("/movies/$movieId/watch")}
       />
       <section className="relative z-30 flex h-[clamp(360px,45vh,480px)] w-full shrink-0 flex-col gap-3.5 overflow-hidden bg-bg px-5 pt-6 pb-16 sm:px-10 sm:pt-6 lg:px-[70px]">
         <h2 className="m-0 font-display text-lg font-bold text-text sm:text-[1.312rem]">
@@ -101,8 +102,8 @@ export function MovieDetailsPage() {
                 className="w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] min-w-[clamp(153px,calc((45vh_-_100px)*2/3),240px)] shrink-0 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
                 data-tv-navigation-zone="catalog-items"
                 key={movie.id}
-                params={{ movieId: movie.id }}
-                to="/app/movies/$movieId"
+                params={{ movieId: movie.id } as never}
+                to={appRoute("/movies/$movieId") as never}
               >
                 <DetailCard
                   accent={index % 2 ? "amber" : "blue"}

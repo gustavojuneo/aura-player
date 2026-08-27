@@ -1,5 +1,6 @@
 export interface SharedRuntimeConfig {
   baseUrl: string;
+  routeBasePath: "/app" | "";
   apiUrl: string;
   mediaSourceMode: "proxy" | "direct";
   playbackUrls?: string;
@@ -12,6 +13,7 @@ export interface SharedRuntimeConfig {
 
 const DEFAULT_RUNTIME_CONFIG: SharedRuntimeConfig = {
   baseUrl: "/",
+  routeBasePath: "/app",
   apiUrl: "http://localhost:3333",
   mediaSourceMode: "proxy",
   showFullscreen: true,
@@ -29,4 +31,9 @@ export function configureSharedRuntime(config: SharedRuntimeConfig) {
 
 export function getSharedRuntime() {
   return runtimeConfig;
+}
+
+export function appRoute(path: string) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${runtimeConfig.routeBasePath}${normalizedPath}` || "/";
 }

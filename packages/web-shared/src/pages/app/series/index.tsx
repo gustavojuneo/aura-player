@@ -16,6 +16,7 @@ import {
 import { useCatalogSeries } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
+import { appRoute } from "../../../runtime-config";
 import { usePlaybackProgress } from "../../../services/playback-progress";
 import { AppHeader } from "../components";
 
@@ -128,8 +129,8 @@ const SeriesCard = function SeriesCard({ item }: { item: Series }) {
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 z-10 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
         data-tv-navigation-zone="catalog-items"
-        params={{ seriesId: item.id }}
-        to="/app/series/$seriesId"
+        params={{ seriesId: item.id } as never}
+        to={appRoute("/series/$seriesId") as never}
       />
       {item.posterUrl && (
         <img

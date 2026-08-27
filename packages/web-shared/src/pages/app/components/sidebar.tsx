@@ -3,6 +3,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { type FocusEvent, useState } from "react";
 import { SourceSelector } from "../../../components/source-selector";
 import { useCatalogSources } from "../../../hooks/use-catalog-data";
+import { appRoute } from "../../../runtime-config";
 import {
   getActiveSourceId,
   setActiveSourceId,
@@ -35,7 +36,7 @@ export function Sidebar({ isTv = false }: { isTv?: boolean }) {
     const nextSource = sources.find((source) => source.id === sourceId);
     if (!nextSource || sourceId === getActiveSourceId()) return;
     setActiveSourceId(sourceId);
-    void navigate({ to: "/app" });
+    void navigate({ to: appRoute("/") });
     void refreshCatalogSource(nextSource).catch(() => undefined);
   };
 
@@ -116,7 +117,7 @@ export function Sidebar({ isTv = false }: { isTv?: boolean }) {
               item={{
                 icon: "settings",
                 label: "Configurações",
-                to: "/app/settings",
+                path: "/settings",
               }}
             />
           </div>

@@ -49,9 +49,10 @@ tooltips, keyboard shortcuts, browser history, and Vercel deployment
 configuration.
 
 Examples of TV-owned behavior include hash history for packaged applications,
-spatial focus navigation, remote-control interaction, the absence of browser
-keyboard shortcuts and mouse-hover tooltips, LG webOS metadata and packaging,
-the webOS compatibility target, and TV-specific rendering optimizations.
+with `/` as the application entry route and no `/app` route, spatial focus
+navigation, remote-control interaction, the absence of browser keyboard
+shortcuts and mouse-hover tooltips, LG webOS metadata and packaging, the webOS
+compatibility target, and TV-specific rendering optimizations.
 
 Runtime branching through a general device variable such as
 `VITE_DEVICE_TYPE` must be removed as the applications are separated. A

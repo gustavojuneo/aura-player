@@ -17,7 +17,7 @@ below is the canonical product tour.
 
 ## Routes
 
-The web application currently exposes the following TanStack Router routes:
+The browser application currently exposes the following TanStack Router routes:
 
 | Route | Purpose |
 | --- | --- |
@@ -38,6 +38,10 @@ The web application currently exposes the following TanStack Router routes:
 | `/app/favorites/channels` | Favorite channels |
 | `/app/sources` | IPTV source management |
 | `/app/settings` | Playback, appearance, language, and data settings |
+
+The TV application uses hash history and exposes its application shell at `/`;
+the equivalent catalog paths are `/tv`, `/movies`, `/series`, and so on. It
+does not expose an `/app` route.
 
 `$channelId`, `$movieId`, `$seriesId`, and `$episodeId` are provider-backed
 identifiers generated after a source is imported.

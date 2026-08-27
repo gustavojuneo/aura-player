@@ -62,7 +62,8 @@ configuration.
 
 ### FPS-TV-001: TV ownership
 
-`web-tv` owns hash history for packaged applications, spatial focus navigation,
+`web-tv` owns hash history for packaged applications, with `/` as the
+application entry route and no `/app` route, spatial focus navigation,
 remote-control interaction, TV-specific rendering optimization, the LG webOS
 compatibility target, webOS metadata, and webOS packaging.
 

@@ -108,7 +108,7 @@ const rootRoute = createRootRoute({ component: Outlet });
 const appRoute = createRoute({
   component: AppLayout,
   getParentRoute: () => rootRoute,
-  path: "app",
+  path: "/",
 });
 const homeRoute = createRoute({
   component: HomePage,

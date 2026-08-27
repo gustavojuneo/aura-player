@@ -26,6 +26,7 @@ import {
   defaultHeroAspectRatio,
   useImageAspectRatio,
 } from "../../hooks/use-image-aspect-ratio";
+import { appRoute } from "../../runtime-config";
 import {
   getXtreamCredentialsFromM3uUrl,
   importM3uSource,
@@ -89,8 +90,12 @@ function MediaCard({
         aria-label={`Abrir ${item.title}`}
         className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-focus"
         data-tv-home-card
-        params={isMovie ? { movieId: item.id } : { seriesId: item.id }}
-        to={isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId"}
+        params={
+          (isMovie ? { movieId: item.id } : { seriesId: item.id }) as never
+        }
+        to={
+          appRoute(isMovie ? "/movies/$movieId" : "/series/$seriesId") as never
+        }
       />
       <div className="relative min-w-0">
         <h3 className="truncate text-sm font-bold text-text">{item.title}</h3>
@@ -109,8 +114,8 @@ function ChannelCard({ channel }: { channel: RecentChannel }) {
         aria-label={`Assistir ${channel.title}`}
         className="absolute inset-0 z-0 rounded-[10px] focus-visible:outline-2 focus-visible:outline-focus"
         data-tv-home-card
-        params={{ channelId: channel.id }}
-        to="/app/tv/$channelId/watch"
+        params={{ channelId: channel.id } as never}
+        to={appRoute("/tv/$channelId/watch") as never}
       />
       <span className="relative z-10 grid size-[46px] shrink-0 place-items-center overflow-hidden rounded-lg bg-panel-2 text-muted">
         {channel.logoUrl ? (
@@ -146,7 +151,9 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
   const imageAspectRatio = useImageAspectRatio(imageUrl);
   const backdropFade =
     "linear-gradient(to bottom, rgb(21 19 15 / 0%) 0%, rgb(21 19 15 / 2%) 32%, rgb(21 19 15 / 20%) 52%, rgb(21 19 15 / 62%) 74%, #15130f 100%)";
-  const detailsTo = isMovie ? "/app/movies/$movieId" : "/app/series/$seriesId";
+  const detailsTo = appRoute(
+    isMovie ? "/movies/$movieId" : "/series/$seriesId",
+  );
   const detailsParams = isMovie
     ? { movieId: item?.id ?? "" }
     : { seriesId: item?.id ?? "" };
@@ -183,16 +190,20 @@ function FeaturedHero({ item }: { item?: CatalogItem | CatalogSeries }) {
           >
             <Link
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-gold bg-gold px-5 text-sm font-bold text-ink hover:bg-gold-bright"
-              params={isMovie ? { movieId: item.id } : { seriesId: item.id }}
-              to={
-                isMovie ? "/app/movies/$movieId/watch" : "/app/series/$seriesId"
+              params={
+                (isMovie
+                  ? { movieId: item.id }
+                  : { seriesId: item.id }) as never
               }
+              to={appRoute(
+                isMovie ? "/movies/$movieId/watch" : "/series/$seriesId",
+              )}
             >
               <Icon className="size-4" name="play" /> Assistir
             </Link>
             <Link
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-panel-2 px-5 text-sm font-bold text-text hover:border-gold/60 hover:bg-panel-2/80"
-              params={detailsParams}
+              params={detailsParams as never}
               to={detailsTo}
             >
               <Info className="size-4" /> Ver detalhes

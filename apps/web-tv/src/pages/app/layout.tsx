@@ -38,9 +38,9 @@ export function AppLayout() {
     >
       {!isPlayerRoute && <Sidebar isTv />}
       <div className="relative min-w-0 flex-1" data-tv-app-content>
-        {isCatalogRefreshing && !pathname.startsWith("/app/sources") ? (
+        {isCatalogRefreshing && !pathname.startsWith("/sources") ? (
           <AppLoadingScreen />
-        ) : catalogRefreshError && !pathname.startsWith("/app/sources") ? (
+        ) : catalogRefreshError && !pathname.startsWith("/sources") ? (
           <AppLoadingScreen
             error={catalogRefreshError}
             onRetry={() => window.location.reload()}

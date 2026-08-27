@@ -177,12 +177,14 @@ packages/web-shared/src/
 
 This tree is a reference. Create files and directories as the application requires them.
 
-Routes are represented as a cascading filesystem hierarchy. `pages/index.tsx`
-maps to `/`; `pages/app/index.tsx` maps to `/app`; and
-`pages/app/onboarding/index.tsx` maps to `/app/onboarding`. Route groups may be
-used for organization without changing the URL. Every route page is named
-`index.tsx`. A `layout.tsx` in a route directory wraps that route and all child
-routes; the app shell belongs at `pages/app/layout.tsx`.
+Routes are represented as a cascading filesystem hierarchy. In `web-app`,
+`pages/index.tsx` maps to the public landing page, `pages/app/index.tsx` maps to
+`/app`, and nested application routes map below `/app`. In `web-tv`, hash
+history maps the application shell in `pages/app/layout.tsx` to `/`; its
+catalog routes therefore use `/tv`, `/movies`, and the other product paths
+directly, and `/app` must not be exposed. Route groups may be used for
+organization without changing the URL. Every route page is named `index.tsx`.
+A `layout.tsx` in a route directory wraps that route and all child routes.
 
 ### `components/ui`
 

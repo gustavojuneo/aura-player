@@ -18,9 +18,7 @@ type DetailHeroProps = {
   description: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-  watchTo:
-    | "/app/movies/$movieId/watch"
-    | "/app/series/$seriesId/episodes/$episodeId/watch";
+  watchTo: string;
   watchParams: Record<string, string>;
   watchLabel: string;
   watchProgress?: number;
@@ -122,9 +120,9 @@ export function DetailHero({
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-gold bg-gold px-5 text-xs font-bold text-ink transition-colors hover:bg-gold-bright focus-visible:outline-2 focus-visible:outline-focus sm:h-12 sm:w-[260px] sm:text-sm"
             data-tv-detail-watch="true"
-            params={watchParams}
+            params={watchParams as never}
             onClick={markPlaybackNavigation}
-            to={watchTo}
+            to={watchTo as never}
           >
             <span className="relative flex items-center gap-2">
               <Play className="size-4 fill-current" /> {watchLabel}

@@ -16,6 +16,7 @@ import {
 import { useCatalogItems } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
+import { appRoute } from "../../../runtime-config";
 import { usePlaybackProgress } from "../../../services/playback-progress";
 import { AppHeader } from "../components";
 
@@ -128,8 +129,8 @@ const MovieCard = function MovieCard({ movie }: { movie: Movie }) {
         aria-label={`Abrir ${movie.title}`}
         className="absolute inset-0 z-10 rounded-xl focus-visible:outline-2 focus-visible:outline-focus"
         data-tv-navigation-zone="catalog-items"
-        params={{ movieId: movie.id }}
-        to="/app/movies/$movieId"
+        params={{ movieId: movie.id } as never}
+        to={appRoute("/movies/$movieId") as never}
       />
       {movie.logoUrl && (
         <img
