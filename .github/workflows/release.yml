@@ -9,7 +9,16 @@ permissions:
   contents: write
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  test:
+    uses: ./.github/workflows/test.yml
+
   release:
+    needs:
+      - lint
+      - test
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -26,12 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Validate release
-        run: |
-          pnpm lint
-          pnpm typecheck
-          pnpm test
 
       - name: Set webOS application version
         env:
