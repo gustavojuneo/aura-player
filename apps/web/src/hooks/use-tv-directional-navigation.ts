@@ -256,6 +256,13 @@ function findClosestBelow(current: HTMLElement, candidates: HTMLElement[]) {
 
 function focusElement(element: HTMLElement | undefined) {
   if (!element) return;
+  if (
+    element instanceof HTMLInputElement &&
+    isTextEntry(element) &&
+    element.dataset.keyboardReady !== "true"
+  ) {
+    element.readOnly = true;
+  }
   const focusKey = focusKeys.get(element);
   // Some controls, such as the live preview, can be enabled by selecting a
   // channel immediately before the next directional key. Move DOM focus
@@ -277,9 +284,10 @@ function scrollRegionToStart(element: HTMLElement) {
 }
 
 function handleTextInputEnter(element: HTMLInputElement) {
+  activateTextInput(element);
+  element.focus({ preventScroll: true });
   const form = element.closest("form");
   if (!form) return;
-  activateTextInput(element);
   const inputs = Array.from(
     form.querySelectorAll<HTMLInputElement>(
       'input:not([disabled]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])',
@@ -692,6 +700,13 @@ function createFocusableRegistration(
     },
     onEnterRelease: () => undefined,
     onFocus: () => {
+      if (
+        element instanceof HTMLInputElement &&
+        isTextEntry(element) &&
+        element.dataset.keyboardReady !== "true"
+      ) {
+        element.readOnly = true;
+      }
       if (suppressNextFocusScroll) {
         suppressNextFocusScroll = false;
         return;
@@ -900,13 +915,6 @@ export function useTvDirectionalNavigation() {
     const handleFocusIn = (event: FocusEvent) => {
       const element = event.target;
       if (!(element instanceof HTMLElement)) return;
-      if (
-        element instanceof HTMLInputElement &&
-        isTextEntry(element) &&
-        element.dataset.keyboardReady !== "true"
-      ) {
-        element.readOnly = true;
-      }
       if (element.closest('[role="option"]')) {
         pause();
         return;
@@ -977,6 +985,17 @@ export function useTvDirectionalNavigation() {
           ? handleRegionExit(activeElement, region, direction)
           : true;
         if (shouldNavigate) void navigateByDirection(direction, { event });
+        return;
+      }
+
+      if (
+        event.key === "Enter" &&
+        activeElement instanceof HTMLInputElement &&
+        isTextEntry(activeElement)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleTextInputEnter(activeElement);
         return;
       }
 

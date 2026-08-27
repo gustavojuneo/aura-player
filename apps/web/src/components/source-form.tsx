@@ -167,7 +167,7 @@ export function SourceForm({
         <Input
           {...form.register("name")}
           aria-invalid={Boolean(form.formState.errors.name)}
-          autoCapitalize="sentences"
+          autoCapitalize="words"
           autoCorrect="off"
           placeholder="Casa principal"
           type="text"
