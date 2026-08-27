@@ -1,5 +1,8 @@
-import { PlayerScreen } from "../../../../../components/media-player";
+import {
+  MediaPlayer,
+  PlayerScreen,
+} from "../../../../../components/media-player";
 
 export function MoviePlayerPage() {
-  return <PlayerScreen kind="movie" />;
+  return <PlayerScreen kind="movie" player={MediaPlayer} />;
 }

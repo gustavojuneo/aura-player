@@ -55,7 +55,7 @@ pnpm webos:package
 
 The command builds the TV application and packages it with `ares-package`.
 The webOS build uses the published backend at
-`https://aura-api-ia1i.onrender.com`, injected by the package script.
+`https://aura-api-ia1i.onrender.com`, configured by the TV application itself.
 The packaged application enables the webOS cross-domain capability so it can
 reach the API and user-configured IPTV providers from its local application
 origin.

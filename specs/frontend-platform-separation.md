@@ -86,6 +86,13 @@ application shell during startup and whenever a source is being loaded or
 updated. The splash must identify that the catalog is being loaded and must
 cover the sidebar and route content while the operation is in progress.
 
+### FPS-TV-005: TV-owned runtime configuration
+
+TV platform behavior and the TV API endpoint must be defined by the
+`web-tv` application composition. The webOS build must not require environment
+variables for media source mode, player controls, keyboard shortcuts, TV
+navigation, playback URL overrides, or the configured TV API endpoint.
+
 ## Shared code requirements
 
 ### FPS-SHARED-001: Concrete reuse

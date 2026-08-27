@@ -1,3 +1,4 @@
+import { useSearchShortcut } from "@iptv/web-shared/search-shortcut";
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
@@ -15,7 +16,6 @@ import {
 } from "../../../components/ui";
 import { useCatalogItems } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
-import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { appRoute } from "../../../runtime-config";
 import { usePlaybackProgress } from "../../../services/playback-progress";
 import { AppHeader } from "../components";

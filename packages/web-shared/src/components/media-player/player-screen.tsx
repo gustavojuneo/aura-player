@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useRef } from "react";
+import { type ComponentType, useRef } from "react";
 import { appRoute } from "../../runtime-config";
 import {
   markEpisodeWatched,
@@ -10,17 +10,23 @@ import {
   type PlayerScreenKind,
   usePlayerScreen,
 } from "./hooks/use-player-screen";
-import { MediaPlayer } from "./media-player";
 import {
   PlayerLiveContentList,
   PlayerSeriesContentList,
 } from "./player-content-list";
 import { PlayerLiveGuide } from "./player-live-guide";
 import { PlayerNextEpisode } from "./player-next-episode";
+import type { MediaPlayerProps } from "./types";
 
 export type { PlayerScreenKind } from "./hooks/use-player-screen";
 
-export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
+export function PlayerScreen({
+  kind,
+  player: Player,
+}: {
+  kind: PlayerScreenKind;
+  player: ComponentType<MediaPlayerProps>;
+}) {
   const state = usePlayerScreen(kind);
   const {
     contentId,
@@ -147,7 +153,7 @@ export function PlayerScreen({ kind }: { kind: PlayerScreenKind }) {
         : undefined;
 
   return (
-    <MediaPlayer
+    <Player
       autoPlay={state.allowAutoplay}
       descriptor={descriptor}
       isLoading={state.isLoading}

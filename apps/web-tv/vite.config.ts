@@ -14,6 +14,9 @@ export default defineConfig({
   publicDir: "../../packages/web-shared/public",
   resolve: {
     alias: {
+      "@iptv/web-shared/search-shortcut": fileURLToPath(
+        new URL("./src/hooks/use-no-search-shortcut.ts", import.meta.url),
+      ),
       "@iptv/web-shared": fileURLToPath(
         new URL("../../packages/web-shared/src", import.meta.url),
       ),

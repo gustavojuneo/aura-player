@@ -1,3 +1,4 @@
+import { useSearchShortcut } from "@iptv/web-shared/search-shortcut";
 import { useNavigate } from "@tanstack/react-router";
 import type Hls from "hls.js";
 import {
@@ -31,7 +32,6 @@ import {
 } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
-import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { appRoute } from "../../../runtime-config";
 import { useFavorites } from "../../../services/favorites";
 import { markPlaybackNavigation } from "../../../services/playback-autoplay";

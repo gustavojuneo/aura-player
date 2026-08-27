@@ -119,7 +119,7 @@ pnpm webos:package
 The LG webOS CLI is installed as a workspace development dependency, so no
 global CLI installation is required. The command writes the package to
 `apps/web-tv/release`. The webOS build uses the published Render API at
-`https://aura-api-ia1i.onrender.com`, injected by the package script.
+`https://aura-api-ia1i.onrender.com`, configured by the TV application itself.
 
 ## Continuous integration and releases
 

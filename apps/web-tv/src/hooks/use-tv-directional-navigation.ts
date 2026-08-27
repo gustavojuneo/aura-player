@@ -13,7 +13,7 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { env } from "../env";
+import { TV_NAVIGATION_ENABLED } from "../config";
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
@@ -891,7 +891,7 @@ function focusInitialElement() {
 export function useTvDirectionalNavigation() {
   const { pathname } = useLocation();
   const router = useRouter();
-  const enabled = env.VITE_ENABLE_TV_NAVIGATION;
+  const enabled = TV_NAVIGATION_ENABLED;
 
   useEffect(() => {
     if (!enabled || !pathname) return;
