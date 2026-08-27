@@ -15,6 +15,12 @@ onboarding, source management, live TV, movie and series catalogs, detail
 pages, episode navigation, playback, favorites, and settings. The route list
 below is the canonical product tour.
 
+The Pencil source file for the interface system is [`aura.pen`](aura.pen). It
+contains the responsive AURA TV component library, product states, and the
+browser/TV compositions described below. Screens use fictional catalog data
+only; they are visual references, not provider credentials or production
+content.
+
 ## Routes
 
 The browser application currently exposes the following TanStack Router routes:
@@ -62,18 +68,34 @@ This repository is a pnpm/Turborepo monorepo:
 
 ```text
 apps/
-├── api/       Fastify provider gateway and catalog normalization
-├── web-app/   Desktop and mobile browser application
-└── web-tv/    TV web application and LG webOS package
+├── api/       Fastify provider gateway, validation, and catalog normalization
+├── web-app/   Independent desktop/mobile browser product
+└── web-tv/    Independent TV product and LG webOS package
 
 packages/
-└── web-shared/ Browser React catalog, data, UI, and playback capabilities
+├── config-typescript/ Shared TypeScript presets
+├── config-vite/       Shared Vite composition helpers
+└── web-shared/        Reused browser catalog, UI, and playback capabilities
 ```
 
-The web application uses React, Vite, TypeScript, Tailwind CSS, TanStack
-Router, TanStack Query, Axios, React Hook Form, and Zod. The API uses Fastify
-and Zod, and permits outbound requests to arbitrary public provider hosts while
-rejecting private network targets.
+`web-app` and `web-tv` are separate applications with their own entry points,
+routers, layouts, environment validation, assets, and build configuration.
+Neither imports the other. Platform behavior is selected through application
+composition, with no general device runtime flag. Only concrete reuse lives in
+`packages/web-shared`; pure playback and transport rules remain independent of
+React and application environment modules.
+
+The browser product owns public landing, desktop/mobile navigation, pointer and
+keyboard interactions, and Vercel deployment. The TV product owns hash
+history, spatial remote navigation, LG webOS packaging, and its full-screen
+catalog loading splash. TV playback has a binary mute action only: it never
+mounts a variable-volume slider, and unmuting restores media volume to 100% so
+system volume remains television-owned.
+
+The API uses Fastify, Zod, PostgreSQL, and Drizzle. Its media resolver follows
+bounded redirects, accepts public provider hosts without an allowlist, and
+rejects private, loopback, link-local, and unspecified network targets. The
+frontend plays the final resolved media URL.
 
 See [`docs/architecture.md`](docs/architecture.md) for the architectural
 boundaries and [`docs/deployment-vercel.md`](docs/deployment-vercel.md) for
