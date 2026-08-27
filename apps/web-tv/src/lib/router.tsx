@@ -7,7 +7,7 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
-import { AppLayout } from "../app-layout";
+import { AppLayout } from "../pages/app/layout";
 
 function lazyPage(
   load: () => Promise<{ default: ComponentType }>,

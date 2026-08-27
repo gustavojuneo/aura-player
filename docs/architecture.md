@@ -147,16 +147,17 @@ capabilities:
 
 ```text
 apps/web-app/src/
-|-- app-layout.tsx
 |-- lib/router.tsx
-|-- pages/index.tsx                web-app-only public landing page
+|-- pages/
+|   |-- index.tsx                  web-app-only public landing page
+|   `-- app/layout.tsx             web-app application shell
 |-- env.ts
 `-- main.tsx
 
 apps/web-tv/src/
-|-- app-layout.tsx
 |-- hooks/use-tv-directional-navigation.ts
 |-- lib/router.tsx
+|-- pages/app/layout.tsx           web-tv application shell
 |-- env.ts
 `-- main.tsx
 

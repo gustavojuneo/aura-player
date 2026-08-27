@@ -10,7 +10,7 @@ import {
 } from "@iptv/web-shared/pages/app/components";
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useTvDirectionalNavigation } from "./hooks/use-tv-directional-navigation";
+import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
 
 export function AppLayout() {
   useAppLifecycle();
