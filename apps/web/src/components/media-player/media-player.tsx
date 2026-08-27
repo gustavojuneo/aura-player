@@ -144,7 +144,9 @@ export function MediaPlayer({
           {controls.volumeShortcutValue}%
         </div>
       )}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/90" />
+      {controls.controlsVisible && (
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/90" />
+      )}
       {descriptor.isLive &&
         controls.controlsVisible &&
         controls.liveGuideOpen &&

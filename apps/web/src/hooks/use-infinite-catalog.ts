@@ -8,6 +8,7 @@ export function useInfiniteCatalog<T>(
   sort: (first: T, second: T) => number,
   query: string,
   category: string,
+  shouldPaginate = true,
 ) {
   const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase());
   const [page, setPage] = useState(1);
@@ -16,7 +17,9 @@ export function useInfiniteCatalog<T>(
   const filteredItems = items
     .filter((item) => filter(item, deferredQuery, category))
     .sort(sort);
-  const visibleItems = filteredItems.slice(0, page * pageSize);
+  const visibleItems = shouldPaginate
+    ? filteredItems.slice(0, page * pageSize)
+    : filteredItems;
 
   useEffect(() => {
     if (!resetKey) return;
@@ -25,7 +28,12 @@ export function useInfiniteCatalog<T>(
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || visibleItems.length >= filteredItems.length) return;
+    if (
+      !shouldPaginate ||
+      !sentinel ||
+      visibleItems.length >= filteredItems.length
+    )
+      return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setPage((current) => current + 1);
@@ -34,7 +42,7 @@ export function useInfiniteCatalog<T>(
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [filteredItems.length, visibleItems.length]);
+  }, [filteredItems.length, shouldPaginate, visibleItems.length]);
 
   return {
     deferredQuery,

@@ -279,6 +279,7 @@ function scrollRegionToStart(element: HTMLElement) {
 function handleTextInputEnter(element: HTMLInputElement) {
   const form = element.closest("form");
   if (!form) return;
+  activateTextInput(element);
   const inputs = Array.from(
     form.querySelectorAll<HTMLInputElement>(
       'input:not([disabled]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])',
@@ -287,10 +288,16 @@ function handleTextInputEnter(element: HTMLInputElement) {
   const currentIndex = inputs.indexOf(element);
   const nextInput = inputs[currentIndex + 1];
   if (nextInput) {
+    activateTextInput(nextInput);
     focusElement(nextInput);
     return;
   }
   form.requestSubmit();
+}
+
+function activateTextInput(element: HTMLInputElement) {
+  element.dataset.keyboardReady = "true";
+  element.readOnly = false;
 }
 
 function getRegionItems(region: NavigationRegion) {
@@ -893,6 +900,13 @@ export function useTvDirectionalNavigation() {
     const handleFocusIn = (event: FocusEvent) => {
       const element = event.target;
       if (!(element instanceof HTMLElement)) return;
+      if (
+        element instanceof HTMLInputElement &&
+        isTextEntry(element) &&
+        element.dataset.keyboardReady !== "true"
+      ) {
+        element.readOnly = true;
+      }
       if (element.closest('[role="option"]')) {
         pause();
         return;
@@ -904,9 +918,18 @@ export function useTvDirectionalNavigation() {
     };
 
     document.addEventListener("focusin", handleFocusIn);
+    const handleTextInputClick = (event: MouseEvent) => {
+      const element = event.target;
+      if (!(element instanceof HTMLInputElement) || !isTextEntry(element))
+        return;
+      activateTextInput(element);
+      window.requestAnimationFrame(() => element.focus());
+    };
+    document.addEventListener("click", handleTextInputClick, true);
     return () => {
       observer.disconnect();
       document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("click", handleTextInputClick, true);
       if (frame !== undefined) window.cancelAnimationFrame(frame);
     };
   }, [enabled, pathname]);

@@ -29,6 +29,7 @@ import {
   useXtreamEpg,
   useXtreamEpgForChannels,
 } from "../../../hooks/use-catalog-data";
+import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { useFavorites } from "../../../services/favorites";
@@ -457,15 +458,23 @@ export function TvPage() {
       ...counts.entries(),
     ];
   })();
-  const visibleChannels = (() => {
-    return channels.filter(
-      (channel) =>
-        channel.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
-        (query.trim().length > 0 ||
-          category === "Todos" ||
-          channel.current === category),
-    );
-  })();
+  const {
+    visibleItems: visibleChannels,
+    filteredCount,
+    hasMore,
+    sentinelRef,
+  } = useInfiniteCatalog(
+    channels,
+    (channel, search, selectedCategory) =>
+      channel.name.toLocaleLowerCase().includes(search) &&
+      (search.length > 0 ||
+        selectedCategory === "Todos" ||
+        channel.current === selectedCategory),
+    () => 0,
+    query,
+    category,
+    category === "Todos",
+  );
   const epgChannelsForView = (() => {
     const grouped = new Map<string, Channel>();
     for (const channel of visibleChannels) {
@@ -584,6 +593,16 @@ export function TvPage() {
                     />
                   ))}
                 </div>
+                {hasMore && visibleChannels.length > 0 && (
+                  <p
+                    className="mt-4 mb-0 text-center text-xs text-muted"
+                    role="status"
+                  >
+                    Mostrando {visibleChannels.length} de {filteredCount}{" "}
+                    canais...
+                  </p>
+                )}
+                <div className="h-1" ref={sentinelRef} />
               </ScrollArea>
             </section>
             <ProgramPanel
