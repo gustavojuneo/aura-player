@@ -24,6 +24,7 @@ import type {
   CatalogItem,
   EpgProgram,
 } from "../../../features/catalog/catalog";
+import { sanitizeCategory } from "../../../features/catalog/catalog";
 import {
   useCatalogItems,
   useXtreamEpg,
@@ -436,7 +437,9 @@ export function TvPage({
     });
   };
   const channels = items.map((item) => ({
-    current: item.groupTitle ?? item.categories?.[0] ?? "Sem categoria",
+    current:
+      sanitizeCategory(item.groupTitle ?? item.categories?.[0] ?? "") ||
+      "Sem categoria",
     delivery: item.delivery,
     id: item.id,
     logoUrl: item.logoUrl,

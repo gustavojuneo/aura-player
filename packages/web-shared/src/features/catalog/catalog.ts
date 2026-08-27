@@ -2,9 +2,15 @@ import { z } from "zod";
 
 const emojiPattern =
   /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier}|\p{Regional_Indicator}|\uFE0F|\u200D|\u20E3)/gu;
+const categoryPrefixPattern =
+  /^\s*(?:CANAIS|FILMES|S(?:ERIES|ÉRIES))\b\s*(?:[|:]\s*)?/iu;
 
 export function sanitizeCategory(value: string) {
-  return value.replace(emojiPattern, "").replace(/\s+/gu, " ").trim();
+  return value
+    .replace(categoryPrefixPattern, "")
+    .replace(emojiPattern, "")
+    .replace(/\s+/gu, " ")
+    .trim();
 }
 
 const optionalCategorySchema = z.preprocess((value) => {

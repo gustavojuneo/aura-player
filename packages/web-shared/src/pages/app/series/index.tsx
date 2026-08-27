@@ -13,6 +13,7 @@ import {
   SelectField,
   VirtualizedGrid,
 } from "../../../components/ui";
+import { sanitizeCategory } from "../../../features/catalog/catalog";
 import { useCatalogSeries } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { appRoute } from "../../../runtime-config";
@@ -178,19 +179,28 @@ export function SeriesPage({
       .filter((p) => p.mediaType === "episode" && p.seriesId)
       .map((p) => p.seriesId as string),
   );
-  const seriesCatalog = importedSeries.map((item) => ({
-    accent: "from-[#243442] to-[#171510]",
-    categories: item.categories?.length
-      ? item.categories
-      : item.groupTitle
-        ? [item.groupTitle]
-        : ["Sem categoria"],
-    genre: item.categories?.[0] ?? item.groupTitle ?? "Sem categoria",
-    id: item.id,
-    posterUrl: item.posterUrl,
-    seasons: item.seasonCount,
-    title: item.title,
-  }));
+  const seriesCatalog = importedSeries.map((item) => {
+    const categories = (item.categories ?? [])
+      .map(sanitizeCategory)
+      .filter(Boolean);
+    const groupTitle = sanitizeCategory(item.groupTitle ?? "");
+    const normalizedCategories =
+      categories.length > 0
+        ? categories
+        : groupTitle
+          ? [groupTitle]
+          : ["Sem categoria"];
+
+    return {
+      accent: "from-[#243442] to-[#171510]",
+      categories: normalizedCategories,
+      genre: normalizedCategories[0],
+      id: item.id,
+      posterUrl: item.posterUrl,
+      seasons: item.seasonCount,
+      title: item.title,
+    };
+  });
 
   const categories = [
     "Todos",

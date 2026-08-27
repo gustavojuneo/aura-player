@@ -13,6 +13,7 @@ import {
   SelectField,
   VirtualizedGrid,
 } from "../../../components/ui";
+import { sanitizeCategory } from "../../../features/catalog/catalog";
 import { useCatalogItems } from "../../../hooks/use-catalog-data";
 import { useInfiniteCatalog } from "../../../hooks/use-infinite-catalog";
 import { appRoute } from "../../../runtime-config";
@@ -178,19 +179,28 @@ export function MoviesPage({
   const continueIds = new Set(
     progress.filter((p) => p.mediaType === "movie").map((p) => p.contentId),
   );
-  const movieCatalog = importedMovies.map((movie) => ({
-    accent: "from-[#243442] to-[#171510]",
-    categories: movie.categories?.length
-      ? movie.categories
-      : movie.groupTitle
-        ? [movie.groupTitle]
-        : ["Sem categoria"],
-    genre: movie.categories?.[0] ?? movie.groupTitle ?? "Sem categoria",
-    id: movie.id,
-    logoUrl: movie.logoUrl,
-    metadata: movie.year ? String(movie.year) : "Filme",
-    title: movie.title,
-  }));
+  const movieCatalog = importedMovies.map((movie) => {
+    const categories = (movie.categories ?? [])
+      .map(sanitizeCategory)
+      .filter(Boolean);
+    const groupTitle = sanitizeCategory(movie.groupTitle ?? "");
+    const normalizedCategories =
+      categories.length > 0
+        ? categories
+        : groupTitle
+          ? [groupTitle]
+          : ["Sem categoria"];
+
+    return {
+      accent: "from-[#243442] to-[#171510]",
+      categories: normalizedCategories,
+      genre: normalizedCategories[0],
+      id: movie.id,
+      logoUrl: movie.logoUrl,
+      metadata: movie.year ? String(movie.year) : "Filme",
+      title: movie.title,
+    };
+  });
 
   const categories = [
     "Todos",
