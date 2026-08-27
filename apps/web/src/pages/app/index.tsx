@@ -1,11 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Info, Radio } from "lucide-react";
-import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import {
+  type CSSProperties,
+  lazy,
+  type ReactNode,
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
 import { Carousel } from "../../components/carousel";
 import { HomePageSkeleton } from "../../components/catalog-skeleton";
 import { Icon } from "../../components/icon";
 import type { SourceFormValues } from "../../components/source-form";
-import { SourceOnboardingDialog } from "../../components/source-onboarding-dialog";
 import { ProductState } from "../../components/ui";
 import type {
   CatalogItem,
@@ -32,6 +38,12 @@ import {
   type RecentChannel,
   recentChannelsEvent,
 } from "../../services/recent-channels";
+
+const SourceOnboardingDialog = lazy(() =>
+  import("../../components/source-onboarding-dialog").then(
+    ({ SourceOnboardingDialog: dialog }) => ({ default: dialog }),
+  ),
+);
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
@@ -375,11 +387,13 @@ export function HomePage() {
         )}
       </div>
       {!sourcesLoading && !sources.length && (
-        <SourceOnboardingDialog
-          error={error}
-          onSave={saveFirstSource}
-          progress={progress}
-        />
+        <Suspense fallback={null}>
+          <SourceOnboardingDialog
+            error={error}
+            onSave={saveFirstSource}
+            progress={progress}
+          />
+        </Suspense>
       )}
     </>
   );

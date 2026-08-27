@@ -10,7 +10,6 @@ import {
 import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
 import { HomePageSkeleton } from "../components/catalog-skeleton";
 import { env } from "../env";
-import { AppLayout } from "../pages/app/layout";
 
 function lazyPage(
   load: () => Promise<{ default: ComponentType }>,
@@ -28,6 +27,11 @@ function lazyPage(
 
 const LandingPage = lazyPage(() =>
   import("../pages").then(({ LandingPage: page }) => ({ default: page })),
+);
+const AppLayout = lazyPage(() =>
+  import("../pages/app/layout").then(({ AppLayout: page }) => ({
+    default: page,
+  })),
 );
 const HomePage = lazyPage(
   () =>
