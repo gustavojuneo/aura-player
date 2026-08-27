@@ -147,7 +147,8 @@ capabilities:
 
 ```text
 apps/web-app/src/
-|-- lib/router.tsx
+|-- routes/index.tsx                browser history and route composition
+|   `-- app/                        application route groups
 |-- pages/
 |   |-- index.tsx                  web-app-only public landing page
 |   `-- app/layout.tsx             web-app application shell
@@ -156,7 +157,8 @@ apps/web-app/src/
 
 apps/web-tv/src/
 |-- hooks/use-tv-directional-navigation.ts
-|-- lib/router.tsx
+|-- routes/index.tsx                hash history and route composition
+|   `-- app/                        application route groups
 |-- pages/app/layout.tsx           web-tv application shell
 |-- env.ts
 `-- main.tsx
@@ -386,7 +388,6 @@ Possible examples:
 
 ```text
 lib/query-client.ts
-lib/router.ts
 ```
 
 `lib/` must not contain business rules.

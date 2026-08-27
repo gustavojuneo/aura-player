@@ -5,7 +5,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { env } from "./env";
-import { router } from "./lib/router";
+import { router } from "./routes";
 import "./styles.css";
 
 configureSharedRuntime({
