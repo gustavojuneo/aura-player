@@ -1,16 +1,16 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { AppLoadingScreen } from "@iptv/web-shared/components/app-loading-screen";
+import { useAppLifecycle } from "@iptv/web-shared/hooks/use-app-lifecycle";
+import {
+  useCatalogRefreshError,
+  useCatalogRefreshInProgress,
+} from "@iptv/web-shared/hooks/use-catalog-data";
 import {
   MobileNavigation,
   SessionExpiredState,
   Sidebar,
 } from "@iptv/web-shared/pages/app/components";
-import {
-  useCatalogRefreshError,
-  useCatalogRefreshInProgress,
-} from "@iptv/web-shared/hooks/use-catalog-data";
-import { useAppLifecycle } from "@iptv/web-shared/hooks/use-app-lifecycle";
+import { Outlet, useLocation } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export function AppLayout() {
   useAppLifecycle();

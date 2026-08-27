@@ -891,8 +891,7 @@ function focusInitialElement() {
 export function useTvDirectionalNavigation() {
   const { pathname } = useLocation();
   const router = useRouter();
-  const enabled =
-    env.VITE_ENABLE_TV_NAVIGATION;
+  const enabled = env.VITE_ENABLE_TV_NAVIGATION;
 
   useEffect(() => {
     if (!enabled || !pathname) return;

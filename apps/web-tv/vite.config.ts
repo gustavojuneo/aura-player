@@ -1,8 +1,8 @@
 import { fileURLToPath, URL } from "node:url";
-import appInfo from "./public/appinfo.json";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import appInfo from "./public/appinfo.json";
 
 export default defineConfig({
   base: "./",

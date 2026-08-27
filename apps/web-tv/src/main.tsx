@@ -1,9 +1,9 @@
+import { queryClient } from "@iptv/web-shared/lib-query-client";
+import { configureSharedRuntime } from "@iptv/web-shared/runtime-config";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { queryClient } from "@iptv/web-shared/lib-query-client";
-import { configureSharedRuntime } from "@iptv/web-shared/runtime-config";
 import { env } from "./env";
 import { router } from "./lib/router";
 import "./styles.css";

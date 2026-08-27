@@ -1,3 +1,4 @@
+import { HomePageSkeleton } from "@iptv/web-shared/components/catalog-skeleton";
 import {
   createBrowserHistory,
   createRootRoute,
@@ -6,7 +7,6 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
-import { HomePageSkeleton } from "@iptv/web-shared/components/catalog-skeleton";
 import { AppLayout } from "../app-layout";
 
 function lazyPage(
@@ -24,28 +24,40 @@ function lazyPage(
 }
 
 const LandingPage = lazyPage(() =>
-  import("@iptv/web-shared/pages").then(({ LandingPage: page }) => ({ default: page })),
-);
-const HomePage = lazyPage(
-  () =>
-    import("@iptv/web-shared/pages/app").then(({ HomePage: page }) => ({ default: page })),
-  <HomePageSkeleton onRetry={() => window.location.reload()} />,
-);
-const FavoritesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/favorites").then(({ FavoritesPage: page }) => ({
+  import("@iptv/web-shared/pages").then(({ LandingPage: page }) => ({
     default: page,
   })),
 );
+const HomePage = lazyPage(
+  () =>
+    import("@iptv/web-shared/pages/app").then(({ HomePage: page }) => ({
+      default: page,
+    })),
+  <HomePageSkeleton onRetry={() => window.location.reload()} />,
+);
+const FavoritesPage = lazyPage(() =>
+  import("@iptv/web-shared/pages/app/favorites").then(
+    ({ FavoritesPage: page }) => ({
+      default: page,
+    }),
+  ),
+);
 const FavoriteMoviesPage = lazyPage(async () => {
-  const { FavoritesPage: Page } = await import("@iptv/web-shared/pages/app/favorites");
+  const { FavoritesPage: Page } = await import(
+    "@iptv/web-shared/pages/app/favorites"
+  );
   return { default: () => <Page category="movie" /> };
 });
 const FavoriteSeriesPage = lazyPage(async () => {
-  const { FavoritesPage: Page } = await import("@iptv/web-shared/pages/app/favorites");
+  const { FavoritesPage: Page } = await import(
+    "@iptv/web-shared/pages/app/favorites"
+  );
   return { default: () => <Page category="series" /> };
 });
 const FavoriteChannelsPage = lazyPage(async () => {
-  const { FavoritesPage: Page } = await import("@iptv/web-shared/pages/app/favorites");
+  const { FavoritesPage: Page } = await import(
+    "@iptv/web-shared/pages/app/favorites"
+  );
   return { default: () => <Page category="channel" /> };
 });
 const MoviesPage = lazyPage(() =>
@@ -54,9 +66,11 @@ const MoviesPage = lazyPage(() =>
   })),
 );
 const MovieDetailsPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/movies/$movieId").then(({ MovieDetailsPage: page }) => ({
-    default: page,
-  })),
+  import("@iptv/web-shared/pages/app/movies/$movieId").then(
+    ({ MovieDetailsPage: page }) => ({
+      default: page,
+    }),
+  ),
 );
 const MoviePlayerPage = lazyPage(() =>
   import("@iptv/web-shared/pages/app/movies/$movieId/watch").then(
@@ -78,22 +92,28 @@ const SeriesDetailsPage = lazyPage(() =>
   ),
 );
 const EpisodePlayerPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/series/$seriesId/episodes/$episodeId/watch").then(
-    ({ EpisodePlayerPage: page }) => ({ default: page }),
-  ),
+  import(
+    "@iptv/web-shared/pages/app/series/$seriesId/episodes/$episodeId/watch"
+  ).then(({ EpisodePlayerPage: page }) => ({ default: page })),
 );
 const SettingsPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/settings").then(({ SettingsPage: page }) => ({
-    default: page,
-  })),
+  import("@iptv/web-shared/pages/app/settings").then(
+    ({ SettingsPage: page }) => ({
+      default: page,
+    }),
+  ),
 );
 const SourcesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/sources").then(({ SourcesPage: page }) => ({
-    default: page,
-  })),
+  import("@iptv/web-shared/pages/app/sources").then(
+    ({ SourcesPage: page }) => ({
+      default: page,
+    }),
+  ),
 );
 const TvPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/tv").then(({ TvPage: page }) => ({ default: page })),
+  import("@iptv/web-shared/pages/app/tv").then(({ TvPage: page }) => ({
+    default: page,
+  })),
 );
 const LivePlayerPage = lazyPage(() =>
   import("@iptv/web-shared/pages/app/tv/$channelId/watch").then(

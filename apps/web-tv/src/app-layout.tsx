@@ -1,12 +1,15 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { AppLoadingScreen } from "@iptv/web-shared/components/app-loading-screen";
 import { useAppLifecycle } from "@iptv/web-shared/hooks/use-app-lifecycle";
 import {
   useCatalogRefreshError,
   useCatalogRefreshInProgress,
 } from "@iptv/web-shared/hooks/use-catalog-data";
-import { SessionExpiredState, Sidebar } from "@iptv/web-shared/pages/app/components";
+import {
+  SessionExpiredState,
+  Sidebar,
+} from "@iptv/web-shared/pages/app/components";
+import { Outlet, useLocation } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useTvDirectionalNavigation } from "./hooks/use-tv-directional-navigation";
 
 export function AppLayout() {
@@ -26,13 +29,22 @@ export function AppLayout() {
   }, []);
 
   return (
-    <main className={isPlayerRoute ? "h-dvh overflow-hidden bg-bg text-text" : "flex min-h-screen bg-bg text-text"}>
+    <main
+      className={
+        isPlayerRoute
+          ? "h-dvh overflow-hidden bg-bg text-text"
+          : "flex min-h-screen bg-bg text-text"
+      }
+    >
       {!isPlayerRoute && <Sidebar isTv />}
       <div className="relative min-w-0 flex-1" data-tv-app-content>
         {isCatalogRefreshing && !pathname.startsWith("/app/sources") ? (
           <AppLoadingScreen />
         ) : catalogRefreshError && !pathname.startsWith("/app/sources") ? (
-          <AppLoadingScreen error={catalogRefreshError} onRetry={() => window.location.reload()} />
+          <AppLoadingScreen
+            error={catalogRefreshError}
+            onRetry={() => window.location.reload()}
+          />
         ) : (
           <Outlet />
         )}
