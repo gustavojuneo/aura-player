@@ -81,7 +81,7 @@ the two-project Vercel deployment setup.
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 24.x
 - pnpm 9.7.1 or newer
 
 ## Installation

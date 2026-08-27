@@ -2,6 +2,9 @@
   "name": "iptv",
   "private": true,
   "packageManager": "pnpm@9.7.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",

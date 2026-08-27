@@ -22,13 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: pnpm
@@ -44,11 +44,12 @@ jobs:
             import { readFile, writeFile } from "node:fs/promises";
             const path = "apps/web-tv/public/appinfo.json";
             const tag = process.env.RELEASE_VERSION;
-            if (!/^v\d+\.\d+\.\d+(?:-(?:beta|rc)(?:\.\d+)?)?$/.test(tag)) {
+            const match = /^v(\d+\.\d+\.\d+)(?:-(?:beta|rc)(?:\.\d+)?)?$/.exec(tag);
+            if (!match) {
               throw new Error(`Invalid release tag: ${tag}`);
             }
             const appInfo = JSON.parse(await readFile(path, "utf8"));
-            appInfo.version = tag.slice(1);
+            appInfo.version = match[1];
             await writeFile(path, `${JSON.stringify(appInfo, null, 2)}\n`);
           '
 
@@ -62,7 +63,11 @@ jobs:
           node --input-type=module -e '
             import { access, readFile, readdir } from "node:fs/promises";
             const tag = process.env.RELEASE_VERSION;
-            const version = tag.slice(1);
+            const match = /^v(\d+\.\d+\.\d+)(?:-(?:beta|rc)(?:\.\d+)?)?$/.exec(tag);
+            if (!match) {
+              throw new Error(`Invalid release tag: ${tag}`);
+            }
+            const version = match[1];
             const appInfo = JSON.parse(
               await readFile("apps/web-tv/dist/appinfo.json", "utf8"),
             );
