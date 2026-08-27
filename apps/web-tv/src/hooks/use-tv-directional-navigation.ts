@@ -25,6 +25,9 @@ let initialized = false;
 let lastPlayerBottomControl: HTMLElement | undefined;
 const playerInitialFocusAssigned = new WeakSet<HTMLElement>();
 let suppressNextFocusScroll = false;
+let playerBackPressStartedAt = 0;
+
+const PLAYER_BACK_PRESS_TIMEOUT_MS = 1000;
 
 type NavigationRegion =
   | "catalog-categories"
@@ -470,9 +473,8 @@ function handleRegionExit(
         }
         if (direction === "left") {
           focusElement(
-            document.querySelector<HTMLElement>(
-              "[data-player-primary-play]",
-            ) ?? undefined,
+            document.querySelector<HTMLElement>("[data-player-primary-play]") ??
+              undefined,
           );
           return false;
         }
@@ -1140,12 +1142,24 @@ export function useTvDirectionalNavigation() {
     const handleBack = (event: KeyboardEvent) => {
       if (!isBackKey(event)) return;
 
+      const now = Date.now();
+      if (
+        playerBackPressStartedAt > 0 &&
+        now - playerBackPressStartedAt < PLAYER_BACK_PRESS_TIMEOUT_MS
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      playerBackPressStartedAt = 0;
+
       const player = document.querySelector<HTMLElement>("[data-player-root]");
       if (player) {
         // webOS sends the LG remote Back key as keyCode 461. Stop it before
         // the browser/router can interpret it as history navigation.
         event.preventDefault();
         event.stopImmediatePropagation();
+        playerBackPressStartedAt = now;
       }
 
       const openSourceSelector = document.querySelector<HTMLElement>(
@@ -1186,20 +1200,27 @@ export function useTvDirectionalNavigation() {
       }
       if (player) {
         document
-          .querySelector<HTMLElement>('[data-player-root] [data-player-back]')
+          .querySelector<HTMLElement>("[data-player-root] [data-player-back]")
           ?.click();
         return;
       }
       if (document.querySelector('[role="dialog"]')) return;
-      if (
-        !document.querySelector("[data-player-root]") &&
-        pathname !== "/app"
-      ) {
+      if (!document.querySelector("[data-player-root]") && pathname !== "/") {
         event.preventDefault();
         void router.history.back();
       }
     };
+    const handleBackRelease = (event: KeyboardEvent) => {
+      if (!isBackKey(event) || playerBackPressStartedAt === 0) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      playerBackPressStartedAt = 0;
+    };
     window.addEventListener("keydown", handleBack, true);
-    return () => window.removeEventListener("keydown", handleBack, true);
+    window.addEventListener("keyup", handleBackRelease, true);
+    return () => {
+      window.removeEventListener("keydown", handleBack, true);
+      window.removeEventListener("keyup", handleBackRelease, true);
+    };
   }, [enabled, pathname, router]);
 }

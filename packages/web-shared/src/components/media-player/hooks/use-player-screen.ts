@@ -165,9 +165,10 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
         void navigate({
           to: appRoute("/series/$seriesId") as never,
           params: { seriesId: detailsSeriesId } as never,
+          replace: true,
         });
       } else {
-        void navigate({ to: appRoute("/series") as never });
+        void navigate({ replace: true, to: appRoute("/series") as never });
       }
       return;
     }
