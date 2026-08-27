@@ -17,17 +17,25 @@ The repository uses:
 - Zod at application boundaries;
 - Biome for linting, formatting, and import organization.
 
-Planned top-level structure:
+The current frontend is implemented in `apps/web`. ADR 0003 establishes an
+incremental migration to two independently built frontend products. Until that
+migration is complete, documentation and commands that refer to `apps/web`
+describe the current repository state.
+
+Target top-level structure:
 
 ```text
 .
 |-- apps/
 |   |-- api/
-|   `-- web/
+|   |-- web-app/
+|   `-- web-tv/
 |-- packages/
 |-- docs/
 |   |-- architecture.md
 |   `-- adr/
+|-- specs/
+|   `-- index.md
 |-- AGENTS.md
 |-- README.md
 |-- biome.json
@@ -37,6 +45,28 @@ Planned top-level structure:
 ```
 
 Do not place code in `packages/` preemptively. A shared package should exist only when there is concrete reuse or when a technical boundary justifies its creation.
+
+### Frontend platform separation
+
+`web-app` and `web-tv` are separate products, not two modes of one frontend.
+Each application owns its routes, layouts, entry point, environment validation,
+build target, assets, deployment or packaging configuration, and direct
+dependencies. Neither application may import the other.
+
+Only behavior with demonstrated reuse belongs in a package. Pure domain and
+transport code must remain independent of React and browser APIs. Code shared
+only by the two browser runtimes must be identified as browser-specific rather
+than treated as portable to future native applications.
+
+Platform-specific behavior is selected by application composition and imports.
+Do not ship both implementations behind a general runtime device flag. The
+browser and TV player may share their playback engine and pure rules, but they
+own separate control compositions. In particular, the TV volume button only
+toggles mute: focusing it never reveals a slider, and unmuting restores media
+volume to 100 percent because system volume is controlled by the television.
+
+See [ADR 0003](adr/0003-separate-web-app-and-web-tv.md) for the complete
+decision, migration constraints, alternatives, and consequences.
 
 ## Documentation
 
@@ -65,6 +95,15 @@ docs/adr/
 ```
 
 May store Architecture Decision Records when an important decision needs to capture context, alternatives, and consequences.
+
+```text
+specs/
+```
+
+Contains normative application behavior, supported capabilities, platform
+requirements, and verifiable acceptance criteria. Specifications describe what
+the products must do; ADRs preserve why consequential architectural choices
+were made.
 
 All project documentation must be written in English.
 

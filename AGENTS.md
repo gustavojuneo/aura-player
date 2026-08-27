@@ -4,6 +4,12 @@ This repository is being rebuilt incrementally. All implementations must follow 
 
 Before changing code, inspect the current repository structure. Do not assume that planned applications, packages, routes, tables, or features already exist.
 
+Before analyzing, planning, or changing anything in this repository, enumerate
+and read every file under `specs/` completely. Treat accepted specifications as
+mandatory product requirements and acceptance criteria. If a specification
+changes during the task, read the complete `specs/` directory again before
+continuing.
+
 ## General Principles
 
 - Use TypeScript in every application and package.
@@ -334,6 +340,9 @@ Adapt the reference architecture to Fastify, Drizzle, and Zod. Do not automatica
 - `AGENTS.md` contains normative rules for agents and contributors.
 - `docs/architecture.md` describes the architecture, boundaries, and detailed responsibilities.
 - Important or controversial architectural decisions may be recorded as ADRs in `docs/adr/`.
+- `specs/` contains normative application behavior, platform requirements, and
+  acceptance criteria. Update the relevant specification whenever product
+  behavior changes.
 - Update documentation whenever a change modifies the architecture or development workflow.
 - Write all project documentation in English.
 
