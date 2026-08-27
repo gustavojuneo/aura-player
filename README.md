@@ -119,9 +119,8 @@ global CLI installation is required. The command writes the package to
 ## Continuous integration and releases
 
 GitHub Actions runs lint, type checks, and tests for pull requests and pushes
-to `main`. Creating and pushing a semantic version tag publishes a GitHub
-Release containing the API build, the browser web build, and the LG webOS
-`.ipk` package:
+to `main`. Creating and pushing a semantic version tag builds and publishes
+only the LG webOS `web-tv` `.ipk` package:
 
 ```bash
 git tag v1.0.0

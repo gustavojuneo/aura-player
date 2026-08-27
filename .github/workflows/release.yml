@@ -42,14 +42,11 @@ jobs:
         run: |
           node --input-type=module -e '
             import { readFile, writeFile } from "node:fs/promises";
-            const path = "apps/web/public/appinfo.json";
+            const path = "apps/web-tv/public/appinfo.json";
             const appInfo = JSON.parse(await readFile(path, "utf8"));
             appInfo.version = process.env.RELEASE_VERSION.replace(/^v/, "");
             await writeFile(path, `${JSON.stringify(appInfo, null, 2)}\n`);
           '
-
-      - name: Build applications
-        run: pnpm build
 
       - name: Package webOS application
         run: pnpm webos:package
@@ -57,9 +54,7 @@ jobs:
       - name: Create release archives
         run: |
           mkdir -p release-artifacts
-          tar -C apps/api -czf release-artifacts/aura-api-${{ github.ref_name }}.tar.gz dist package.json
-          tar -C apps/web/dist -czf release-artifacts/aura-web-${{ github.ref_name }}.tar.gz .
-          cp apps/web/release/*.ipk release-artifacts/
+          cp apps/web-tv/release/*.ipk release-artifacts/
 
       - name: Publish GitHub release
         env:
