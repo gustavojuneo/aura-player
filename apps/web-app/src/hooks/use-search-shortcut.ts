@@ -1,15 +1,9 @@
 import { type RefObject, useEffect } from "react";
-import { getSharedRuntime } from "../runtime-config";
 
 export function useSearchShortcut(
   searchInputRef: RefObject<HTMLInputElement | null>,
 ) {
   useEffect(() => {
-    if (
-      !__IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ||
-      !getSharedRuntime().enableKeyboardShortcuts
-    )
-      return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.defaultPrevented ||

@@ -1,6 +1,5 @@
-import { useSearchShortcut } from "@iptv/web-shared/search-shortcut";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { type RefObject, useState } from "react";
 import { CatalogGridSkeleton } from "../../../components/catalog-skeleton";
 import {
   CategoryDialog,
@@ -163,13 +162,15 @@ const SeriesCard = function SeriesCard({ item }: { item: Series }) {
   );
 };
 
-export function SeriesPage() {
+export function SeriesPage({
+  searchInputRef,
+}: {
+  searchInputRef?: RefObject<HTMLInputElement | null>;
+} = {}) {
   const [genre, setGenre] = useState("Todos");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  useSearchShortcut(searchInputRef);
   const { items: importedSeries, isLoading } = useCatalogSeries();
   const progress = usePlaybackProgress();
   const continueIds = new Set(

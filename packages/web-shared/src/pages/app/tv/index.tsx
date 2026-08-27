@@ -1,4 +1,3 @@
-import { useSearchShortcut } from "@iptv/web-shared/search-shortcut";
 import { useNavigate } from "@tanstack/react-router";
 import type Hls from "hls.js";
 import {
@@ -417,13 +416,15 @@ function ProgramPanel({
   );
 }
 
-export function TvPage() {
+export function TvPage({
+  searchInputRef,
+}: {
+  searchInputRef?: React.RefObject<HTMLInputElement | null>;
+} = {}) {
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { items, isLoading } = useCatalogItems("live");
   const [query, setQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  useSearchShortcut(searchInputRef);
   const [category, setCategory] = useState("Todos");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string>();

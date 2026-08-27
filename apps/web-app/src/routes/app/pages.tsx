@@ -1,5 +1,6 @@
 import { HomePageSkeleton } from "@iptv/web-shared/components/catalog-skeleton";
 import { type ComponentType, lazy, type ReactNode, Suspense } from "react";
+import { MoviesPage as BrowserMoviesPage, SeriesPage as BrowserSeriesPage, TvPage as BrowserTvPage } from "../../pages/catalog";
 
 function lazyPage(
   load: () => Promise<{ default: ComponentType }>,
@@ -45,11 +46,7 @@ export const FavoriteChannelsPage = lazyPage(async () => {
   );
   return { default: () => <Page category="channel" /> };
 });
-export const MoviesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/movies").then(({ MoviesPage: page }) => ({
-    default: page,
-  })),
-);
+export const MoviesPage = BrowserMoviesPage;
 export const MovieDetailsPage = lazyPage(() =>
   import("@iptv/web-shared/pages/app/movies/$movieId").then(
     ({ MovieDetailsPage: page }) => ({ default: page }),
@@ -60,11 +57,7 @@ export const MoviePlayerPage = lazyPage(() =>
     ({ MoviePlayerPage: page }) => ({ default: page }),
   ),
 );
-export const SeriesPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/series").then(({ SeriesPage: page }) => ({
-    default: page,
-  })),
-);
+export const SeriesPage = BrowserSeriesPage;
 export const SeriesDetailsPage = lazyPage(() =>
   import("@iptv/web-shared/pages/app/series/$seriesId").then(
     ({ SeriesDetailsPage: page }) => ({ default: page }),
@@ -85,11 +78,7 @@ export const SourcesPage = lazyPage(() =>
     ({ SourcesPage: page }) => ({ default: page }),
   ),
 );
-export const TvPage = lazyPage(() =>
-  import("@iptv/web-shared/pages/app/tv").then(({ TvPage: page }) => ({
-    default: page,
-  })),
-);
+export const TvPage = BrowserTvPage;
 export const LivePlayerPage = lazyPage(() =>
   import("@iptv/web-shared/pages/app/tv/$channelId/watch").then(
     ({ LivePlayerPage: page }) => ({ default: page }),

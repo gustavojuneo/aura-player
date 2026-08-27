@@ -10,14 +10,7 @@ export default createReactViteConfig({
     __IPTV_SHOW_PLAYER_TOOLTIPS__: JSON.stringify(false),
     __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(false),
   },
-  aliases: {
-    "@iptv/web-shared/search-shortcut": fileURLToPath(
-      new URL("./src/hooks/use-no-search-shortcut.ts", import.meta.url),
-    ),
-    "@iptv/web-shared": fileURLToPath(
-      new URL("../../packages/web-shared/src", import.meta.url),
-    ),
-  },
+  aliases: {},
   plugins: [
     {
       name: "emit-webos-appinfo",
