@@ -988,7 +988,8 @@ export function useTvDirectionalNavigation() {
       if (
         isActivationKey(event) &&
         activeElement.closest("[data-player-root]") &&
-        activeElement instanceof HTMLButtonElement
+        (activeElement instanceof HTMLButtonElement ||
+          activeElement.hasAttribute("data-player-next-episode"))
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();

@@ -17,7 +17,10 @@ export function PlayerNextEpisode({
 
   return (
     <aside
+      aria-label={`Próximo episódio: ${episode.title}`}
       className="flex w-full max-w-sm cursor-pointer flex-col items-stretch gap-3 rounded-2xl border border-white/15 bg-black/55 p-4 text-white shadow-2xl backdrop-blur-md sm:gap-4 sm:p-5"
+      data-player-focus-anchor
+      data-player-next-episode
       onClick={handleSelect}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -25,6 +28,8 @@ export function PlayerNextEpisode({
           handleSelect();
         }
       }}
+      role="group"
+      tabIndex={0}
     >
       {imageUrl && (
         <button

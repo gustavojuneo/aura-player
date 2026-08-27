@@ -9,7 +9,7 @@ import { ProductState } from "@aura/web-shared/components/ui";
 import { usePlaybackPreferences } from "@aura/web-shared/services/playback-preferences";
 import type { PlayerAspectRatio } from "@aura/web-shared/utils/constants";
 import { Pause, Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTvPlayerControls } from "../hooks/use-tv-player-controls";
 import { TvPlayerControls } from "./tv-player-controls";
 
@@ -42,6 +42,16 @@ export function TvMediaPlayer({
   const { controlsVisible, revealControls } = useTvPlayerControls();
   const [liveGuideOpen, setLiveGuideOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  useEffect(() => {
+    if (controlsVisible) return;
+    setContentListOpen(false);
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>("[data-player-primary-play]")
+        ?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [controlsVisible]);
   const nextEpisode = useNextEpisodeCountdown({
     contentId: descriptor.contentId,
     currentTime: playback.currentTime,
@@ -107,7 +117,14 @@ export function TvMediaPlayer({
           playback.togglePlay();
         }
       }}
-      onFocusCapture={revealControls}
+      onFocusCapture={(event) => {
+        if (
+          !(event.target as HTMLElement).closest(
+            "[data-player-primary-play]",
+          )
+        )
+          revealControls();
+      }}
       onTouchStart={revealControls}
     >
       <PlayerVideo
@@ -129,7 +146,7 @@ export function TvMediaPlayer({
         onNavigateDown={focusPrimaryPlay}
       />
       <div
-        className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
+        className={`absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
         data-player-primary-controls
       >
         <button
