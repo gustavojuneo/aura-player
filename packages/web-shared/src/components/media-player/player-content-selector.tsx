@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "../../utils/cn";
 import { ScrollArea } from "../ui";
 
 type PlayerContentSelectorOption = {
@@ -12,12 +13,14 @@ export function PlayerContentSelector({
   onInteraction,
   onValueChange,
   options,
+  popupClassName,
   value,
 }: {
   "aria-label": string;
   onInteraction: () => void;
   onValueChange: (value: string) => void;
   options: readonly PlayerContentSelectorOption[];
+  popupClassName?: string;
   value: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -160,7 +163,10 @@ export function PlayerContentSelector({
       </button>
       {open && (
         <div
-          className="absolute top-full right-0 z-30 mt-1.5 w-full rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl"
+          className={cn(
+            "absolute top-full right-0 z-30 mt-1.5 w-full rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl",
+            popupClassName,
+          )}
           ref={popupRef}
           role="listbox"
         >

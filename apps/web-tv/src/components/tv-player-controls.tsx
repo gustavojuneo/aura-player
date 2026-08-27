@@ -20,6 +20,7 @@ import {
   Volume2,
   VolumeOff,
 } from "lucide-react";
+import { useEffect } from "react";
 import { TvPlayerControlButton } from "./tv-player-control-button";
 
 export function TvPlayerControls({
@@ -78,6 +79,18 @@ export function TvPlayerControls({
   const displayedCurrentTime =
     duration > 0 ? Math.min(currentTime, duration) : 0;
 
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(
+          '[aria-label="Configurações do player"] [data-tv-select-trigger]',
+        )
+        ?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [settingsOpen]);
+
   return (
     <section
       aria-label="Controles de reprodução"
@@ -92,7 +105,7 @@ export function TvPlayerControls({
           </div>
           <input
             aria-label="Posição da reprodução"
-            className="h-1 w-full accent-gold focus-visible:outline-2 focus-visible:outline-focus"
+            className="h-1 w-full accent-gold focus-visible:accent-gold-bright focus-visible:!outline-none"
             data-player-focus-anchor
             data-player-progress
             max={duration || 1}
@@ -182,8 +195,10 @@ export function TvPlayerControls({
                 <SelectField
                   aria-label="Qualidade da imagem"
                   className="mt-1.5 w-full"
+                  focusAnchor
                   onValueChange={onQualityChange}
                   options={qualityOptions}
+                  popupClassName="!backdrop-blur-md"
                   triggerClassName="w-full border-white/15 bg-transparent"
                   value={quality}
                   valueLabel={
@@ -194,20 +209,24 @@ export function TvPlayerControls({
               </div>
             )}
           </div>
-          <TvPlayerControlButton
-            label="Proporção do player"
-            onClick={() => {
-              const index = ASPECT_RATIO_OPTIONS.findIndex(
-                (option) => option.value === aspectRatio,
-              );
-              onAspectRatioChange(
-                ASPECT_RATIO_OPTIONS[(index + 1) % ASPECT_RATIO_OPTIONS.length]
-                  .value,
-              );
+          <SelectField
+            aria-label="Proporção do player"
+            leading={<Ratio aria-hidden="true" className="size-4 shrink-0" />}
+            focusAnchor
+            onValueChange={(value) => {
+              if (["original", "16:9", "4:3", "fill", "crop"].includes(value))
+                onAspectRatioChange(value as PlayerAspectRatio);
             }}
-          >
-            <Ratio aria-hidden="true" className="size-4" />
-          </TvPlayerControlButton>
+            options={ASPECT_RATIO_OPTIONS}
+            popupClassName="!backdrop-blur-md"
+            triggerClassName="h-8 min-w-[92px] border-transparent bg-transparent px-2 hover:border-white/10 hover:bg-white/10"
+            value={aspectRatio}
+            valueLabel={
+              ASPECT_RATIO_OPTIONS.find(
+                (option) => option.value === aspectRatio,
+              )?.label
+            }
+          />
         </div>
       </div>
     </section>

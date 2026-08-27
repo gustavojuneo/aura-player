@@ -52,7 +52,14 @@ export function TvMediaPlayer({
     onNext,
   });
   const playerLoading = isLoading || !playback.isReady;
-  const closeContentList = () => setContentListOpen(false);
+  const closeContentList = () => {
+    setContentListOpen(false);
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>('[aria-label="Lista de conteúdo"]')
+        ?.focus({ preventScroll: true });
+    });
+  };
   const toggleContentList = () => {
     if (!renderContentList) {
       onOpenContentList();
@@ -180,13 +187,15 @@ export function TvMediaPlayer({
         showEpisodeNavigation={showEpisodeNavigation}
       />
       {playback.error && (
-        <ProductState
-          action={{ label: "Tentar novamente", onClick: playback.retry }}
-          className="absolute inset-x-4 bottom-28 z-20 mx-auto max-w-lg"
-          kind="stream-unavailable"
-        >
-          Tente novamente ou escolha outro conteúdo.
-        </ProductState>
+        <div data-player-error>
+          <ProductState
+            action={{ label: "Tentar novamente", onClick: playback.retry }}
+            className="absolute inset-x-4 bottom-28 z-20 mx-auto max-w-lg"
+            kind="stream-unavailable"
+          >
+            Tente novamente ou escolha outro conteúdo.
+          </ProductState>
+        </div>
       )}
     </main>
   );

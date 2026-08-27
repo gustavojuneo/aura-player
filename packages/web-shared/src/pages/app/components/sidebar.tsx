@@ -25,6 +25,10 @@ export function Sidebar({ isTv = false }: { isTv?: boolean }) {
   const activeSourceId = getActiveSourceId() ?? sources[0]?.id;
   const isExpanded =
     !isCollapsed || isHovered || hasFocusWithin || isSourceSelectorOpen;
+  const sidebarSurfaceClass =
+    isTv || sidebarCollapsed
+      ? "bg-[#11100dcc] !backdrop-blur-md"
+      : "bg-[#11100d]";
 
   const handleBlurCapture = (event: FocusEvent<HTMLElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -47,7 +51,7 @@ export function Sidebar({ isTv = false }: { isTv?: boolean }) {
     >
       <aside
         aria-label="Barra lateral"
-        className={`absolute inset-y-0 left-0 z-[60] overflow-hidden border-r border-line py-5 transition-[width,background-color,backdrop-filter] duration-200 ${isExpanded ? "w-56 bg-[#11100d]" : "w-[72px] bg-[#11100dcc] backdrop-blur-md"}`}
+        className={`absolute inset-y-0 left-0 z-[60] overflow-hidden border-r border-line py-5 transition-[width,background-color,backdrop-filter] duration-200 ${isExpanded ? "w-56" : "w-[72px]"} ${sidebarSurfaceClass}`}
         onBlurCapture={handleBlurCapture}
         onFocusCapture={() => setHasFocusWithin(true)}
         onMouseEnter={() => setIsHovered(true)}

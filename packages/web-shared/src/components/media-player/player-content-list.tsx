@@ -139,6 +139,7 @@ export function PlayerSeriesContentList({
           label: `Temporada ${season}`,
           value: String(season),
         }))}
+        popupClassName="!backdrop-blur-md"
         value={String(selectedSeason)}
       />
       <ScrollArea className="mt-3 min-h-0 flex-1">
@@ -200,12 +201,39 @@ function PlayerContentListShell({
       const activeElement = document.activeElement;
       if (
         !(activeElement instanceof HTMLElement) ||
-        !contentListRef.current?.contains(activeElement) ||
-        !activeElement.matches('[data-player-content-item="true"]')
+        !contentListRef.current?.contains(activeElement)
       )
         return;
 
       onInteraction();
+      const contentSelector = contentListRef.current.querySelector<HTMLElement>(
+        '[data-player-content-select="true"]:not([disabled])',
+      );
+      if (activeElement.matches('[aria-label="Fechar lista de conteúdo"]')) {
+        if (
+          event.key === "Enter" ||
+          event.keyCode === 13 ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          onClose();
+          return;
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          contentSelector?.focus();
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+        return;
+      }
+
+      if (!activeElement.matches('[data-player-content-item="true"]')) return;
+
       if (event.key === "Escape" || event.keyCode === 461) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -225,11 +253,7 @@ function PlayerContentListShell({
       event.preventDefault();
       event.stopImmediatePropagation();
       if (event.key === "ArrowUp" && currentIndex === 0) {
-        contentListRef.current
-          .querySelector<HTMLElement>(
-            '[data-player-content-select="true"]:not([disabled])',
-          )
-          ?.focus();
+        contentSelector?.focus();
         return;
       }
       const nextIndex = Math.min(

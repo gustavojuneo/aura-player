@@ -17,6 +17,7 @@ export function SelectField({
   onOpenChange,
   onValueChange,
   options,
+  popupClassName,
   placeholder,
   triggerClassName,
   value,
@@ -29,6 +30,7 @@ export function SelectField({
   onOpenChange?: (open: boolean) => void;
   onValueChange: (value: string) => void;
   options: readonly SelectFieldOption[];
+  popupClassName?: string;
   placeholder?: ReactNode;
   triggerClassName?: string;
   value?: string;
@@ -85,7 +87,12 @@ export function SelectField({
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner className="z-[100]" side="top" sideOffset={6}>
-          <BaseSelect.Popup className="z-50 max-h-[min(360px,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl outline-none data-[open]:animate-in data-[closed]:animate-out">
+          <BaseSelect.Popup
+            className={cn(
+              "z-50 max-h-[min(360px,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl outline-none data-[open]:animate-in data-[closed]:animate-out",
+              popupClassName,
+            )}
+          >
             {options.map((option) => (
               <BaseSelect.Item
                 className="relative flex min-h-9 cursor-default select-none items-center rounded-lg px-2.5 py-2 outline-none transition-colors data-[highlighted]:bg-panel-2 data-[highlighted]:text-text data-[selected]:text-gold-bright data-[disabled]:pointer-events-none data-[disabled]:opacity-40"

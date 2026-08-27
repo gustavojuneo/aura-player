@@ -22,6 +22,8 @@ const focusKeys = new WeakMap<HTMLElement, string>();
 const elementByFocusKey = new Map<string, HTMLElement>();
 let nextFocusId = 0;
 let initialized = false;
+let lastPlayerBottomControl: HTMLElement | undefined;
+const playerInitialFocusAssigned = new WeakSet<HTMLElement>();
 let suppressNextFocusScroll = false;
 
 type NavigationRegion =
@@ -317,6 +319,14 @@ function getRegionItems(region: NavigationRegion) {
   );
 }
 
+function getPlayerBottomControls() {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "[data-player-controls] button:not([disabled])",
+    ),
+  ).filter(isVisible);
+}
+
 function getSelectedSidebarItem() {
   const sidebarItems = getRegionItems("sidebar");
   return (
@@ -438,26 +448,25 @@ function handleRegionExit(
       focusElement(primaryPlay ?? undefined);
       return false;
     }
-    if (direction === "left") {
-      const sameRowControl = findAxisAlignedElement(
-        element,
-        "left",
-        getRegionItems("player").filter(
-          (item) => !item.hasAttribute("data-player-back"),
-        ),
-      );
-      if (!sameRowControl) {
-        focusElement(
-          document.querySelector<HTMLElement>("[data-player-back]") ??
-            undefined,
-        );
-        return false;
-      }
+    if (
+      (direction === "left" || direction === "right") &&
+      element.closest("[data-player-controls]") &&
+      !element.matches("[data-player-progress]")
+    ) {
+      const controls = getPlayerBottomControls();
+      const currentIndex = controls.indexOf(element);
+      const offset = direction === "left" ? -1 : 1;
+      focusElement(controls[currentIndex + offset]);
+      return false;
+    }
+    if (direction === "left" || direction === "right") {
+      return false;
     }
     if (
       direction === "down" &&
       element.closest("[data-player-primary-controls]")
     ) {
+      lastPlayerBottomControl = undefined;
       const progress = document.querySelector<HTMLElement>(
         "[data-player-controls] [data-player-progress]",
       );
@@ -465,10 +474,7 @@ function handleRegionExit(
         focusElement(progress);
         return false;
       }
-      const firstBottomControl = document.querySelector<HTMLElement>(
-        "[data-player-controls] button:not([disabled])",
-      );
-      focusElement(firstBottomControl ?? undefined);
+      focusElement(getPlayerBottomControls()[0]);
       return false;
     }
     if (
@@ -480,7 +486,24 @@ function handleRegionExit(
       );
       return false;
     }
+    if (direction === "up" && element.matches("[data-player-progress]")) {
+      const primaryPlay = document.querySelector<HTMLElement>(
+        "[data-player-primary-play]",
+      );
+      focusElement(primaryPlay ?? undefined);
+      return false;
+    }
+    if (direction === "down" && element.matches("[data-player-progress]")) {
+      const controls = getPlayerBottomControls();
+      const returnControl =
+        lastPlayerBottomControl && controls.includes(lastPlayerBottomControl)
+          ? lastPlayerBottomControl
+          : controls[0];
+      focusElement(returnControl);
+      return false;
+    }
     if (direction === "up" && element.closest("[data-player-controls]")) {
+      lastPlayerBottomControl = element;
       const progress = document.querySelector<HTMLElement>(
         "[data-player-controls] [data-player-progress]",
       );
@@ -813,30 +836,31 @@ function focusInitialElement() {
   const activeElement = document.activeElement;
   const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
   const player = document.querySelector<HTMLElement>("[data-player-root]");
+  if (dialog) return;
   if (player) {
-    const currentFocusElement = elementByFocusKey.get(getCurrentFocusKey());
-    const primaryPlay = Array.from(
-      player.querySelectorAll<HTMLElement>(focusableSelector),
-    ).find(
-      (element) =>
-        isVisible(element) &&
-        !element.hasAttribute("disabled") &&
-        (element.getAttribute("aria-label") === "Reproduzir" ||
-          element.getAttribute("aria-label") === "Pausar") &&
-        element.closest("[data-player-primary-controls]"),
+    const primaryPlay = player.querySelector<HTMLElement>(
+      "[data-player-primary-play]:not([disabled])",
     );
-    if (
-      primaryPlay &&
-      (!currentFocusElement ||
-        !player.contains(currentFocusElement) ||
-        !currentFocusElement.closest(
-          "[data-player-primary-controls], [data-player-controls]",
-        ))
-    ) {
-      suppressNextFocusScroll = true;
-      focusElement(primaryPlay);
+    const errorAction = player.querySelector<HTMLElement>(
+      "[data-player-error] button:not([disabled])",
+    );
+    const initialTarget =
+      primaryPlay && isVisible(primaryPlay)
+        ? primaryPlay
+        : errorAction && isVisible(errorAction)
+          ? errorAction
+          : undefined;
+    if (!initialTarget) {
+      playerInitialFocusAssigned.delete(player);
       return;
     }
+    if (!playerInitialFocusAssigned.has(player)) {
+      suppressNextFocusScroll = true;
+      focusElement(initialTarget);
+      playerInitialFocusAssigned.add(player);
+      return;
+    }
+    return;
   }
   if (
     activeElement instanceof HTMLElement &&
@@ -860,24 +884,7 @@ function focusInitialElement() {
     }
     return;
   }
-  const scope =
-    dialog ?? player ?? document.querySelector("[data-tv-app-content]");
-  if (player) {
-    const primaryPlay = Array.from(
-      player.querySelectorAll<HTMLElement>(focusableSelector),
-    ).find(
-      (element) =>
-        isVisible(element) &&
-        (element.getAttribute("aria-label") === "Reproduzir" ||
-          element.getAttribute("aria-label") === "Pausar") &&
-        element.closest("[data-player-primary-controls]"),
-    );
-    if (primaryPlay) {
-      suppressNextFocusScroll = true;
-      focusElement(primaryPlay);
-      return;
-    }
-  }
+  const scope = document.querySelector("[data-tv-app-content]");
   const first = Array.from(
     scope?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
   ).find(
@@ -908,7 +915,12 @@ export function useTvDirectionalNavigation() {
       });
     };
     const observer = new MutationObserver(scheduleRegistration);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      attributeFilter: ["aria-hidden", "class", "disabled", "style"],
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
     scheduleRegistration();
 
     const handleFocusIn = (event: FocusEvent) => {
@@ -950,6 +962,16 @@ export function useTvDirectionalNavigation() {
       if (activeElement.closest("[data-player-content-list]")) return;
 
       if (
+        (event.key === "Enter" || event.keyCode === 13) &&
+        activeElement.hasAttribute("data-tv-select-trigger")
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        activeElement.click();
+        return;
+      }
+
+      if (
         activeElement.matches(
           '[data-player-content-item="true"], [data-player-content-select="true"]',
         )
@@ -957,6 +979,29 @@ export function useTvDirectionalNavigation() {
         return;
 
       const direction = getDirection(event);
+      if (
+        direction &&
+        activeElement instanceof HTMLInputElement &&
+        activeElement.matches("[data-player-progress]") &&
+        (direction === "left" || direction === "right")
+      ) {
+        if (direction === "right") activeElement.stepUp();
+        else activeElement.stepDown();
+        activeElement.dispatchEvent(new Event("input", { bubbles: true }));
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (
+        direction &&
+        activeElement.closest("[data-player-root]") &&
+        !activeElement.closest('[role="dialog"]')
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        handleRegionExit(activeElement, "player", direction);
+        return;
+      }
       if (
         direction &&
         isTextEntry(activeElement) &&
@@ -1028,6 +1073,35 @@ export function useTvDirectionalNavigation() {
     if (!enabled) return;
     const handleBack = (event: KeyboardEvent) => {
       if (event.key !== "Escape" && event.keyCode !== 461) return;
+      const openSelect = document.querySelector<HTMLElement>(
+        '[data-tv-select-trigger][aria-expanded="true"], [data-tv-select-trigger][data-popup-open], [data-player-content-select="true"][aria-expanded="true"]',
+      );
+      if (openSelect) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openSelect.click();
+        return;
+      }
+      const playerSettings = document.querySelector<HTMLElement>(
+        '[aria-label="Configurações do player"]',
+      );
+      if (playerSettings) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        document
+          .querySelector<HTMLElement>('[aria-label="Configurações"]')
+          ?.click();
+        return;
+      }
+      const contentListCloseButton = document.querySelector<HTMLElement>(
+        '[data-player-content-list] [aria-label="Fechar lista de conteúdo"]',
+      );
+      if (contentListCloseButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        contentListCloseButton.click();
+        return;
+      }
       if (document.querySelector('[role="dialog"]')) return;
       if (
         !document.querySelector("[data-player-root]") &&
