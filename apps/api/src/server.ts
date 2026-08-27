@@ -680,6 +680,13 @@ async function resolveMediaRedirect(
   const addresses = await dns.lookup(resolvedUrl.hostname, { all: true });
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("MEDIA_REDIRECT_PRIVATE_TARGET");
+
+  // Some IPTV providers redirect HTTP stream URLs to HTTPS even when the
+  // HTTPS endpoint has an invalid certificate (commonly when the target is an
+  // IP address). Preserve the requested protocol while keeping the resolved
+  // path and query string.
+  if (url.protocol === "http:") resolvedUrl.protocol = "http:";
+
   return resolvedUrl;
 }
 
