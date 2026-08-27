@@ -33,7 +33,10 @@ import {
   saveM3uSource,
   saveXtreamSource,
 } from "../../services/catalog-service";
-import { usePlaybackProgress } from "../../services/playback-progress";
+import {
+  selectContinueWatchingProgress,
+  usePlaybackProgress,
+} from "../../services/playback-progress";
 import {
   loadRecentChannels,
   type RecentChannel,
@@ -237,7 +240,7 @@ export function HomePage() {
   const [recentChannels, setRecentChannels] =
     useState<RecentChannel[]>(loadRecentChannels);
   const playbackProgress = usePlaybackProgress();
-  const progressCards = playbackProgress
+  const progressCards = selectContinueWatchingProgress(playbackProgress)
     .map((progress) => {
       const item =
         movieItems.find((candidate) => candidate.id === progress.contentId) ??

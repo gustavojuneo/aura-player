@@ -60,6 +60,24 @@ export function loadPlaybackProgress(): PlaybackProgress[] {
   return active.sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
+export function selectContinueWatchingProgress(
+  progressList: PlaybackProgress[],
+): PlaybackProgress[] {
+  const seenSeries = new Set<string>();
+
+  return progressList.filter((progress) => {
+    if (progress.mediaType !== "episode" || !progress.seriesId) return true;
+    if (seenSeries.has(progress.seriesId)) return false;
+
+    seenSeries.add(progress.seriesId);
+    return true;
+  });
+}
+
+export function loadContinueWatchingProgress(): PlaybackProgress[] {
+  return selectContinueWatchingProgress(loadPlaybackProgress());
+}
+
 export function savePlaybackProgress(progress: PlaybackProgress) {
   const current = loadPlaybackProgress().filter(
     (item) => item.contentId !== progress.contentId,
