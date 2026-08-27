@@ -30,6 +30,7 @@ type PlayerBottomControlsProps = {
   currentTime: number;
   descriptor: { isLive: boolean; secondaryTitle?: string; title: string };
   duration: number;
+  isReady: boolean;
   isMuted: boolean;
   isPlaying: boolean;
   liveGuideOpen: boolean;
@@ -62,6 +63,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
     currentTime,
     descriptor,
     duration,
+    isReady,
     isMuted,
     isPlaying,
     liveGuideOpen,
@@ -121,7 +123,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
             min={0}
             onChange={(event) => onSeek(Number(event.target.value))}
             type="range"
-            value={Math.min(currentTime, duration || 1)}
+            value={isReady && duration > 0 ? Math.min(currentTime, duration) : 0}
           />
         </PlayerTooltip>
       )}

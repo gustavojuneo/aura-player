@@ -200,6 +200,7 @@ export function MediaPlayer({
         currentTime={controls.seekPreview ?? playback.currentTime}
         descriptor={descriptor}
         duration={playback.duration}
+        isReady={playback.isReady}
         isMuted={playback.isMuted}
         isPlaying={playback.isPlaying}
         liveGuideOpen={controls.liveGuideOpen}
