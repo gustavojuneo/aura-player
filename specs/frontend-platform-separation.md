@@ -79,6 +79,13 @@ public landing page, mobile browser navigation, or Vercel configuration.
 tooltips. Remote directional navigation and activation remain TV-owned
 interaction behavior and are not browser shortcut features.
 
+### FPS-TV-004: Catalog loading splash
+
+`web-tv` must display a full-screen catalog loading splash before rendering the
+application shell during startup and whenever a source is being loaded or
+updated. The splash must identify that the catalog is being loaded and must
+cover the sidebar and route content while the operation is in progress.
+
 ## Shared code requirements
 
 ### FPS-SHARED-001: Concrete reuse
@@ -179,3 +186,5 @@ The specification is satisfied when:
    restores media volume to `1` before clearing the muted state.
 9. The webOS package passes validation on the oldest supported TV target, and
    the browser application retains its required desktop and mobile behavior.
+10. `web-tv` displays the catalog loading splash before its shell on startup and
+    during source loading or updates.

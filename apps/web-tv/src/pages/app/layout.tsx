@@ -28,6 +28,24 @@ export function AppLayout() {
       window.removeEventListener("iptv:session-expired", handleExpired);
   }, []);
 
+  if (isCatalogRefreshing) {
+    return (
+      <AppLoadingScreen
+        loadingDescription="Aguarde enquanto o catálogo é carregado."
+        loadingTitle="Carregando catálogo"
+      />
+    );
+  }
+
+  if (catalogRefreshError) {
+    return (
+      <AppLoadingScreen
+        error={catalogRefreshError}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
+
   return (
     <main
       className={
@@ -38,16 +56,7 @@ export function AppLayout() {
     >
       {!isPlayerRoute && <Sidebar isTv />}
       <div className="relative min-w-0 flex-1" data-tv-app-content>
-        {isCatalogRefreshing && !pathname.startsWith("/sources") ? (
-          <AppLoadingScreen />
-        ) : catalogRefreshError && !pathname.startsWith("/sources") ? (
-          <AppLoadingScreen
-            error={catalogRefreshError}
-            onRetry={() => window.location.reload()}
-          />
-        ) : (
-          <Outlet />
-        )}
+        <Outlet />
       </div>
       {sessionExpired && (
         <div className="fixed inset-0 z-40 grid place-items-center bg-bg/90 p-5">

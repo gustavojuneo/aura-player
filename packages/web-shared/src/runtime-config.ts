@@ -35,5 +35,6 @@ export function getSharedRuntime() {
 
 export function appRoute(path: string) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  if (normalizedPath === "/") return runtimeConfig.routeBasePath || "/";
   return `${runtimeConfig.routeBasePath}${normalizedPath}` || "/";
 }

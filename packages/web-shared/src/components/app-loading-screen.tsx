@@ -3,9 +3,13 @@ import { Button } from "./ui";
 
 export function AppLoadingScreen({
   error,
+  loadingDescription = "Carregando dados da aplicação",
+  loadingTitle = "Carregando",
   onRetry,
 }: {
   error?: Error | null;
+  loadingDescription?: string;
+  loadingTitle?: string;
   onRetry?: () => void;
 }) {
   if (error) {
@@ -43,10 +47,8 @@ export function AppLoadingScreen({
           className="size-8 animate-spin text-gold"
         />
         <div>
-          <p className="m-0 text-xl font-bold text-text">Carregando</p>
-          <p className="mt-2 mb-0 text-sm text-muted">
-            Carregando dados da aplicação
-          </p>
+          <p className="m-0 text-xl font-bold text-text">{loadingTitle}</p>
+          <p className="mt-2 mb-0 text-sm text-muted">{loadingDescription}</p>
         </div>
       </div>
     </div>
