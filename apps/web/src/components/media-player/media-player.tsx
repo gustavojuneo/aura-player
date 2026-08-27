@@ -71,7 +71,13 @@ export function MediaPlayer({
   });
   const playerLoading = isLoading || !playback.isReady;
   const closeContentList = () => controls.setContentListOpen(false);
-  const keepContentListControlsVisible = () => controls.revealControls(2000);
+  const keepContentListControlsVisible = () =>
+    controls.revealControls(2000, true);
+  const focusPrimaryPlay = () => {
+    document
+      .querySelector<HTMLElement>("[data-player-primary-play]")
+      ?.focus({ preventScroll: true });
+  };
   const toggleContentList = () => {
     if (!renderContentList) {
       onOpenContentList();
@@ -161,7 +167,12 @@ export function MediaPlayer({
           controls.liveGuideOpen,
           keepContentListControlsVisible,
         )}
-      <PlayerHeader descriptor={descriptor} onBack={onBack} />
+      <PlayerHeader
+        controlsVisible={controls.controlsVisible}
+        descriptor={descriptor}
+        onBack={onBack}
+        onNavigateDown={focusPrimaryPlay}
+      />
       <PlayerPrimaryControls
         controlsVisible={controls.controlsVisible}
         isLive={descriptor.isLive}

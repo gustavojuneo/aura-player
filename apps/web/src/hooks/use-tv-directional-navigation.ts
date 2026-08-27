@@ -13,6 +13,7 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { env } from "../env";
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
@@ -53,6 +54,7 @@ function isTextEntry(element: Element | null) {
 }
 
 function isVisible(element: HTMLElement) {
+  const isFocusAnchor = element.hasAttribute("data-player-focus-anchor");
   if (
     element.getClientRects().length === 0 ||
     element.getAttribute("aria-hidden") === "true"
@@ -64,8 +66,8 @@ function isVisible(element: HTMLElement) {
     if (
       styles.visibility === "hidden" ||
       styles.display === "none" ||
-      styles.opacity === "0" ||
-      styles.pointerEvents === "none"
+      (!isFocusAnchor &&
+        (styles.opacity === "0" || styles.pointerEvents === "none"))
     )
       return false;
     current = current.parentElement;
@@ -414,6 +416,13 @@ function handleRegionExit(
   }
 
   if (region === "player") {
+    if (direction === "down" && element.matches("[data-player-back]")) {
+      const primaryPlay = document.querySelector<HTMLElement>(
+        "[data-player-primary-play]",
+      );
+      focusElement(primaryPlay ?? undefined);
+      return false;
+    }
     if (direction === "left") {
       const sameRowControl = findAxisAlignedElement(
         element,
@@ -434,15 +443,31 @@ function handleRegionExit(
       direction === "down" &&
       element.closest("[data-player-primary-controls]")
     ) {
-      const bottomPlay = document.querySelector<HTMLElement>(
-        '[data-player-controls] button[aria-label="Reproduzir"], [data-player-controls] button[aria-label="Pausar"]',
+      const progress = document.querySelector<HTMLElement>(
+        "[data-player-controls] [data-player-progress]",
       );
-      focusElement(bottomPlay ?? undefined);
+      if (progress) {
+        focusElement(progress);
+        return false;
+      }
+      const firstBottomControl = document.querySelector<HTMLElement>(
+        "[data-player-controls] button:not([disabled])",
+      );
+      focusElement(firstBottomControl ?? undefined);
+      return false;
+    }
+    if (
+      direction === "up" &&
+      element.closest("[data-player-primary-controls]")
+    ) {
+      focusElement(
+        document.querySelector<HTMLElement>("[data-player-back]") ?? undefined,
+      );
       return false;
     }
     if (direction === "up" && element.closest("[data-player-controls]")) {
       const progress = document.querySelector<HTMLElement>(
-        '[data-player-controls] input[type="range"]',
+        "[data-player-controls] [data-player-progress]",
       );
       if (progress) {
         focusElement(progress);
@@ -841,14 +866,15 @@ function focusInitialElement() {
   focusElement(first);
 }
 
-initializeSpatialNavigation();
-
 export function useTvDirectionalNavigation() {
   const { pathname } = useLocation();
   const router = useRouter();
+  const enabled =
+    env.VITE_DEVICE_TYPE === "tv" || env.VITE_ENABLE_TV_NAVIGATION;
 
   useEffect(() => {
-    if (!pathname) return;
+    if (!enabled || !pathname) return;
+    initializeSpatialNavigation();
     if (pathname === "/app" || pathname === "/app/")
       window.scrollTo({ left: 0, top: 0 });
     resume();
@@ -883,9 +909,10 @@ export function useTvDirectionalNavigation() {
       document.removeEventListener("focusin", handleFocusIn);
       if (frame !== undefined) window.cancelAnimationFrame(frame);
     };
-  }, [pathname]);
+  }, [enabled, pathname]);
 
   useEffect(() => {
+    if (!enabled) return;
     const handleDialogNavigation = (event: KeyboardEvent) => {
       const activeElement = document.activeElement;
       if (!(activeElement instanceof HTMLElement)) return;
@@ -954,9 +981,10 @@ export function useTvDirectionalNavigation() {
     document.addEventListener("keydown", handleDialogNavigation, true);
     return () =>
       document.removeEventListener("keydown", handleDialogNavigation, true);
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     const handleBack = (event: KeyboardEvent) => {
       if (event.key !== "Escape" && event.keyCode !== 461) return;
       if (document.querySelector('[role="dialog"]')) return;
@@ -970,5 +998,5 @@ export function useTvDirectionalNavigation() {
     };
     document.addEventListener("keydown", handleBack, true);
     return () => document.removeEventListener("keydown", handleBack, true);
-  }, [pathname, router]);
+  }, [enabled, pathname, router]);
 }

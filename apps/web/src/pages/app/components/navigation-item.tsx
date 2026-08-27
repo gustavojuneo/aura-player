@@ -32,9 +32,9 @@ export function NavigationItem({
         className={`${itemClassName} border-transparent text-muted hover:bg-panel hover:text-text ${mobileClassName}`}
         to={item.to}
       >
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-transparent text-current transition-colors group-data-[status=active]:bg-panel-2 group-focus-visible:bg-gold group-focus-visible:text-ink">
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-transparent text-current transition-colors group-data-[status=active]:bg-panel-2 group-focus-visible:!bg-gold group-focus-visible:!text-ink">
           <Icon
-            className={`size-5 ${mobile ? "text-current" : "text-muted"} group-data-[status=active]:text-text group-focus-visible:text-ink`}
+            className={`size-5 ${mobile ? "text-current" : "text-muted"} group-data-[status=active]:text-text group-focus-visible:!text-ink`}
             name={item.icon}
           />
         </span>
@@ -52,9 +52,9 @@ export function NavigationItem({
       disabled
       type="button"
     >
-      <span className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors group-focus-visible:bg-gold group-focus-visible:text-ink">
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors group-focus-visible:!bg-gold group-focus-visible:!text-ink">
         <Icon
-          className="size-5 group-focus-visible:text-ink"
+          className="size-5 group-focus-visible:!text-ink"
           name={item.icon}
         />
       </span>

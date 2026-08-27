@@ -20,7 +20,6 @@ export function usePlayerControls({
   duration,
   hideControls,
   isLive,
-  isPlaying,
   isReady,
   onChangeVolume,
   onSeek,
@@ -55,21 +54,26 @@ export function usePlayerControls({
   }, [contentId]);
 
   const revealControls = useCallback(
-    (hideAfterMs = 3000) => {
+    (hideAfterMs = 2000, _forceHide = false) => {
       setControlsVisible(true);
       if (hideTimerRef.current !== null)
         window.clearTimeout(hideTimerRef.current);
-      if (hideControls && isPlaying)
+      if (hideControls)
         hideTimerRef.current = window.setTimeout(() => {
+          document
+            .querySelector<HTMLElement>(
+              '[data-player-primary-controls] button[aria-label="Reproduzir"], [data-player-primary-controls] button[aria-label="Pausar"]',
+            )
+            ?.focus({ preventScroll: true });
           setControlsVisible(false);
           setContentListOpen(false);
         }, hideAfterMs);
     },
-    [hideControls, isPlaying],
+    [hideControls],
   );
 
   useEffect(() => {
-    if (!hideControls || !isPlaying) {
+    if (!hideControls) {
       setControlsVisible(true);
       if (hideTimerRef.current !== null)
         window.clearTimeout(hideTimerRef.current);
@@ -80,7 +84,7 @@ export function usePlayerControls({
       if (hideTimerRef.current !== null)
         window.clearTimeout(hideTimerRef.current);
     };
-  }, [hideControls, isPlaying, revealControls]);
+  }, [hideControls, revealControls]);
 
   const queueSeek = useCallback(
     (delta: number, source: "button" | "keyboard" = "button") => {
@@ -152,7 +156,7 @@ export function usePlayerControls({
           "[data-player-content-list], [data-player-content-select-popup]",
         )
       ) {
-        revealControls(2000);
+        revealControls(2000, true);
         return;
       }
       const key = event.key.toLowerCase();

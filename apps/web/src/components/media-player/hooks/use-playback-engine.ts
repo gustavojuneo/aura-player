@@ -63,7 +63,13 @@ export function usePlaybackEngine({
     void video.play().catch(() => {
       video.muted = true;
       setIsMuted(true);
-      void video.play().catch(() => undefined);
+      void video
+        .play()
+        .then(() => {
+          video.muted = false;
+          setIsMuted(false);
+        })
+        .catch(() => undefined);
     });
   }, [autoPlay]);
 
@@ -93,7 +99,16 @@ export function usePlaybackEngine({
     const play = (start: () => Promise<void>) => {
       if (!autoPlay) return;
       video.muted = false;
-      void start().catch(() => undefined);
+      void start().catch(() => {
+        video.muted = true;
+        setIsMuted(true);
+        void start()
+          .then(() => {
+            video.muted = false;
+            setIsMuted(false);
+          })
+          .catch(() => undefined);
+      });
     };
     destroyEngine(engineRef.current, video);
     engineRef.current = null;

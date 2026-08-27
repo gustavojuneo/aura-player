@@ -2,7 +2,10 @@ import { Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppLoadingScreen } from "../../components/app-loading-screen";
 import { useAppLifecycle } from "../../hooks/use-app-lifecycle";
-import { useCatalogRefreshInProgress } from "../../hooks/use-catalog-data";
+import {
+  useCatalogRefreshError,
+  useCatalogRefreshInProgress,
+} from "../../hooks/use-catalog-data";
 import { useTvDirectionalNavigation } from "../../hooks/use-tv-directional-navigation";
 import { MobileNavigation, SessionExpiredState, Sidebar } from "./components";
 
@@ -12,6 +15,7 @@ export function AppLayout() {
   const [sessionExpired, setSessionExpired] = useState(false);
   const { pathname } = useLocation();
   const isCatalogRefreshing = useCatalogRefreshInProgress();
+  const catalogRefreshError = useCatalogRefreshError();
   const isPlayerRoute =
     /^\/app\/(movies\/[^/]+\/watch|series\/[^/]+\/episodes\/[^/]+\/watch|tv\/[^/]+\/watch)(\/|$)/.test(
       pathname,
@@ -39,6 +43,11 @@ export function AppLayout() {
       <div className="relative min-w-0 flex-1" data-tv-app-content>
         {isCatalogRefreshing && !pathname.startsWith("/app/sources") ? (
           <AppLoadingScreen />
+        ) : catalogRefreshError && !pathname.startsWith("/app/sources") ? (
+          <AppLoadingScreen
+            error={catalogRefreshError}
+            onRetry={() => window.location.reload()}
+          />
         ) : (
           <Outlet />
         )}

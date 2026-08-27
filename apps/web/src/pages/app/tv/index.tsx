@@ -32,6 +32,7 @@ import {
 import { usePlaybackSource } from "../../../hooks/use-playback-source";
 import { useSearchShortcut } from "../../../hooks/use-search-shortcut";
 import { useFavorites } from "../../../services/favorites";
+import { markPlaybackNavigation } from "../../../services/playback-autoplay";
 import { AppHeader } from "../components";
 
 type Channel = {
@@ -364,6 +365,7 @@ function ProgramPanel({
   const navigate = useNavigate();
   const watchChannel = () => {
     if (!channel) return;
+    markPlaybackNavigation();
     void navigate({
       to: "/app/tv/$channelId/watch",
       params: { channelId: channel.id },

@@ -111,6 +111,8 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
             aria-keyshortcuts="ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
             aria-label="Posição da reprodução"
             className="h-1 w-full cursor-pointer accent-gold"
+            data-player-focus-anchor
+            data-player-progress
             max={duration || 1}
             min={0}
             onChange={(event) => onSeek(Number(event.target.value))}
@@ -246,6 +248,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
           <PlayerTooltip label="Proporção do player">
             <SelectField
               aria-label="Proporção do player"
+              focusAnchor
               leading={<Ratio aria-hidden="true" className="size-4 shrink-0" />}
               onValueChange={(value) => {
                 if (["original", "16:9", "4:3", "fill", "crop"].includes(value))

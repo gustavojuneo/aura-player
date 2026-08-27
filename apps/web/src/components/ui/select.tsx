@@ -12,6 +12,7 @@ export type SelectFieldOption = {
 export function SelectField({
   "aria-label": ariaLabel,
   className,
+  focusAnchor = false,
   leading,
   onOpenChange,
   onValueChange,
@@ -23,6 +24,7 @@ export function SelectField({
 }: {
   "aria-label": string;
   className?: string;
+  focusAnchor?: boolean;
   leading?: ReactNode;
   onOpenChange?: (open: boolean) => void;
   onValueChange: (value: string) => void;
@@ -48,6 +50,7 @@ export function SelectField({
     >
       <BaseSelect.Trigger
         aria-label={ariaLabel}
+        data-player-focus-anchor={focusAnchor || undefined}
         data-tv-select-trigger
         className={cn(
           "group inline-flex h-10 min-w-0 items-center justify-between gap-2 rounded-xl border border-line bg-panel-2 px-3 text-xs font-semibold text-text outline-none transition-colors hover:border-gold/60 focus-visible:border-gold focus-visible:ring-2 focus-visible:ring-focus/40 disabled:cursor-not-allowed disabled:opacity-50",

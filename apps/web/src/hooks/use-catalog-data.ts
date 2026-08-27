@@ -14,6 +14,7 @@ import {
 } from "../http/xtream/catalog";
 import { getActiveSourceId, getSource } from "../services/catalog-db";
 import {
+  getCatalogRefreshError,
   isCatalogRefreshInProgress,
   loadActiveCatalog,
   loadActiveSeries,
@@ -42,6 +43,14 @@ export function useCatalogRefreshInProgress() {
     subscribeCatalogRefreshState,
     isCatalogRefreshInProgress,
     () => false,
+  );
+}
+
+export function useCatalogRefreshError() {
+  return useSyncExternalStore(
+    subscribeCatalogRefreshState,
+    getCatalogRefreshError,
+    () => null,
   );
 }
 

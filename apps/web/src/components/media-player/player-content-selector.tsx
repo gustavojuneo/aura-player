@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ScrollArea } from "../ui";
 
 type PlayerContentSelectorOption = {
   label: string;
@@ -77,6 +78,12 @@ export function PlayerContentSelector({
           event.preventDefault();
           event.stopImmediatePropagation();
           onInteraction();
+          triggerRef.current
+            ?.closest("[data-player-content-list]")
+            ?.querySelector<HTMLElement>(
+              '[aria-label="Fechar lista de conteúdo"]',
+            )
+            ?.focus();
         }
         return;
       }
@@ -103,6 +110,11 @@ export function PlayerContentSelector({
         event.preventDefault();
         event.stopImmediatePropagation();
         onInteraction();
+        if (event.key === "ArrowUp" && currentIndex === 0) {
+          setOpen(false);
+          triggerRef.current?.focus();
+          return;
+        }
         const offset = event.key === "ArrowDown" ? 1 : -1;
         const nextIndex = Math.min(
           optionElements.length - 1,
@@ -148,28 +160,34 @@ export function PlayerContentSelector({
       </button>
       {open && (
         <div
-          className="absolute top-full right-0 z-30 mt-1.5 max-h-60 w-full overflow-y-auto rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl"
+          className="absolute top-full right-0 z-30 mt-1.5 w-full rounded-xl border border-line bg-panel p-1.5 text-sm text-text shadow-2xl"
           ref={popupRef}
           role="listbox"
         >
-          {options.map((option) => (
-            <button
-              aria-selected={option.value === value}
-              className="flex min-h-9 w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left outline-none transition-colors hover:bg-panel-2 focus:bg-panel-2"
-              data-player-content-select-option="true"
-              key={option.value}
-              onClick={() => handleValueSelect(option.value)}
-              role="option"
-              type="button"
-            >
-              <span className="min-w-0 flex-1 truncate">{option.label}</span>
-              {option.value === value && (
-                <span aria-hidden="true" className="ml-3 text-gold-bright">
-                  ✓
-                </span>
-              )}
-            </button>
-          ))}
+          <ScrollArea className="h-60">
+            <div className="grid gap-0.5">
+              {options.map((option) => (
+                <button
+                  aria-selected={option.value === value}
+                  className="flex min-h-9 w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left outline-none transition-colors hover:bg-panel-2 focus:bg-panel-2"
+                  data-player-content-select-option="true"
+                  key={option.value}
+                  onClick={() => handleValueSelect(option.value)}
+                  role="option"
+                  type="button"
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {option.label}
+                  </span>
+                  {option.value === value && (
+                    <span aria-hidden="true" className="ml-3 text-gold-bright">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       )}
     </div>
