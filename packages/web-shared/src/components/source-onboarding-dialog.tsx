@@ -23,7 +23,10 @@ export function SourceOnboardingDialog({
       <DialogPortal>
         <DialogBackdrop />
         <DialogViewport>
-          <DialogPopup aria-labelledby="source-onboarding-title">
+          <DialogPopup
+            aria-labelledby="source-onboarding-title"
+            className="bg-panel"
+          >
             <div className="mb-[22px] flex flex-col gap-2">
               <p className="m-0 text-[0.6875rem] font-extrabold tracking-[0.08em] text-gold-bright">
                 PRIMEIRO ACESSO · ETAPA 1 DE 2
