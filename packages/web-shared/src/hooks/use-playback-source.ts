@@ -20,8 +20,13 @@ export function usePlaybackSource(
     setError(null);
     const sourcePromise = resolveMediaUrl(url);
     void sourcePromise
-      .then((resolvedSource) => {
-        if (!cancelled) setSource(resolvedSource);
+      .then(({ proxyUrl, resolvedUrl }) => {
+        const finalUrl = new URL(resolvedUrl);
+        const source =
+          window.location.protocol === "https:" && finalUrl.protocol === "http:"
+            ? proxyUrl
+            : resolvedUrl;
+        if (!cancelled) setSource(source);
       })
       .catch((caught) => {
         if (!cancelled)

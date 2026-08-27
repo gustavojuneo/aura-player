@@ -725,7 +725,8 @@ async function fetchMediaUpstream(
       continue;
     }
 
-    if (response.status < 300 || response.status >= 400) return response;
+    if (response.status < 300 || response.status >= 400)
+      return { response, url: currentUrl };
     const location = response.headers.get("location");
     await response.body?.cancel();
     if (!location) throw new Error("MEDIA_REDIRECT_WITHOUT_LOCATION");
@@ -741,11 +742,32 @@ app.post<{ Body: { url?: string } }>(
       const url = await validateTarget(request.body?.url);
       const host = request.headers.host;
       if (!host) throw new Error("MISSING_REQUEST_HOST");
+      const upstream = await fetchMediaUpstream(url, {
+        request: {
+          origin:
+            typeof request.headers.origin === "string"
+              ? request.headers.origin
+              : undefined,
+          referer:
+            typeof request.headers.referer === "string"
+              ? request.headers.referer
+              : undefined,
+          range: "bytes=0-0",
+          userAgent:
+            typeof request.headers["user-agent"] === "string"
+              ? request.headers["user-agent"]
+              : undefined,
+        },
+      });
+      await upstream.response.body?.cancel();
       const proxyUrl = new URL(
-        `/media-proxy?url=${encodeURIComponent(url.toString())}`,
-        `${request.protocol}://${host}`,
+        `/media-proxy?url=${encodeURIComponent(upstream.url.toString())}`,
+        `${request.headers["x-forwarded-proto"] === "https" ? "https" : request.protocol}://${host}`,
       );
-      return reply.send({ resolvedUrl: proxyUrl.toString() });
+      return reply.send({
+        proxyUrl: proxyUrl.toString(),
+        resolvedUrl: upstream.url.toString(),
+      });
     } catch (error) {
       request.log.error(
         {
@@ -807,15 +829,15 @@ app.route<{ Querystring: { url?: string } }>({
       });
 
       for (const header of mediaProxyHeaders) {
-        const value = response.headers.get(header);
+        const value = response.response.headers.get(header);
         if (value) reply.header(header, value);
       }
-      reply.code(response.status);
-      if (request.method === "HEAD" || !response.body) {
-        await response.body?.cancel();
+      reply.code(response.response.status);
+      if (request.method === "HEAD" || !response.response.body) {
+        await response.response.body?.cancel();
         return reply.send();
       }
-      return reply.send(Readable.fromWeb(response.body as never));
+      return reply.send(Readable.fromWeb(response.response.body as never));
     } catch (error) {
       request.log.error(
         {
