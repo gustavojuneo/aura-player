@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { env } from "../../env";
 import { Tooltip } from "../ui";
 
 export function PlayerTooltip({
@@ -10,6 +11,7 @@ export function PlayerTooltip({
   label: string;
   shortcut?: string;
 }) {
+  if (env.VITE_DEVICE_TYPE === "tv") return children;
   return (
     <Tooltip
       content={

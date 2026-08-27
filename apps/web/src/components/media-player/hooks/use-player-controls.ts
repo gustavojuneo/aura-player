@@ -54,7 +54,7 @@ export function usePlayerControls({
   }, [contentId]);
 
   const revealControls = useCallback(
-    (hideAfterMs = 2000, _forceHide = false) => {
+    (hideAfterMs = 5000, _forceHide = false) => {
       setControlsVisible(true);
       if (hideTimerRef.current !== null)
         window.clearTimeout(hideTimerRef.current);
@@ -156,7 +156,7 @@ export function usePlayerControls({
           "[data-player-content-list], [data-player-content-select-popup]",
         )
       ) {
-        revealControls(2000, true);
+        revealControls(5000, true);
         return;
       }
       const key = event.key.toLowerCase();

@@ -76,7 +76,7 @@ export function MediaPlayer({
   const playerLoading = isLoading || !playback.isReady;
   const closeContentList = () => controls.setContentListOpen(false);
   const keepContentListControlsVisible = () =>
-    controls.revealControls(2000, true);
+    controls.revealControls(5000, true);
   const focusPrimaryPlay = () => {
     document
       .querySelector<HTMLElement>("[data-player-primary-play]")
