@@ -16,6 +16,8 @@ import {
   removeM3uSource,
   saveM3uSource,
   saveXtreamSource,
+  updateM3uSource,
+  updateXtreamSource,
 } from "../../../services/catalog-service";
 import { AppHeader } from "../components";
 import { SourceCard } from "./components/source-card";
@@ -46,12 +48,28 @@ export function SourcesPage() {
   };
   const saveSource = async (values: SourceFormValues) => {
     try {
+      const editingSource = editing
+        ? importedSources.find((source) => source.id === editing.id)
+        : undefined;
       const m3uXtream =
         values.type === "m3u"
           ? getXtreamCredentialsFromM3uUrl(values.url)
           : null;
-      const source =
-        values.type === "xtream" || m3uXtream
+      const source = editingSource
+        ? values.type === "xtream" || m3uXtream
+          ? await updateXtreamSource(editingSource, {
+              name: values.name,
+              ...(m3uXtream ?? {
+                server: values.server,
+                username: values.username,
+                password: values.password,
+              }),
+            })
+          : await updateM3uSource(editingSource, {
+              name: values.name,
+              url: values.url,
+            })
+        : values.type === "xtream" || m3uXtream
           ? await saveXtreamSource({
               name: values.name,
               ...(m3uXtream ?? {
@@ -65,7 +83,10 @@ export function SourcesPage() {
       setActiveId(source.id);
       setActiveSourceId(source.id);
       setFormOpen(false);
-      setNotice(`${source.name} foi importada.`);
+      setEditing(undefined);
+      setNotice(
+        `${source.name} foi ${editingSource ? "atualizada" : "importada"}.`,
+      );
     } catch (error) {
       setNotice(
         error instanceof Error
@@ -201,8 +222,12 @@ export function SourcesPage() {
           <SourceForm
             key={`${editing?.id ?? "new"}-${formOpen ? "open" : "closed"}`}
             initialSource={editing}
-            onCancel={() => setFormOpen(false)}
+            onCancel={() => {
+              setEditing(undefined);
+              setFormOpen(false);
+            }}
             onSave={saveSource}
+            submitLabel={editing ? "Editar" : "Adicionar"}
           />
         </section>
       </div>

@@ -93,6 +93,26 @@ export async function saveM3uSource(input: { name: string; url: string }) {
   return source;
 }
 
+export async function updateM3uSource(
+  source: CatalogSource,
+  input: { name: string; url: string },
+) {
+  const nextSource = sourceSchema.parse({
+    ...source,
+    name: input.name.trim(),
+    type: "m3u",
+    url: input.url.trim(),
+    server: undefined,
+    username: undefined,
+    password: undefined,
+    status: "importing",
+    errorMessage: undefined,
+  });
+  await putSource(nextSource);
+  setActiveSourceId(nextSource.id);
+  return nextSource;
+}
+
 export async function saveXtreamSource(input: {
   name: string;
   server: string;
@@ -130,6 +150,25 @@ export async function saveXtreamSource(input: {
   setActiveSourceId(imported.source.id);
   window.dispatchEvent(new Event("aura-catalog-change"));
   return storedSource;
+}
+
+export async function updateXtreamSource(
+  source: CatalogSource,
+  input: {
+    name: string;
+    server: string;
+    username: string;
+    password: string;
+  },
+) {
+  return syncXtreamSource({
+    ...source,
+    name: input.name.trim(),
+    type: "xtream",
+    server: input.server.trim(),
+    username: input.username.trim(),
+    password: input.password,
+  });
 }
 
 export async function syncXtreamSource(source: CatalogSource) {
