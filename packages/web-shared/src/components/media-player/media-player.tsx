@@ -71,6 +71,7 @@ export function MediaPlayer({
     isLive: descriptor.isLive,
     isLoading,
     isReady: playback.isReady,
+    onComplete,
     onNext,
   });
   const playerLoading = isLoading || !playback.isReady;

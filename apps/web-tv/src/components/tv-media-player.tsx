@@ -60,6 +60,7 @@ export function TvMediaPlayer({
     isLive: descriptor.isLive,
     isLoading,
     isReady: playback.isReady,
+    onComplete,
     onNext,
   });
   useEffect(() => {

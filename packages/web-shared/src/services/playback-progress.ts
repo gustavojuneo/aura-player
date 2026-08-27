@@ -54,7 +54,19 @@ function validProgress(value: unknown): value is PlaybackProgress {
 
 export function loadPlaybackProgress(): PlaybackProgress[] {
   const now = Date.now();
-  const current = read<unknown[]>(progressKey, []).filter(validProgress);
+  const watchedEpisodes = new Set(
+    loadWatchedEpisodes().map(
+      (episode) => `${episode.seriesId}:${episode.episodeKey}`,
+    ),
+  );
+  const current = read<unknown[]>(progressKey, [])
+    .filter(validProgress)
+    .filter(
+      (progress) =>
+        progress.mediaType !== "episode" ||
+        !progress.seriesId ||
+        !watchedEpisodes.has(`${progress.seriesId}:${progress.contentId}`),
+    );
   const active = current.filter((item) => now - item.updatedAt < ttlMs);
   if (active.length !== current.length) write(progressKey, active);
   return active.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -79,6 +91,16 @@ export function loadContinueWatchingProgress(): PlaybackProgress[] {
 }
 
 export function savePlaybackProgress(progress: PlaybackProgress) {
+  if (
+    progress.mediaType === "episode" &&
+    progress.seriesId &&
+    loadWatchedEpisodes(progress.seriesId).some(
+      (episode) => episode.episodeKey === progress.contentId,
+    )
+  ) {
+    removePlaybackProgress(progress.contentId);
+    return;
+  }
   const current = loadPlaybackProgress().filter(
     (item) => item.contentId !== progress.contentId,
   );
@@ -101,6 +123,7 @@ export function removePlaybackProgress(contentId: string) {
 }
 
 export function markEpisodeWatched(seriesId: string, episodeKey: string) {
+  removePlaybackProgress(episodeKey);
   const current = read<WatchedEpisode[]>(watchedKey, []).filter(
     (item) => item.seriesId !== seriesId || item.episodeKey !== episodeKey,
   );
@@ -108,6 +131,14 @@ export function markEpisodeWatched(seriesId: string, episodeKey: string) {
     { seriesId, episodeKey, watchedAt: Date.now() },
     ...current,
   ]);
+  window.dispatchEvent(new Event(eventName));
+}
+
+export function removeWatchedEpisode(seriesId: string, episodeKey: string) {
+  const current = read<WatchedEpisode[]>(watchedKey, []).filter(
+    (item) => item.seriesId !== seriesId || item.episodeKey !== episodeKey,
+  );
+  write(watchedKey, current);
   window.dispatchEvent(new Event(eventName));
 }
 

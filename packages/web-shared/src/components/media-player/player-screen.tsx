@@ -51,10 +51,12 @@ export function PlayerScreen({
     setSelectedSeason,
   } = state;
   const lastSavedAt = useRef(0);
+  const completedContentId = useRef<string | undefined>(undefined);
   const saveProgress = (positionSecs: number, durationSecs: number) => {
     if (
       kind === "live" ||
       durationSecs <= 0 ||
+      completedContentId.current === contentId ||
       Date.now() - lastSavedAt.current < 5000
     )
       return;
@@ -76,6 +78,7 @@ export function PlayerScreen({
   };
   const complete = () => {
     if (kind === "live") return;
+    completedContentId.current = contentId;
     removePlaybackProgress(contentId);
     if (kind === "episode" && state.seriesId) {
       markEpisodeWatched(state.seriesId, contentId);

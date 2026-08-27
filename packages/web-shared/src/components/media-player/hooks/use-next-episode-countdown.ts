@@ -8,6 +8,7 @@ type UseNextEpisodeCountdownParams = {
   isLive: boolean;
   isLoading: boolean;
   isReady: boolean;
+  onComplete?: () => void;
   onNext?: () => void;
 };
 
@@ -19,6 +20,7 @@ export function useNextEpisodeCountdown({
   isLive,
   isLoading,
   isReady,
+  onComplete,
   onNext,
 }: UseNextEpisodeCountdownParams) {
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -26,6 +28,7 @@ export function useNextEpisodeCountdown({
   const countdownTimerRef = useRef<number | null>(null);
   const countdownValueRef = useRef<number | null>(null);
   const startedRef = useRef(false);
+  const completionReportedRef = useRef(false);
 
   const clear = () => {
     if (startTimerRef.current !== null)
@@ -41,6 +44,7 @@ export function useNextEpisodeCountdown({
   useEffect(() => {
     void contentId;
     startedRef.current = false;
+    completionReportedRef.current = false;
     clear();
     return clear;
   }, [clear, contentId]);
@@ -59,6 +63,10 @@ export function useNextEpisodeCountdown({
     }
     const remaining = duration - currentTime;
     if (remaining <= 0) return;
+    if (remaining <= 30 && !completionReportedRef.current) {
+      completionReportedRef.current = true;
+      onComplete?.();
+    }
     const start = () => {
       if (startedRef.current) return;
       startedRef.current = true;
@@ -91,6 +99,7 @@ export function useNextEpisodeCountdown({
     isLive,
     isLoading,
     isReady,
+    onComplete,
     onNext,
   ]);
 

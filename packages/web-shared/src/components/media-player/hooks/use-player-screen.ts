@@ -20,7 +20,12 @@ import {
   consumePlaybackNavigation,
   markPlaybackNavigation,
 } from "../../../services/playback-autoplay";
-import { loadPlaybackProgress } from "../../../services/playback-progress";
+import {
+  loadPlaybackProgress,
+  loadWatchedEpisodes,
+  removePlaybackProgress,
+  removeWatchedEpisode,
+} from "../../../services/playback-progress";
 import { recordRecentChannel } from "../../../services/recent-channels";
 
 const FALLBACK_TITLES: Record<
@@ -79,6 +84,18 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
   useEffect(() => {
     if (kind === "live" && item?.kind === "live") recordRecentChannel(item);
   }, [item, kind]);
+  useEffect(() => {
+    if (
+      kind !== "episode" ||
+      !seriesId ||
+      !loadWatchedEpisodes(seriesId).some(
+        (episode) => episode.episodeKey === contentId,
+      )
+    )
+      return;
+    removeWatchedEpisode(seriesId, contentId);
+    removePlaybackProgress(contentId);
+  }, [contentId, kind, seriesId]);
 
   const isLoading =
     kind === "episode" ? episode.isLoading : catalogItem.isLoading;
@@ -142,11 +159,16 @@ export function usePlayerScreen(kind: PlayerScreenKind) {
     title: contentTitle,
   });
   const goBack = () => {
-    if (kind === "episode" && seriesId) {
-      void navigate({
-        to: appRoute("/series/$seriesId") as never,
-        params: { seriesId } as never,
-      });
+    if (kind === "episode") {
+      const detailsSeriesId = seriesId ?? item?.seriesId;
+      if (detailsSeriesId) {
+        void navigate({
+          to: appRoute("/series/$seriesId") as never,
+          params: { seriesId: detailsSeriesId } as never,
+        });
+      } else {
+        void navigate({ to: appRoute("/series") as never });
+      }
       return;
     }
     router.history.back();
