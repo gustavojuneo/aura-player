@@ -134,7 +134,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
               <Play className="size-4 fill-current" />
             )}
           </ControlButton>
-          <div className="group/volume relative">
+          <div className="group/volume flex items-center gap-2">
             <ControlButton
               label={isMuted ? "Ativar som" : "Silenciar"}
               onClick={onToggleMute}
@@ -148,22 +148,18 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 <Volume2 className="size-4" />
               )}
             </ControlButton>
-            <PlayerTooltip label="Volume" shortcut="↑/↓">
-              <div className="pointer-events-none absolute bottom-full left-1/2 flex h-8 w-28 -translate-x-1/2 items-center justify-center rounded-lg bg-black/35 opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100">
-                <input
-                  aria-keyshortcuts="ArrowUp ArrowDown"
-                  aria-label="Volume do player"
-                  className="pointer-events-auto h-1 w-24 cursor-pointer accent-gold"
-                  max={100}
-                  min={0}
-                  onChange={(event) =>
-                    onVolumeChange(Number(event.target.value) / 100)
-                  }
-                  type="range"
-                  value={Math.round(volume * 100)}
-                />
-              </div>
-            </PlayerTooltip>
+            <input
+              aria-keyshortcuts="ArrowUp ArrowDown"
+              aria-label="Volume do player"
+              className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
+              max={100}
+              min={0}
+              onChange={(event) =>
+                onVolumeChange(Number(event.target.value) / 100)
+              }
+              type="range"
+              value={Math.round(volume * 100)}
+            />
           </div>
           {!descriptor.isLive && (
             <span className="hidden text-[0.6875rem] text-muted sm:inline">

@@ -18,4 +18,5 @@ export { SearchField } from "./search-field";
 export { SelectField } from "./select";
 export { Skeleton } from "./skeleton";
 export { Switch } from "./switch";
+export { Tooltip } from "./tooltip";
 export { VirtualizedGrid } from "./virtualized-grid";
