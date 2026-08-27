@@ -38,8 +38,10 @@ For the API project, add these Production variables:
 
 ```text
 CLIENT_URL=https://<web-project>.vercel.app
-IPTV_PROXY_ALLOWED_HOSTS=uexme.pics,dnsvornakapp.online,sh.hx3060.com,sh.playtz.shop
 ```
+
+`IPTV_PROXY_ALLOWED_HOSTS` is not required. The API accepts arbitrary public
+provider hosts and continues to reject private network targets.
 
 `PORT` is supplied by Vercel and is not needed in the Vercel project. Add the
 same variables to Preview if preview deployments should communicate with each

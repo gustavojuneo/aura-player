@@ -36,3 +36,5 @@ the same change.
 - [Frontend platform separation](frontend-platform-separation.md): independent
   `web-app` and `web-tv` products, sharing boundaries, player composition, and
   TV volume behavior.
+- [Provider proxy](provider-proxy.md): public provider-host access and private
+  network target protection.

@@ -71,8 +71,9 @@ packages/
 ```
 
 The web application uses React, Vite, TypeScript, Tailwind CSS, TanStack
-Router, TanStack Query, Axios, React Hook Form, and Zod. The API uses Fastify,
-Zod, and a strict provider allowlist for outbound IPTV requests.
+Router, TanStack Query, Axios, React Hook Form, and Zod. The API uses Fastify
+and Zod, and permits outbound requests to arbitrary public IPTV hosts while
+rejecting private network targets.
 
 See [`docs/architecture.md`](docs/architecture.md) for the architectural
 boundaries and [`docs/deployment-vercel.md`](docs/deployment-vercel.md) for

@@ -17,11 +17,6 @@ const app = Fastify({ logger: true });
 await app.register(cors, {
   origin: [env.CLIENT_URL, /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/],
 });
-const allowedHosts = new Set(
-  env.IPTV_PROXY_ALLOWED_HOSTS.split(",")
-    .map((host) => host.trim().toLowerCase())
-    .filter(Boolean),
-);
 
 function isPrivateAddress(address: string) {
   const version = net.isIP(address);
@@ -653,8 +648,6 @@ async function validateTarget(rawUrl: unknown) {
   const url = new URL(rawUrl);
   if (!["http:", "https:"].includes(url.protocol))
     throw new Error("UNSUPPORTED_PROTOCOL");
-  if (!allowedHosts.has(url.hostname.toLowerCase()))
-    throw new Error("HOST_NOT_ALLOWED");
   const addresses = await dns.lookup(url.hostname, { all: true });
   if (addresses.some(({ address }) => isPrivateAddress(address)))
     throw new Error("PRIVATE_TARGET");

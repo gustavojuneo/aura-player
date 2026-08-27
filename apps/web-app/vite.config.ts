@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "./",
+  base: "/",
   define: {
     __IPTV_ENABLE_KEYBOARD_SHORTCUTS__: JSON.stringify(true),
     __IPTV_SHOW_PLAYER_TOOLTIPS__: JSON.stringify(true),
