@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { getSharedRuntime } from "../../runtime-config";
 import { Tooltip } from "../ui";
 
 export function PlayerTooltip({
@@ -11,8 +10,6 @@ export function PlayerTooltip({
   label: string;
   shortcut?: string;
 }) {
-  if (!__IPTV_SHOW_PLAYER_TOOLTIPS__ || !getSharedRuntime().showPlayerTooltips)
-    return children;
   return (
     <Tooltip
       content={

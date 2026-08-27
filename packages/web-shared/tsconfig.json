@@ -1,9 +1,4 @@
 {
   "extends": "@iptv/config-typescript/react.json",
-  "compilerOptions": {
-    "paths": {
-      "@iptv/web-shared/*": ["./src/*"]
-    }
-  },
   "include": ["src"]
 }

@@ -14,11 +14,6 @@ configureSharedRuntime({
   routeBasePath: "/app",
   mediaSourceMode: env.VITE_MEDIA_SOURCE_MODE,
   playbackUrls: env.VITE_PLAYBACK_URLS,
-  showFullscreen: env.VITE_SHOW_FULLSCREEN,
-  showPlayerTooltips: env.VITE_SHOW_PLAYER_TOOLTIPS,
-  showSeekButtons: env.VITE_SHOW_SEEK_BUTTONS,
-  showVolumeSlider: env.VITE_SHOW_VOLUME_SLIDER,
-  enableKeyboardShortcuts: env.VITE_ENABLE_KEYBOARD_SHORTCUTS,
 });
 
 const rootElement = document.getElementById("root");

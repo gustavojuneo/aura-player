@@ -1,5 +1,4 @@
 import { LoaderCircle, Pause, Play, RotateCcw, RotateCw } from "lucide-react";
-import { getSharedRuntime } from "../../runtime-config";
 
 type PlayerPrimaryControlsProps = {
   controlsVisible: boolean;
@@ -24,7 +23,7 @@ export function PlayerPrimaryControls({
       className={`absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-3 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
       data-player-primary-controls
     >
-      {getSharedRuntime().showSeekButtons && !isLive && (
+      {!isLive && (
         <button
           aria-label="Retroceder 10 segundos"
           className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/15 bg-black/35 px-3 text-base font-bold text-text opacity-70 outline-2 outline-offset-2 outline-transparent transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"
@@ -37,9 +36,7 @@ export function PlayerPrimaryControls({
         </button>
       )}
       <button
-        aria-keyshortcuts={
-          __IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ? "Space k" : undefined
-        }
+        aria-keyshortcuts="Space k"
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
         className={`grid size-[88px] cursor-pointer place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text opacity-60 focus-visible:outline-2 focus-visible:outline-focus hover:opacity-100 ${isLoading ? "cursor-wait" : ""} ${reduceMotion ? "transition-none" : "transition-[opacity,transform] hover:scale-105"}`}
         data-player-focus-anchor
@@ -56,7 +53,7 @@ export function PlayerPrimaryControls({
           <Play className="ml-1 size-8 fill-current" />
         )}
       </button>
-      {getSharedRuntime().showSeekButtons && !isLive && (
+      {!isLive && (
         <button
           aria-label="Avançar 10 segundos"
           className="flex h-16 min-w-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/15 bg-black/35 px-3 text-base font-bold text-text opacity-70 outline-2 outline-offset-2 outline-transparent transition-[background-color,opacity] hover:bg-white/10 hover:opacity-100 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-40"

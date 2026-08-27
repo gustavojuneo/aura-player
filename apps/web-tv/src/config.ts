@@ -4,14 +4,9 @@ export function createWebTvRuntimeConfig(apiUrl: string): SharedRuntimeConfig {
   return {
     apiUrl,
     baseUrl: "./",
-    enableKeyboardShortcuts: false,
     mediaSourceMode: "direct",
     playbackUrls: undefined,
     routeBasePath: "",
-    showFullscreen: false,
-    showPlayerTooltips: false,
-    showSeekButtons: false,
-    showVolumeSlider: false,
   };
 }
 

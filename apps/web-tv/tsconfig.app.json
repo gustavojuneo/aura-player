@@ -4,7 +4,6 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "paths": { "@iptv/web-shared/*": ["../../packages/web-shared/src/*"] },
     "jsx": "react-jsx"
   },
   "include": ["src"]

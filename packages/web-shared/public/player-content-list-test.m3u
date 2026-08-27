@@ -1,7 +1,0 @@
-#EXTM3U
-#EXTINF:-1 tvg-id="aura-news" group-title="Notícias",AURA Notícias
-https://example.invalid/aura-news.m3u8
-#EXTINF:-1 tvg-id="aura-sports" group-title="Esportes",AURA Esportes
-https://example.invalid/aura-sports.m3u8
-#EXTINF:-1 tvg-id="aura-cinema" group-title="Cinema",AURA Cinema
-https://example.invalid/aura-cinema.m3u8

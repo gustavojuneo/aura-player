@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { getSharedRuntime } from "../../../runtime-config";
 import type { PlayerAspectRatio } from "../../../utils/constants";
 
 type UsePlayerControlsParams = {
@@ -145,11 +144,6 @@ export function usePlayerControls({
   };
 
   useEffect(() => {
-    if (
-      !__IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ||
-      !getSharedRuntime().enableKeyboardShortcuts
-    )
-      return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       const target = event.target;
@@ -170,8 +164,8 @@ export function usePlayerControls({
         event.key === "f" ||
         event.key === "ArrowLeft" ||
         event.key === "ArrowRight" ||
-        (getSharedRuntime().showVolumeSlider &&
-          (event.key === "ArrowUp" || event.key === "ArrowDown")) ||
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
         event.key === "Home" ||
         event.key === "End" ||
         /^[0-9]$/.test(event.key);
@@ -198,10 +192,7 @@ export function usePlayerControls({
       } else if (!isLive && event.key === "ArrowRight") {
         event.preventDefault();
         queueSeek(5, "keyboard");
-      } else if (
-        getSharedRuntime().showVolumeSlider &&
-        (event.key === "ArrowUp" || event.key === "ArrowDown")
-      ) {
+      } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
         const video = videoRef.current;
         if (!video) return;
         event.preventDefault();

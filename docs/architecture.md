@@ -79,9 +79,13 @@ packages/config-vite/         React, Tailwind, compiler, and common Vite setup
 ```
 
 Applications extend the TypeScript presets and compose the Vite helper with
-their own aliases, platform defines, assets, and plugins. Product-specific
-configuration remains in the application, and configuration packages must not
-import application environment modules.
+their own aliases, assets, and plugins. Product-specific behavior is selected
+by application-owned imports and composition, not by Vite defines or runtime
+flags. Configuration packages must not import application environment modules.
+
+Public assets follow the same ownership boundary: `apps/web-app/public/` and
+`apps/web-tv/public/` are application-owned, and shared packages must not
+provide a `public/` directory or a shared Vite `publicDir`.
 
 ## Documentation
 

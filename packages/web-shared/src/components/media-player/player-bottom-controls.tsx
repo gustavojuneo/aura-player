@@ -13,7 +13,6 @@ import {
   VolumeOff,
 } from "lucide-react";
 import { formatPlaybackTime } from "../../features/playback/playback";
-import { getSharedRuntime } from "../../runtime-config";
 import {
   ASPECT_RATIO_OPTIONS,
   type PlayerAspectRatio,
@@ -114,9 +113,7 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
           >
             <input
               aria-keyshortcuts={
-                __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
-                  ? "ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
-                  : undefined
+                "ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
               }
               aria-label="Posição da reprodução"
               className="h-1 w-full cursor-pointer accent-gold outline-none transition-[height] focus-visible:h-1.5 focus-visible:accent-gold-bright focus-visible:outline-none"
@@ -158,25 +155,18 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
                 <Volume2 className="size-4" />
               )}
             </ControlButton>
-            {__IPTV_SHOW_VOLUME_SLIDER__ &&
-              getSharedRuntime().showVolumeSlider && (
-                <input
-                  aria-keyshortcuts={
-                    __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
-                      ? "ArrowUp ArrowDown"
-                      : undefined
-                  }
-                  aria-label="Volume do player"
-                  className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
-                  max={100}
-                  min={0}
-                  onChange={(event) =>
-                    onVolumeChange(Number(event.target.value) / 100)
-                  }
-                  type="range"
-                  value={Math.round(volume * 100)}
-                />
-              )}
+            <input
+              aria-keyshortcuts="ArrowUp ArrowDown"
+              aria-label="Volume do player"
+              className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
+              max={100}
+              min={0}
+              onChange={(event) =>
+                onVolumeChange(Number(event.target.value) / 100)
+              }
+              type="range"
+              value={Math.round(volume * 100)}
+            />
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -272,15 +262,13 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
               }
             />
           </PlayerTooltip>
-          {getSharedRuntime().showFullscreen && (
-            <ControlButton
-              label="Tela cheia"
-              onClick={onToggleFullscreen}
-              shortcut="F"
-            >
-              <Expand className="size-4" />
-            </ControlButton>
-          )}
+          <ControlButton
+            label="Tela cheia"
+            onClick={onToggleFullscreen}
+            shortcut="F"
+          >
+            <Expand className="size-4" />
+          </ControlButton>
         </div>
       </div>
     </section>

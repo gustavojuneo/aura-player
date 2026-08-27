@@ -4,11 +4,6 @@ export interface SharedRuntimeConfig {
   apiUrl: string;
   mediaSourceMode: "proxy" | "direct";
   playbackUrls?: string;
-  showFullscreen: boolean;
-  showPlayerTooltips: boolean;
-  showSeekButtons: boolean;
-  showVolumeSlider: boolean;
-  enableKeyboardShortcuts: boolean;
 }
 
 const DEFAULT_RUNTIME_CONFIG: SharedRuntimeConfig = {
@@ -16,11 +11,6 @@ const DEFAULT_RUNTIME_CONFIG: SharedRuntimeConfig = {
   routeBasePath: "/app",
   apiUrl: "http://localhost:3333",
   mediaSourceMode: "proxy",
-  showFullscreen: true,
-  showPlayerTooltips: true,
-  showSeekButtons: true,
-  showVolumeSlider: true,
-  enableKeyboardShortcuts: true,
 };
 
 let runtimeConfig = DEFAULT_RUNTIME_CONFIG;

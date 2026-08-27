@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { getSharedRuntime } from "../../runtime-config";
 import { Tooltip } from "../ui";
 
 export function ControlButton({
@@ -19,9 +18,7 @@ export function ControlButton({
 }) {
   const control = (
     <button
-      aria-keyshortcuts={
-        __IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ? shortcut : undefined
-      }
+      aria-keyshortcuts={shortcut}
       aria-label={label}
       aria-pressed={active || undefined}
       className={`grid size-7 cursor-pointer place-items-center rounded-md text-text transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-focus disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-35 sm:size-8 ${active ? "bg-gold/20 text-gold-bright" : ""}`}
@@ -33,8 +30,6 @@ export function ControlButton({
       {children}
     </button>
   );
-  if (!__IPTV_SHOW_PLAYER_TOOLTIPS__ || !getSharedRuntime().showPlayerTooltips)
-    return control;
   return (
     <Tooltip
       content={

@@ -5,8 +5,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@iptv/web-shared/*": ["../../packages/web-shared/src/*"]
+      "@/*": ["./src/*"]
     },
     "jsx": "react-jsx"
   },
