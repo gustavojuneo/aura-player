@@ -56,8 +56,9 @@ such as `VITE_DEVICE_TYPE` to choose between browser and TV implementations.
 ### FPS-WEB-001: Browser ownership
 
 `web-app` owns the public landing page, desktop and mobile browser navigation,
-pointer and touch interactions, browser history, modern browser build target,
-and Vercel deployment configuration.
+pointer and touch interactions, mouse-hover tooltips, keyboard shortcuts,
+browser history, modern browser build target, and Vercel deployment
+configuration.
 
 ### FPS-TV-001: TV ownership
 
@@ -70,6 +71,12 @@ compatibility target, webOS metadata, and webOS packaging.
 The `web-app` dependency graph must not include spatial-navigation or webOS
 packaging code. The `web-tv` source and dependency graph must not include the
 public landing page, mobile browser navigation, or Vercel configuration.
+
+### FPS-TV-003: Remote-only interaction
+
+`web-tv` must not register browser keyboard shortcuts or render mouse-hover
+tooltips. Remote directional navigation and activation remain TV-owned
+interaction behavior and are not browser shortcut features.
 
 ## Shared code requirements
 

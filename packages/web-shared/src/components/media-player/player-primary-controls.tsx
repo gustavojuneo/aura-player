@@ -37,7 +37,9 @@ export function PlayerPrimaryControls({
         </button>
       )}
       <button
-        aria-keyshortcuts="Space k"
+        aria-keyshortcuts={
+          __IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ? "Space k" : undefined
+        }
         aria-label={isPlaying ? "Pausar" : "Reproduzir"}
         className={`grid size-[88px] cursor-pointer place-items-center rounded-full border border-white/20 bg-[#171510CC] text-text opacity-60 focus-visible:outline-2 focus-visible:outline-focus hover:opacity-100 ${isLoading ? "cursor-wait" : ""} ${reduceMotion ? "transition-none" : "transition-[opacity,transform] hover:scale-105"}`}
         data-player-focus-anchor

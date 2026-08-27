@@ -11,7 +11,8 @@ export function PlayerTooltip({
   label: string;
   shortcut?: string;
 }) {
-  if (!getSharedRuntime().showPlayerTooltips) return children;
+  if (!__IPTV_SHOW_PLAYER_TOOLTIPS__ || !getSharedRuntime().showPlayerTooltips)
+    return children;
   return (
     <Tooltip
       content={

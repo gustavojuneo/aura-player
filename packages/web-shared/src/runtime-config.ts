@@ -7,6 +7,7 @@ export interface SharedRuntimeConfig {
   showPlayerTooltips: boolean;
   showSeekButtons: boolean;
   showVolumeSlider: boolean;
+  enableKeyboardShortcuts: boolean;
 }
 
 const DEFAULT_RUNTIME_CONFIG: SharedRuntimeConfig = {
@@ -17,6 +18,7 @@ const DEFAULT_RUNTIME_CONFIG: SharedRuntimeConfig = {
   showPlayerTooltips: true,
   showSeekButtons: true,
   showVolumeSlider: true,
+  enableKeyboardShortcuts: true,
 };
 
 let runtimeConfig = DEFAULT_RUNTIME_CONFIG;

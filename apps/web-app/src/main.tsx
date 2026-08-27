@@ -17,6 +17,7 @@ configureSharedRuntime({
   showPlayerTooltips: env.VITE_SHOW_PLAYER_TOOLTIPS,
   showSeekButtons: env.VITE_SHOW_SEEK_BUTTONS,
   showVolumeSlider: env.VITE_SHOW_VOLUME_SLIDER,
+  enableKeyboardShortcuts: env.VITE_ENABLE_KEYBOARD_SHORTCUTS,
 });
 
 const rootElement = document.getElementById("root");

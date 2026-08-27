@@ -145,6 +145,11 @@ export function usePlayerControls({
   };
 
   useEffect(() => {
+    if (
+      !__IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ||
+      !getSharedRuntime().enableKeyboardShortcuts
+    )
+      return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       const target = event.target;

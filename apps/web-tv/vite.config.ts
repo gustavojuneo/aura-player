@@ -6,7 +6,11 @@ import appInfo from "./public/appinfo.json";
 
 export default defineConfig({
   base: "./",
-  define: { __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(false) },
+  define: {
+    __IPTV_ENABLE_KEYBOARD_SHORTCUTS__: JSON.stringify(false),
+    __IPTV_SHOW_PLAYER_TOOLTIPS__: JSON.stringify(false),
+    __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(false),
+  },
   publicDir: "../../packages/web-shared/public",
   resolve: {
     alias: {

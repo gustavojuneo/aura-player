@@ -108,7 +108,11 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
           shortcut="←/→ · Home/End · 0–9"
         >
           <input
-            aria-keyshortcuts="ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
+            aria-keyshortcuts={
+              __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
+                ? "ArrowLeft ArrowRight Home End 0 1 2 3 4 5 6 7 8 9"
+                : undefined
+            }
             aria-label="Posição da reprodução"
             className="h-1 w-full cursor-pointer accent-gold"
             data-player-focus-anchor
@@ -151,7 +155,11 @@ export function PlayerBottomControls(props: PlayerBottomControlsProps) {
             {__IPTV_SHOW_VOLUME_SLIDER__ &&
               getSharedRuntime().showVolumeSlider && (
                 <input
-                  aria-keyshortcuts="ArrowUp ArrowDown"
+                  aria-keyshortcuts={
+                    __IPTV_ENABLE_KEYBOARD_SHORTCUTS__
+                      ? "ArrowUp ArrowDown"
+                      : undefined
+                  }
                   aria-label="Volume do player"
                   className="h-1 w-0 cursor-pointer accent-gold opacity-0 transition-[width,opacity] duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 group-focus-within/volume:w-20 group-focus-within/volume:opacity-100 sm:group-hover/volume:w-24 sm:group-focus-within/volume:w-24"
                   max={100}

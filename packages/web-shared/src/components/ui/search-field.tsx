@@ -22,7 +22,7 @@ export const SearchField = forwardRef<
       />
       <input
         {...props}
-        aria-keyshortcuts="/"
+        aria-keyshortcuts={__IPTV_ENABLE_KEYBOARD_SHORTCUTS__ ? "/" : undefined}
         className="min-w-0 flex-1 bg-transparent text-[0.8125rem] text-text outline-none placeholder:text-muted"
         id="aura-search"
         inputMode="search"

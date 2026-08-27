@@ -5,7 +5,11 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "./",
-  define: { __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(true) },
+  define: {
+    __IPTV_ENABLE_KEYBOARD_SHORTCUTS__: JSON.stringify(true),
+    __IPTV_SHOW_PLAYER_TOOLTIPS__: JSON.stringify(true),
+    __IPTV_SHOW_VOLUME_SLIDER__: JSON.stringify(true),
+  },
   publicDir: "../../packages/web-shared/public",
   resolve: {
     alias: {
