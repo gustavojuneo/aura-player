@@ -1,5 +1,25 @@
 import { z } from "zod";
 
+const emojiPattern =
+  /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier}|\p{Regional_Indicator}|\uFE0F|\u200D|\u20E3)/gu;
+
+export function sanitizeCategory(value: string) {
+  return value.replace(emojiPattern, "").replace(/\s+/gu, " ").trim();
+}
+
+const optionalCategorySchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const category = sanitizeCategory(value);
+  return category || undefined;
+}, z.string().min(1).optional());
+
+const categoriesSchema = z
+  .array(z.string())
+  .default([])
+  .transform((categories) => [
+    ...new Set(categories.map(sanitizeCategory).filter((category) => category)),
+  ]);
+
 export const catalogKindSchema = z.enum(["live", "movie", "episode"]);
 export const deliverySchema = z.enum(["hls", "mpeg-ts", "dash", "native"]);
 
@@ -9,8 +29,8 @@ export const catalogItemSchema = z.object({
   sourceId: z.string().min(1),
   kind: catalogKindSchema,
   title: z.string().min(1),
-  groupTitle: z.string().optional(),
-  categories: z.array(z.string()).default([]),
+  groupTitle: optionalCategorySchema,
+  categories: categoriesSchema,
   logoUrl: z.string().url().optional(),
   backdropUrl: z.string().url().optional(),
   description: z.string().optional(),
@@ -47,8 +67,8 @@ export const catalogSeriesSchema = z.object({
   providerId: z.string().optional(),
   sourceId: z.string().min(1),
   title: z.string().min(1),
-  groupTitle: z.string().optional(),
-  categories: z.array(z.string()).default([]),
+  groupTitle: optionalCategorySchema,
+  categories: categoriesSchema,
   posterUrl: z.string().url().optional(),
   backdropUrl: z.string().url().optional(),
   description: z.string().optional(),
@@ -231,7 +251,9 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
             ? 1
             : 0);
     const id = `${sourceId}:${kind}:${index}`;
-    const category = entry.attributes["group-title"]?.trim() || "Sem categoria";
+    const category =
+      sanitizeCategory(entry.attributes["group-title"] ?? "") ||
+      "Sem categoria";
     const identity =
       kind === "movie"
         ? `${kind}:${slugify(title)}:${yearMatch?.[1] ?? ""}`
@@ -243,7 +265,8 @@ export function normalizeM3uEntries(entries: ParsedEntry[], sourceId: string) {
       sourceId,
       kind,
       title,
-      groupTitle: entry.attributes["group-title"] || undefined,
+      groupTitle:
+        sanitizeCategory(entry.attributes["group-title"] ?? "") || undefined,
       categories: [category],
       logoUrl: validUrl(entry.attributes["tvg-logo"]),
       tvgId: entry.attributes["tvg-id"] || undefined,
