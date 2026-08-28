@@ -16,6 +16,15 @@ import { useEffect } from "react";
 import { TV_NAVIGATION_ENABLED } from "../config";
 import { registerTvBackHandler } from "../navigation/tv-back-handler";
 import {
+  elementByFocusKey,
+  focusKeys,
+  getFocusKey,
+  getRegion,
+  getRegionElement,
+  regionSelector,
+  type NavigationRegion,
+} from "../navigation/tv-focus-registry";
+import {
   getTvDirection,
   isTvActivationKey,
   isTvBackKey,
@@ -23,10 +32,6 @@ import {
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
-const regionSelector = "[data-tv-navigation-region]";
-const focusKeys = new WeakMap<HTMLElement, string>();
-const elementByFocusKey = new Map<string, HTMLElement>();
-let nextFocusId = 0;
 let initialized = false;
 let lastPlayerBottomControl: HTMLElement | undefined;
 const playerInitialFocusAssigned = new WeakSet<HTMLElement>();
@@ -34,15 +39,6 @@ let suppressNextFocusScroll = false;
 let playerBackPressStartedAt = 0;
 
 const PLAYER_BACK_PRESS_TIMEOUT_MS = 1000;
-
-type NavigationRegion =
-  | "catalog-categories"
-  | "catalog-grid"
-  | "catalog-preview"
-  | "content"
-  | "dialog"
-  | "player"
-  | "sidebar";
 
 function initializeSpatialNavigation() {
   if (initialized) return;
@@ -84,47 +80,6 @@ function isVisible(element: HTMLElement) {
     current = current.parentElement;
   }
   return true;
-}
-
-function getFocusKey(element: HTMLElement, prefix = "item") {
-  const existing = focusKeys.get(element);
-  if (existing) return existing;
-  const focusKey = `tv-${prefix}-${nextFocusId++}`;
-  focusKeys.set(element, focusKey);
-  elementByFocusKey.set(focusKey, element);
-  return focusKey;
-}
-
-function getRegion(element: HTMLElement): NavigationRegion | undefined {
-  if (element.closest('[role="dialog"]')) return "dialog";
-  if (element.closest("[data-player-root]")) return "player";
-  const explicitRegion =
-    element.closest<HTMLElement>(regionSelector)?.dataset.tvNavigationRegion;
-  if (
-    explicitRegion === "sidebar" ||
-    explicitRegion === "catalog-categories" ||
-    explicitRegion === "catalog-grid" ||
-    explicitRegion === "catalog-preview"
-  ) {
-    return explicitRegion;
-  }
-  if (element.closest("[data-tv-app-content]")) return "content";
-  return undefined;
-}
-
-function getRegionElement(region: NavigationRegion) {
-  if (region === "dialog") {
-    return document.querySelector<HTMLElement>('[role="dialog"]');
-  }
-  if (region === "content") {
-    return document.querySelector<HTMLElement>("[data-tv-app-content]");
-  }
-  if (region === "player") {
-    return document.querySelector<HTMLElement>("[data-player-root]");
-  }
-  return document.querySelector<HTMLElement>(
-    `[data-tv-navigation-region="${region}"]`,
-  );
 }
 
 function overlapsOnSecondaryAxis(
