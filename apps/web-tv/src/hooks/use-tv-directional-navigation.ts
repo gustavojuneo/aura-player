@@ -14,6 +14,11 @@ import {
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { TV_NAVIGATION_ENABLED } from "../config";
+import {
+  getTvDirection,
+  isTvActivationKey,
+  isTvBackKey,
+} from "../navigation/tv-remote-input";
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
@@ -78,28 +83,6 @@ function isVisible(element: HTMLElement) {
     current = current.parentElement;
   }
   return true;
-}
-
-function getDirection(event: KeyboardEvent): Direction | undefined {
-  if (event.key === "ArrowUp") return "up";
-  if (event.key === "ArrowDown") return "down";
-  if (event.key === "ArrowLeft") return "left";
-  if (event.key === "ArrowRight") return "right";
-  return undefined;
-}
-
-function isActivationKey(event: KeyboardEvent) {
-  return event.key === "Enter" || event.key === "OK" || event.keyCode === 13;
-}
-
-function isBackKey(event: KeyboardEvent) {
-  return (
-    event.key === "Escape" ||
-    event.key === "Back" ||
-    event.key === "BrowserBack" ||
-    event.keyCode === 461 ||
-    event.which === 461
-  );
 }
 
 function getFocusKey(element: HTMLElement, prefix = "item") {
@@ -1018,7 +1001,7 @@ export function useTvDirectionalNavigation() {
       if (activeElement.closest("[data-player-content-list]")) return;
 
       if (
-        isActivationKey(event) &&
+        isTvActivationKey(event) &&
         activeElement.hasAttribute("data-tv-select-trigger")
       ) {
         event.preventDefault();
@@ -1028,7 +1011,7 @@ export function useTvDirectionalNavigation() {
       }
 
       if (
-        isActivationKey(event) &&
+        isTvActivationKey(event) &&
         activeElement.closest("[data-player-root]") &&
         (activeElement instanceof HTMLButtonElement ||
           activeElement.hasAttribute("data-player-next-episode"))
@@ -1046,7 +1029,7 @@ export function useTvDirectionalNavigation() {
       )
         return;
 
-      const direction = getDirection(event);
+      const direction = getTvDirection(event);
       if (
         direction &&
         activeElement instanceof HTMLInputElement &&
@@ -1126,7 +1109,7 @@ export function useTvDirectionalNavigation() {
         void navigateByDirection(direction, { event });
         return;
       }
-      if (isActivationKey(event)) {
+      if (isTvActivationKey(event)) {
         event.preventDefault();
         event.stopPropagation();
         SpatialNavigation.onEnterPress({ pressedKeys: {} });
@@ -1140,7 +1123,7 @@ export function useTvDirectionalNavigation() {
   useEffect(() => {
     if (!enabled) return;
     const handleBack = (event: KeyboardEvent) => {
-      if (!isBackKey(event)) return;
+      if (!isTvBackKey(event)) return;
 
       const now = Date.now();
       if (
@@ -1223,7 +1206,7 @@ export function useTvDirectionalNavigation() {
       }
     };
     const handleBackRelease = (event: KeyboardEvent) => {
-      if (!isBackKey(event) || playerBackPressStartedAt === 0) return;
+      if (!isTvBackKey(event) || playerBackPressStartedAt === 0) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       playerBackPressStartedAt = 0;
