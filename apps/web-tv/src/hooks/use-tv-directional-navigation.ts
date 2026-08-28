@@ -14,6 +14,7 @@ import {
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { TV_NAVIGATION_ENABLED } from "../config";
+import { registerTvBackHandler } from "../navigation/tv-back-handler";
 import {
   getTvDirection,
   isTvActivationKey,
@@ -1211,11 +1212,6 @@ export function useTvDirectionalNavigation() {
       event.stopImmediatePropagation();
       playerBackPressStartedAt = 0;
     };
-    window.addEventListener("keydown", handleBack, true);
-    window.addEventListener("keyup", handleBackRelease, true);
-    return () => {
-      window.removeEventListener("keydown", handleBack, true);
-      window.removeEventListener("keyup", handleBackRelease, true);
-    };
+    return registerTvBackHandler(handleBack, handleBackRelease);
   }, [enabled, pathname, router]);
 }
