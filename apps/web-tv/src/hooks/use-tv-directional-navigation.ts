@@ -10,7 +10,7 @@ import {
   SpatialNavigation,
   setFocus,
   updateAllLayouts,
-} from "@noriginmedia/norigin-spatial-navigation";
+} from "../navigation/tv-spatial-navigation";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { TV_NAVIGATION_ENABLED } from "../config";
