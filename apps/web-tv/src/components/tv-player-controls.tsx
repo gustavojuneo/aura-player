@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { TvPlayerControlButton } from "./tv-player-control-button";
+import { focusTvPlayerTarget } from "../navigation/tv-player-navigation";
 
 export function TvPlayerControls({
   aspectRatio,
@@ -82,11 +83,9 @@ export function TvPlayerControls({
   useEffect(() => {
     if (!settingsOpen) return;
     const frame = window.requestAnimationFrame(() => {
-      document
-        .querySelector<HTMLElement>(
-          '[aria-label="Configurações do player"] [data-tv-select-trigger]',
-        )
-        ?.focus({ preventScroll: true });
+      focusTvPlayerTarget(
+        '[aria-label="Configurações do player"] [data-tv-select-trigger]',
+      );
     });
     return () => window.cancelAnimationFrame(frame);
   }, [settingsOpen]);

@@ -11,6 +11,7 @@ import type { PlayerAspectRatio } from "@aura/web-shared/utils/constants";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTvPlayerControls } from "../hooks/use-tv-player-controls";
+import { focusTvPlayerTarget } from "../navigation/tv-player-navigation";
 import { TvPlayerControls } from "./tv-player-controls";
 
 export function TvMediaPlayer({
@@ -46,9 +47,7 @@ export function TvMediaPlayer({
     if (controlsVisible) return;
     setContentListOpen(false);
     const frame = window.requestAnimationFrame(() => {
-      document
-        .querySelector<HTMLElement>("[data-player-primary-play]")
-        ?.focus({ preventScroll: true });
+      focusTvPlayerTarget("[data-player-primary-play]");
     });
     return () => window.cancelAnimationFrame(frame);
   }, [controlsVisible]);
@@ -66,9 +65,7 @@ export function TvMediaPlayer({
   useEffect(() => {
     if (nextEpisode.nextEpisodeCountdown === null) return;
     const frame = window.requestAnimationFrame(() => {
-      document
-        .querySelector<HTMLElement>("[data-player-next-episode]")
-        ?.focus({ preventScroll: true });
+      focusTvPlayerTarget("[data-player-next-episode]");
     });
     return () => window.cancelAnimationFrame(frame);
   }, [nextEpisode.nextEpisodeCountdown]);
@@ -76,9 +73,7 @@ export function TvMediaPlayer({
   const closeContentList = () => {
     setContentListOpen(false);
     window.requestAnimationFrame(() => {
-      document
-        .querySelector<HTMLElement>('[aria-label="Lista de conteúdo"]')
-        ?.focus({ preventScroll: true });
+      focusTvPlayerTarget('[aria-label="Lista de conteúdo"]');
     });
   };
   const toggleContentList = () => {
@@ -89,9 +84,7 @@ export function TvMediaPlayer({
     setContentListOpen((open) => !open);
   };
   const focusPrimaryPlay = () =>
-    document
-      .querySelector<HTMLElement>("[data-player-primary-play]")
-      ?.focus({ preventScroll: true });
+    focusTvPlayerTarget("[data-player-primary-play]");
 
   return (
     <main
