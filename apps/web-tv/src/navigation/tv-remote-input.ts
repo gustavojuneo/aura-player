@@ -1,4 +1,4 @@
-import type { Direction } from "@noriginmedia/norigin-spatial-navigation";
+import type { Direction } from "./tv-spatial-navigation";
 
 export function getTvDirection(event: KeyboardEvent): Direction | undefined {
   if (event.key === "ArrowUp") return "up";

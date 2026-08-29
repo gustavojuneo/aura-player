@@ -2,7 +2,6 @@ import {
   type Direction,
   type FocusableComponent,
   getCurrentFocusKey,
-  init,
   navigateByDirection,
   pause,
   ROOT_FOCUS_KEY,
@@ -11,6 +10,7 @@ import {
   setFocus,
   updateAllLayouts,
 } from "../navigation/tv-spatial-navigation";
+import { initializeTvSpatialNavigation } from "../navigation/tv-spatial-navigation";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { TV_NAVIGATION_ENABLED } from "../config";
@@ -33,25 +33,12 @@ import {
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([data-tv-scroll-area]):not([data-tv-scroll-viewport]):not([data-tv-scroll-content])';
-let initialized = false;
 let lastPlayerBottomControl: HTMLElement | undefined;
 const playerInitialFocusAssigned = new WeakSet<HTMLElement>();
 let suppressNextFocusScroll = false;
 let playerBackPressStartedAt = 0;
 
 const PLAYER_BACK_PRESS_TIMEOUT_MS = 1000;
-
-function initializeSpatialNavigation() {
-  if (initialized) return;
-  init({
-    distanceCalculationMethod: "center",
-    domNodeFocusOptions: { preventScroll: true },
-    shouldFocusDOMNode: true,
-    throttle: 80,
-    throttleKeypresses: true,
-  });
-  initialized = true;
-}
 
 function isTextEntry(element: Element | null) {
   return (
@@ -898,7 +885,7 @@ export function useTvDirectionalNavigation() {
 
   useEffect(() => {
     if (!enabled || !pathname) return;
-    initializeSpatialNavigation();
+    initializeTvSpatialNavigation();
     if (pathname === "/app" || pathname === "/app/")
       window.scrollTo({ left: 0, top: 0 });
     resume();

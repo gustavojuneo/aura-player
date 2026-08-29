@@ -12,6 +12,7 @@ import { Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTvPlayerControls } from "../hooks/use-tv-player-controls";
 import { focusTvPlayerTarget } from "../navigation/tv-player-navigation";
+import { isTvBackKey } from "../navigation/tv-remote-input";
 import { TvPlayerControls } from "./tv-player-controls";
 
 export function TvMediaPlayer({
@@ -104,7 +105,7 @@ export function TvMediaPlayer({
       }}
       onKeyDown={(event) => {
         revealControls();
-        if (event.key === "Escape" || event.keyCode === 461) {
+        if (isTvBackKey(event)) {
           event.preventDefault();
           if (contentListOpen) closeContentList();
           else if (settingsOpen) setSettingsOpen(false);
