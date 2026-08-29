@@ -24,6 +24,7 @@ import {
   regionSelector,
   type NavigationRegion,
 } from "../navigation/tv-focus-registry";
+import { getTvNavigationPolicy } from "../navigation/tv-navigation-policies";
 import {
   getTvDirection,
   isTvActivationKey,
@@ -986,6 +987,10 @@ export function useTvDirectionalNavigation() {
         return;
 
       const direction = getTvDirection(event);
+      const navigationPolicy = getTvNavigationPolicy(
+        activeElement,
+        getRegion(activeElement),
+      );
       if (
         direction &&
         activeElement instanceof HTMLInputElement &&
@@ -1001,7 +1006,7 @@ export function useTvDirectionalNavigation() {
       }
       if (
         direction &&
-        activeElement.closest("[data-player-root]") &&
+        navigationPolicy === "player" &&
         !activeElement.closest('[role="dialog"]')
       ) {
         event.preventDefault();
@@ -1050,7 +1055,7 @@ export function useTvDirectionalNavigation() {
         return;
       }
 
-      if (!activeElement.closest('[role="dialog"]')) return;
+      if (navigationPolicy !== "dialog") return;
       if (activeElement.closest('[role="option"]')) return;
 
       if (direction) {
